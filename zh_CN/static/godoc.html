@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+{{with .Tabtitle}}
+<!--
+  <title>{{html .}} - The Go Programming Language</title>
+-->
+  <title>{{html .}} - Go 编程语言</title>
+{{else}}
+<!--
+  <title>The Go Programming Language</title>
+-->
+  <title>Go 编程语言</title>
+{{end}}
+<link type="text/css" rel="stylesheet" href="/lib/godoc/style.css">
+{{if .SearchBox}}
+<link rel="search" type="application/opensearchdescription+xml" title="godoc" href="/opensearch.xml" />
+{{end}}
+<link rel="stylesheet" href="/lib/godoc/jquery.treeview.css">
+<script type="text/javascript">window.initFuncs = [];</script>
+</head>
+<body>
+
+<div id='lowframe' style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar"{{if .Title}} class="wide"{{end}}><div class="container">
+
+<form method="GET" action="/search">
+<div id="menu">
+<!--
+<a href="/doc/">Documents</a>
+<a href="/pkg/">Packages</a>
+<a href="/project/">The Project</a>
+<a href="/help/">Help</a>
+<a href="/blog/">Blog</a>
+-->
+<a href="/doc/">文档</a>
+<a href="/pkg/">包</a>
+<a href="/project/">项目</a>
+<a href="/help/">帮助</a>
+<a href="/blog/">博客</a>
+{{if .Playground}}
+<!--
+<a id="playgroundButton" href="http://play.golang.org/" title="Show Go Playground">Play</a>
+-->
+<a id="playgroundButton" href="http://play.golang.org/" title="显示 Go 操场">运行</a>
+{{end}}
+<!--
+<input type="text" id="search" name="q" class="inactive" value="Search" placeholder="Search">
+-->
+<input type="text" id="search" name="q" class="inactive" value="搜索" placeholder="搜索">
+</div>
+<!--
+<div id="heading"><a href="/">The Go Programming Language</a></div>
+-->
+<div id="heading"><a href="/">Go 编程语言</a></div>
+</form>
+
+</div></div>
+
+{{if .Playground}}
+<div id="playground" class="play">
+	<div class="input"><textarea class="code">package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, 世界")
+}</textarea></div>
+	<div class="output"></div>
+	<div class="buttons">
+<!--
+		<a class="run" title="Run this code [shift-enter]">Run</a>
+		<a class="fmt" title="Format this code">Format</a>
+		<a class="share" title="Share this code">Share</a>
+-->
+		<a class="run" title="运行此代码[Shift-Enter]">运行</a>
+		<a class="fmt" title="格式化此代码">格式化</a>
+		<a class="share" title="分享此代码">分享</a>
+	</div>
+</div>
+{{end}}
+
+<div id="page"{{if .Title}} class="wide"{{end}}>
+<div class="container">
+
+{{with .Title}}
+  <h1>{{html .}}</h1>
+{{end}}
+{{with .Subtitle}}
+  <h2>{{html .}}</h2>
+{{end}}
+
+{{/* The Table of Contents is automatically inserted in this <div>.
+     Do not delete this <div>. */}}
+<div id="nav"></div>
+
+{{/* Body is HTML-escaped elsewhere */}}
+{{printf "%s" .Body}}
+
+<!--
+<div id="footer">
+Build version {{html .Version}}.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="/LICENSE">BSD license</a>.<br>
+<a href="/doc/tos.html">Terms of Service</a> |
+<a href="http://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+-->
+<div id="footer">
+构建版本 {{html .Version}}.<br>
+除<a href="http://code.google.com/policies.html#restrictions">特别注明</a>外，
+本页内容均采用知识共享-署名（CC-BY）3.0协议授权，代码采用<a href="/LICENSE">BSD协议</a>授权。<br>
+<a href="/doc/tos.html">服务条款</a> |
+<a href="http://www.google.com/intl/en/policies/privacy/">隐私政策</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+<!-- TODO(adonovan): load these from <head> using "defer" attribute? -->
+<script type="text/javascript" src="/lib/godoc/jquery.js"></script>
+<script type="text/javascript" src="/lib/godoc/jquery.treeview.js"></script>
+<script type="text/javascript" src="/lib/godoc/jquery.treeview.edit.js"></script>
+
+{{if .Playground}}
+<script type="text/javascript" src="/lib/godoc/playground.js"></script>
+{{end}}
+<script type="text/javascript" src="/lib/godoc/godocs.js"></script>
+
+</body>
+</html>
+

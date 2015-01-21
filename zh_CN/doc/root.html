@@ -1,0 +1,150 @@
+<!--{
+	"Path": "/"
+}-->
+
+<div class="left">
+
+<div id="learn">
+<a class="popout share">弹出</a>
+<div class="rootHeading">尝试 Go</div>
+<div class="input">
+<textarea spellcheck="false" class="code">// 你可以编辑这里的代码！
+// 点击这里然后开始输入。
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, 世界")
+}
+</textarea>
+</div>
+<div class="output">
+<pre>
+Hello, 世界
+</pre>
+</div>
+<div class="buttons">
+<a class="run" href="#" title="运行这段代码 [shift-enter]">运行</a>
+<a class="share" href="#" title="分享这段代码">分享</a>
+<a class="tour" href="http://go-tour-zh.appspot.com/" title="在你的浏览器中学习Go">学习教程</a>
+</div>
+<div class="toys">
+<select>
+	<option value="hello.go">Hello, 世界！</option>
+	<option value="life.go">康威的生命游戏</option>
+	<option value="fib.go">斐波纳契闭包</option>
+	<option value="peano.go">皮亚诺整数</option>
+	<option value="pi.go">并发Pi计算</option>
+	<option value="sieve.go">并发质数筛</option>
+	<option value="solitaire.go">孔明棋求解器</option>
+	<option value="tree.go">二叉树比较</option>
+</select>
+</div>
+</div>
+
+</div>
+
+<div class="right">
+
+<div id="about">
+Go 是一个开源的编程语言，它能让构造简单、可靠且高效的软件变得容易。
+</div>
+
+<div id="gopher"></div>
+
+<a href="/doc/install" id="start">
+<span class="big">下载Go</span>
+<span class="desc">
+我们提供 Linux、Mac OS X 和 Windows
+<br />
+等系统下的二进制发行版
+</span>
+</a>
+
+</div>
+
+<div style="clear: both"></div>
+
+<div class="left">
+
+<div id="video">
+<div class="rootHeading">精选视频</div>
+<iframe width="415" height="241" src="//www.youtube.com/embed/ytEkHepK08c" frameborder="0" allowfullscreen></iframe>
+</div>
+
+</div>
+
+<div class="right">
+
+<div id="blog">
+<div class="rootHeading">博文精选</div>
+<div class="read"><a href="//blog.golang.org/">更多</a></div>
+</div>
+
+</div>
+
+<div style="clear: both;"></div>
+
+<script type="text/javascript">
+
+function readableTime(t) {
+	var m = ["January", "February", "March", "April", "May", "June", "July",
+		"August", "September", "October", "November", "December"];
+	var p = t.substring(0, t.indexOf("T")).split("-");
+	var d = new Date(p[0], p[1]-1, p[2]);
+	return d.getDate() + " " + m[d.getMonth()] + " " + d.getFullYear();
+}
+
+function feedLoaded(result) {
+	var blog = document.getElementById("blog");
+	var read = blog.getElementsByClassName("read")[0];
+	for (var i = 0; i < result.length && i < 2; i++) {
+		var entry = result[i];
+		var title = document.createElement("a");
+		title.className = "title";
+		title.href = entry.Link;
+		title.innerHTML = entry.Title;
+		blog.insertBefore(title, read);
+		var extract = document.createElement("div");
+		extract.className = "extract";
+		extract.innerHTML = entry.Summary;
+		blog.insertBefore(extract, read);
+		var when = document.createElement("div");
+		when.className = "when";
+		when.innerHTML = "Published " + readableTime(entry.Time);
+		blog.insertBefore(when, read);
+	}
+}
+
+window.initFuncs.push(function() {
+	// Set up playground if enabled.
+	if (window.playground) {
+		window.playground({
+			"codeEl":        "#learn .code",
+			"outputEl":      "#learn .output",
+			"runEl":         "#learn .run",
+			"shareEl":       "#learn .share",
+			"shareRedirect": "//play.golang.org/p/",
+			"toysEl":        "#learn .toys select"
+		});
+	} else {
+		$('#learn').hide()
+	}
+
+	// Load blog feed.
+	$('<script/>').attr('text', 'text/javascript')
+		.attr('src', '//blog.golang.org/.json?jsonp=feedLoaded')
+		.appendTo('body');
+
+	// Set the video at random.
+	var videos = [
+		{h: 241, s: "//www.youtube.com/embed/ytEkHepK08c"}, // Tour of Go
+		{h: 241, s: "//www.youtube.com/embed/f6kdp27TYZs"}, // Concurrency Patterns
+		{h: 233, s: "//player.vimeo.com/video/69237265"}    // Simple environment
+	];
+	var v = videos[Math.floor(Math.random()*videos.length)];
+	$('#video iframe').attr('height', v.h).attr('src', v.s);
+});
+
+</script>

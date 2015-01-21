@@ -1,0 +1,420 @@
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+{{with .PDoc}}
+	<script type='text/javascript'>
+	document.ANALYSIS_DATA = {{$.AnalysisData}};
+	document.CALLGRAPH = {{$.CallGraph}};
+	</script>
+
+	{{if $.IsMain}}
+		{{/* command documentation */}}
+		{{comment_html .Doc}}
+	{{else}}
+		{{/* package documentation */}}
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "{{html .ImportPath}}"</code></dd>
+			</dl>
+			<dl>
+<!--
+			<dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+-->
+			<dd><a href="#pkg-overview" class="overviewLink">概览</a></dd>
+			<dd><a href="#pkg-index" class="indexLink">索引</a></dd>
+			{{if $.Examples}}
+<!--
+				<dd><a href="#pkg-examples" class="examplesLink">Examples</a></dd>
+-->
+				<dd><a href="#pkg-examples" class="examplesLink">示例</a></dd>
+			{{end}}
+			{{if $.Dirs}}
+<!--
+				<dd><a href="#pkg-subdirectories">Subdirectories</a></dd>
+-->
+				<dd><a href="#pkg-subdirectories">子目录</a></dd>
+			{{end}}
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+<!--
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+-->
+				<h2 class="toggleButton" title="点此显示概览">概览 ▹</h2>
+			</div>
+			<div class="expanded">
+<!--
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+-->
+				<h2 class="toggleButton" title="点此隐藏概览">概览 ▾</h2>
+				{{comment_html .Doc}}
+			</div>
+		</div>
+		{{example_html $ ""}}
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+<!--
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+-->
+			<h2 class="toggleButton" title="点此显示素引">索引 ▹</h2>
+		</div>
+		<div class="expanded">
+<!--
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+-->
+			<h2 class="toggleButton" title="点此隐藏索引">索引 ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			{{if .Consts}}
+<!--
+				<dd><a href="#pkg-constants">Constants</a></dd>
+-->
+				<dd><a href="#pkg-constants">常量</a></dd>
+			{{end}}
+			{{if .Vars}}
+<!--
+				<dd><a href="#pkg-variables">Variables</a></dd>
+-->
+				<dd><a href="#pkg-variables">变量</a></dd>
+			{{end}}
+			{{range .Funcs}}
+				{{$name_html := html .Name}}
+				<dd><a href="#{{$name_html}}">{{node_html $ .Decl false | sanitize}}</a></dd>
+			{{end}}
+			{{range .Types}}
+				{{$tname_html := html .Name}}
+				<dd><a href="#{{$tname_html}}">type {{$tname_html}}</a></dd>
+				{{range .Funcs}}
+					{{$name_html := html .Name}}
+					<dd>&nbsp; &nbsp; <a href="#{{$name_html}}">{{node_html $ .Decl false | sanitize}}</a></dd>
+				{{end}}
+				{{range .Methods}}
+					{{$name_html := html .Name}}
+					<dd>&nbsp; &nbsp; <a href="#{{$tname_html}}.{{$name_html}}">{{node_html $ .Decl false | sanitize}}</a></dd>
+				{{end}}
+			{{end}}
+			{{if $.Notes}}
+				{{range $marker, $item := $.Notes}}
+				<dd><a href="#pkg-note-{{$marker}}">{{noteTitle $marker | html}}s</a></dd>
+				{{end}}
+			{{end}}
+			</dl>
+			</div><!-- #manual-nav -->
+
+		{{if $.Examples}}
+		<div id="pkg-examples">
+<!--
+			<h4>Examples</h4>
+-->
+			<h4>示例</h4>
+			<dl>
+			{{range $.Examples}}
+			<dd><a class="exampleLink" href="#example_{{.Name}}">{{example_name .Name}}</a></dd>
+			{{end}}
+			</dl>
+		</div>
+		{{end}}
+
+		{{with .Filenames}}
+<!--
+			<h4>Package files</h4>
+-->
+			<h4>包文件</h4>
+			<p>
+			<span style="font-size:90%">
+			{{range .}}
+				<a href="{{.|srcLink|html}}">{{.|filename|html}}</a>
+			{{end}}
+			</span>
+			</p>
+		{{end}}
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		<div id="pkg-callgraph" class="toggle" style="display: none">
+		<div class="collapsed">
+<!--
+			<h2 class="toggleButton" title="Click to show Internal Call Graph section">Internal call graph ▹</h2>
+-->
+			<h2 class="toggleButton" title="点此显示内部调用图">内部调用图 ▹</h2>
+		</div> <!-- .expanded -->
+		<div class="expanded">
+<!--
+			<h2 class="toggleButton" title="Click to hide Internal Call Graph section">Internal call graph ▾</h2>
+-->
+			<h2 class="toggleButton" title="点此隐藏内部调用图">内部调用图 ▾</h2>
+<!--
+			<p>
+			  In the call graph viewer below, each node
+			  is a function belonging to this package
+			  and its children are the functions it
+			  calls&mdash;perhaps dynamically.
+			</p>
+			<p>
+			  The root nodes are the entry points of the
+			  package: functions that may be called from
+			  outside the package.
+			  There may be non-exported or anonymous
+			  functions among them if they are called
+			  dynamically from another package.
+			</p>
+			<p>
+			  Click a node to visit that function's source code.
+			  From there you can visit its callers by
+			  clicking its declaring <code>func</code>
+			  token.
+			</p>
+			<p>
+			  Functions may be omitted if they were
+			  determined to be unreachable in the
+			  particular programs or tests that were
+			  analyzed.
+			</p>
+-->
+			<p>
+			在下面的调用图查看器中，每个节点都是一个属于本包的函数，其子节点即为它所调用的函数——或许是动态的。
+			</p>
+			<p>
+			根节点为包的入口点：函数可从包的外部调用。若这些函数被其它包动态地调用，
+			那么它们可能是未导出的或匿名的。
+			</p>
+			<p>
+			点击一个节点来查看该函数的源码。在源码中，可以点击它的 <code>func</code>
+			声明标记来查看其调用者。
+			</p>
+			<p>
+			在分析特定程序或测试时，被认定为无法访问的函数会被忽略。
+			</p>
+			<!-- Zero means show all package entry points. -->
+			<ul style="margin-left: 0.5in" id="callgraph-0" class="treeview"></ul>
+		</div>
+		</div> <!-- #pkg-callgraph -->
+
+		{{with .Consts}}
+<!--
+			<h2 id="pkg-constants">Constants</h2>
+-->
+			<h2 id="pkg-constants">常量</h2>
+			{{range .}}
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+			{{end}}
+		{{end}}
+		{{with .Vars}}
+<!--
+			<h2 id="pkg-variables">Variables</h2>
+-->
+			<h2 id="pkg-variables">变量</h2>
+			{{range .}}
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+			{{end}}
+		{{end}}
+		{{range .Funcs}}
+			{{/* Name is a string - no need for FSet */}}
+			{{$name_html := html .Name}}
+			<h2 id="{{$name_html}}">func <a href="{{posLink_url $ .Decl}}">{{$name_html}}</a></h2>
+			<pre>{{node_html $ .Decl true}}</pre>
+			{{comment_html .Doc}}
+			{{example_html $ .Name}}
+			{{callgraph_html $ "" .Name}}
+
+		{{end}}
+		{{range .Types}}
+			{{$tname := .Name}}
+			{{$tname_html := html .Name}}
+			<h2 id="{{$tname_html}}">type <a href="{{posLink_url $ .Decl}}">{{$tname_html}}</a></h2>
+			<pre>{{node_html $ .Decl true}}</pre>
+			{{comment_html .Doc}}
+
+			{{range .Consts}}
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+			{{end}}
+
+			{{range .Vars}}
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+			{{end}}
+
+			{{example_html $ $tname}}
+			{{implements_html $ $tname}}
+			{{methodset_html $ $tname}}
+
+			{{range .Funcs}}
+				{{$name_html := html .Name}}
+				<h3 id="{{$name_html}}">func <a href="{{posLink_url $ .Decl}}">{{$name_html}}</a></h3>
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+				{{example_html $ .Name}}
+				{{callgraph_html $ "" .Name}}
+			{{end}}
+
+			{{range .Methods}}
+				{{$name_html := html .Name}}
+				<h3 id="{{$tname_html}}.{{$name_html}}">func ({{html .Recv}}) <a href="{{posLink_url $ .Decl}}">{{$name_html}}</a></h3>
+				<pre>{{node_html $ .Decl true}}</pre>
+				{{comment_html .Doc}}
+				{{$name := printf "%s_%s" $tname .Name}}
+				{{example_html $ $name}}
+				{{callgraph_html $ .Recv .Name}}
+			{{end}}
+		{{end}}
+	{{end}}
+
+	{{with $.Notes}}
+		{{range $marker, $content := .}}
+			<h2 id="pkg-note-{{$marker}}">{{noteTitle $marker | html}}s</h2>
+			<ul style="list-style: none; padding: 0;">
+			{{range .}}
+			<li><a href="{{posLink_url $ .}}">&#x261e;</a> {{html .Body}}</li>
+			{{end}}
+			</ul>
+		{{end}}
+	{{end}}
+{{end}}
+
+{{with .PAst}}
+	{{range $filename, $ast := .}}
+		<a href="{{$filename|srcLink|html}}">{{$filename|filename|html}}</a>:<pre>{{node_html $ $ast false}}</pre>
+	{{end}}
+{{end}}
+
+{{with .Dirs}}
+	{{/* DirList entries are numbers and strings - no need for FSet */}}
+	{{if $.PDoc}}
+<!--
+		<h2 id="pkg-subdirectories">Subdirectories</h2>
+-->
+	{{end}}
+		<h2 id="pkg-subdirectories">子目录</h2>
+	{{if eq $.Dirname "/src"}}
+		<div id="manual-nav">
+			<dl>
+<!--
+				<dt><a href="#stdlib">Standard library</a></dt>
+				<dt><a href="#other">Other packages</a></dt>
+				<dd><a href="#subrepo">Sub-repositories</a></dd>
+				<dd><a href="#community">Community</a></dd>
+-->
+				<dt><a href="#stdlib">标准库</a></dt>
+				<dt><a href="#other">其它包</a></dt>
+				<dd><a href="#subrepo">子代码库</a></dd>
+				<dd><a href="#community">社区</a></dd>
+			</dl>
+		</div>
+<!--
+		<h2 id="stdlib">Standard library</h2>
+-->
+		<h2 id="stdlib">标准库</h2>
+		<img class="gopher" src="/doc/gopher/pkg.png"/>
+	{{end}}
+	<table class="dir">
+	<tr>
+<!--
+	<th>Name</th>
+-->
+	<th>名称</th>
+	<th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+<!--
+	<th style="text-align: left; width: auto">Synopsis</th>
+-->
+	<th style="text-align: left; width: auto">摘要</th>
+	</tr>
+	{{if not (or (eq $.Dirname "/src") (eq $.Dirname "/src/cmd") $.DirFlat)}}
+		<tr>
+		<td><a href="..">..</a></td>
+		</tr>
+	{{end}}
+	{{range .List}}
+		{{if $.DirFlat}}
+			{{if .HasPkg}}
+				<tr>
+				<td class="name"><a href="{{html .Path}}/">{{html .Path}}</a></td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td style="width: auto">{{html .Synopsis}}</td>
+				</tr>
+			{{end}}
+		{{else}}
+			<tr>
+			<td class="name">{{repeat `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;` .Depth}}<a href="{{html .Path}}/">{{html .Name}}</a></td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td style="width: auto">{{html .Synopsis}}</td>
+			</tr>
+		{{end}}
+	{{end}}
+	</table>
+
+	{{if eq $.Dirname "/src"}}
+<!--
+	<h2 id="other">Other packages</h2>
+
+	<h3 id="subrepo">Sub-repositories</h3>
+	<p>
+	These packages are part of the Go Project but outside the main Go tree.
+	They are developed under looser <a href="/doc/go1compat">compatibility requirements</a> than the Go core.
+	Install them with "<a href="/cmd/go/#hdr-Download_and_install_packages_and_dependencies">go get</a>".
+	</p>
+	<ul>
+		<li><a href="//godoc.org/golang.org/x/crypto">crypto</a> — additional cryptography packages.</li>
+		<li><a href="//godoc.org/golang.org/x/image">image</a> — additional imaging packages.</li>
+		<li><a href="//godoc.org/golang.org/x/net">net</a> — additional networking packages.</li>
+		<li><a href="//godoc.org/golang.org/x/sys">sys</a> — packages for making system calls.</li>
+		<li><a href="//godoc.org/golang.org/x/text">text</a> — packages for working with text.</li>
+		<li><a href="//godoc.org/golang.org/x/tools">tools</a> — godoc, vet, cover, and other tools.</li>
+		<li><a href="//godoc.org/golang.org/x/exp">exp</a> — experimental code (handle with care; may change without warning).</li>
+	</ul>
+
+	<h3 id="community">Community</h3>
+	<p>
+	These services can help you find Open Source packages provided by the community.
+	</p>
+	<ul>
+		<li><a href="//godoc.org">GoDoc</a> - a package index and search engine.</li>
+		<li><a href="http://go-search.org">Go Search</a> - a code search engine.</li>
+		<li><a href="/wiki/Projects">Projects at the Go Wiki</a> - a curated list of Go projects.</li>
+	</ul>
+-->
+	<h2 id="other">其它包</h2>
+
+	<h3 id="subrepo">字代码库</h3>
+	<p>
+	这些包是 Go 项目的一部分，但并未在主源码树中。它们在比 Go
+	核心库更加宽松的<a href="/doc/go1compat">兼容性需求</a>下开发。
+	可通过“<a href="/cmd/go/#hdr-Download_and_install_packages_and_dependencies">go get</a>”安装它们.
+	</p>
+	<ul>
+		<li><a href="//godoc.org/golang.org/x/go.crypto">crypto</a> — 附加的加密包。</li>
+		<li><a href="//godoc.org/golang.org/x/go.image">image</a> — 附加的图像包。</li>
+		<li><a href="//godoc.org/golang.org/x/go.net">net</a> — 附加的网络包。</li>
+		<li><a href="//godoc.org/golang.org/x/go.sys">sys</a> — 系统调用包。</li>
+		<li><a href="//godoc.org/golang.org/x/go.text">text</a> — 文本处理包。</li>
+		<li><a href="//godoc.org/golang.org/x/go.tools">tools</a> — godoc、vet、cover 及其它工具。</li>
+		<li><a href="//godoc.org/golang.org/x/go.exp">exp</a> — 实验性代码（可能不经警告就更改，请小心对待）。</li>
+	</ul>
+
+	<h3 id="community">社区</h3>
+	<p>
+	这些服务可帮你寻找社区提供的开源包。
+	</p>
+	<ul>
+		<li><a href="//godoc.org">GoDoc</a> - 包索引与搜索引擎。</li>
+		<li><a href="http://go-search.org">Go 搜索</a> - 代码搜索引擎。</li>
+		<li><a href="/wiki/Projects">Go 维基上的项目</a> - Go 项目策划列表</li>
+	</ul>
+	{{end}}
+{{end}}

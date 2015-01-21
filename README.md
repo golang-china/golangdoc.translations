@@ -1,0 +1,3 @@
+# Godoc translate files
+
+TODO
