@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ingore
+
 /*
 	Package unsafe contains operations that step around the type safety of Go programs.
 
@@ -10,15 +12,15 @@
 */
 
 /*
-	unsafe °üº¬ÓĞ¹ØÓÚGo³ÌĞòÀàĞÍ°²È«µÄËùÓĞ²Ù×÷.
+	unsafe åŒ…å«æœ‰å…³äºGoç¨‹åºç±»å‹å®‰å…¨çš„æ‰€æœ‰æ“ä½œ.
 */
 package unsafe
 
 // ArbitraryType is here for the purposes of documentation only and is not actually
 // part of the unsafe package.  It represents the type of an arbitrary Go expression.
 
-// ArbitraryType ÔÚ´Ë´¦Ö»ÓÃ×÷ÎÄµµÄ¿µÄ£¬ËüÊµ¼ÊÉÏ²¢²»ÊÇ unsafe °üµÄÒ»²¿·Ö¡£
-// Ëü´ú±íÈÎÒâÒ»¸öGo±í´ïÊ½µÄÀàĞÍ¡£
+// ArbitraryType åœ¨æ­¤å¤„åªç”¨ä½œæ–‡æ¡£ç›®çš„ï¼Œå®ƒå®é™…ä¸Šå¹¶ä¸æ˜¯ unsafe åŒ…çš„ä¸€éƒ¨åˆ†ã€‚
+// å®ƒä»£è¡¨ä»»æ„ä¸€ä¸ªGoè¡¨è¾¾å¼çš„ç±»å‹ã€‚
 type ArbitraryType int
 
 // Pointer represents a pointer to an arbitrary type.  There are four special operations
@@ -30,37 +32,37 @@ type ArbitraryType int
 // Pointer therefore allows a program to defeat the type system and read and write
 // arbitrary memory. It should be used with extreme care.
 
-// Pointer ´ú±íÒ»¸öÖ¸ÏòÈÎÒâÀàĞÍµÄÖ¸Õë¡£
-// ÓĞÈıÖÖÌØÊâµÄ²Ù×÷¿ÉÓÃÓÚÀàĞÍÖ¸Õë¶ø²»ÄÜÓÃÓÚÆäËüÀàĞÍ¡£
-//	1) ÈÎÒâÀàĞÍµÄÖ¸ÕëÖµ¾ù¿É×ª»»Îª Pointer¡£
-//	2) Pointer ¾ù¿É×ª»»ÎªÈÎÒâÀàĞÍµÄÖ¸ÕëÖµ¡£
-//	3) uintptr ¾ù¿É×ª»»Îª Pointer¡£
-//	4) Pointer ¾ù¿É×ª»»Îª uintptr¡£
-// Òò´Ë Pointer ÔÊĞí³ÌĞò»÷À£ÀàĞÍÏµÍ³²¢¶ÁĞ´ÈÎÒâÄÚ´æ¡£ËüÓ¦µ±±»ÓÃµÃ·Ç³£Ğ¡ĞÄ¡£
+// Pointer ä»£è¡¨ä¸€ä¸ªæŒ‡å‘ä»»æ„ç±»å‹çš„æŒ‡é’ˆã€‚
+// æœ‰ä¸‰ç§ç‰¹æ®Šçš„æ“ä½œå¯ç”¨äºç±»å‹æŒ‡é’ˆè€Œä¸èƒ½ç”¨äºå…¶å®ƒç±»å‹ã€‚
+//	1) ä»»æ„ç±»å‹çš„æŒ‡é’ˆå€¼å‡å¯è½¬æ¢ä¸º Pointerã€‚
+//	2) Pointer å‡å¯è½¬æ¢ä¸ºä»»æ„ç±»å‹çš„æŒ‡é’ˆå€¼ã€‚
+//	3) uintptr å‡å¯è½¬æ¢ä¸º Pointerã€‚
+//	4) Pointer å‡å¯è½¬æ¢ä¸º uintptrã€‚
+// å› æ­¤ Pointer å…è®¸ç¨‹åºå‡»æºƒç±»å‹ç³»ç»Ÿå¹¶è¯»å†™ä»»æ„å†…å­˜ã€‚å®ƒåº”å½“è¢«ç”¨å¾—éå¸¸å°å¿ƒã€‚
 type Pointer *ArbitraryType
 
 // Sizeof returns the size in bytes occupied by the value v.  The size is that of the
 // "top level" of the value only.  For instance, if v is a slice, it returns the size of
 // the slice descriptor, not the size of the memory referenced by the slice.
 
-// Sizeof ·µ»Ø±»Öµ v ËùÕ¼ÓÃµÄ×Ö½Ú´óĞ¡¡£
-// ¸Ã´óĞ¡Ö»ÊÇ×î¡°¶¥¼¶¡±µÄÖµ¡£ÀıÈç£¬Èô v ÊÇÒ»¸öÇĞÆ¬£¬Ëü»á·µ»Ø¸ÃÇĞÆ¬ÃèÊö·ûµÄ´óĞ¡£¬
-// ¶ø·Ç¸ÃÇĞÆ¬ÒıÓÃµÄÄÚ´æ´óĞ¡¡£
+// Sizeof è¿”å›è¢«å€¼ v æ‰€å ç”¨çš„å­—èŠ‚å¤§å°ã€‚
+// è¯¥å¤§å°åªæ˜¯æœ€â€œé¡¶çº§â€çš„å€¼ã€‚ä¾‹å¦‚ï¼Œè‹¥ v æ˜¯ä¸€ä¸ªåˆ‡ç‰‡ï¼Œå®ƒä¼šè¿”å›è¯¥åˆ‡ç‰‡æè¿°ç¬¦çš„å¤§å°ï¼Œ
+// è€Œéè¯¥åˆ‡ç‰‡å¼•ç”¨çš„å†…å­˜å¤§å°ã€‚
 func Sizeof(v ArbitraryType) uintptr
 
 // Offsetof returns the offset within the struct of the field represented by v,
 // which must be of the form structValue.field.  In other words, it returns the
 // number of bytes between the start of the struct and the start of the field.
 
-// Offsetof ·µ»ØÓÉ v Ëù´ú±íµÄ½á¹¹ÖĞ×Ö¶ÎµÄÆ«ÒÆ£¬Ëü±ØĞëÎª structValue.field µÄĞÎÊ½¡£
-// »»¾ä»°Ëµ£¬Ëü·µ»Ø¸Ã½á¹¹ÆğÊ¼´¦Óë¸Ã×Ö¶ÎÆğÊ¼´¦Ö®¼äµÄ×Ö½ÚÊı¡£
+// Offsetof è¿”å›ç”± v æ‰€ä»£è¡¨çš„ç»“æ„ä¸­å­—æ®µçš„åç§»ï¼Œå®ƒå¿…é¡»ä¸º structValue.field çš„å½¢å¼ã€‚
+// æ¢å¥è¯è¯´ï¼Œå®ƒè¿”å›è¯¥ç»“æ„èµ·å§‹å¤„ä¸è¯¥å­—æ®µèµ·å§‹å¤„ä¹‹é—´çš„å­—èŠ‚æ•°ã€‚
 func Offsetof(v ArbitraryType) uintptr
 
 // Alignof returns the alignment of the value v.  It is the maximum value m such
 // that the address of a variable with the type of v will always be zero mod m.
 // If v is of the form structValue.field, it returns the alignment of field f within struct object obj.
 
-// Alignof ·µ»Ø v ÖµµÄ¶ÔÆë·½Ê½¡£
-// Æä·µ»ØÖµ m Âú×ã±äÁ¿ v µÄÀàĞÍµØÖ·Óë m È¡Ä£Îª 0 µÄ×î´óÖµ¡£Èô v ÊÇ structValue.field
-// µÄĞÎÊ½£¬Ëü»á·µ»Ø×Ö¶Î f ÔÚÆäÏàÓ¦½á¹¹¶ÔÏó obj ÖĞµÄ¶ÔÆë·½Ê½¡£
+// Alignof è¿”å› v å€¼çš„å¯¹é½æ–¹å¼ã€‚
+// å…¶è¿”å›å€¼ m æ»¡è¶³å˜é‡ v çš„ç±»å‹åœ°å€ä¸ m å–æ¨¡ä¸º 0 çš„æœ€å¤§å€¼ã€‚è‹¥ v æ˜¯ structValue.field
+// çš„å½¢å¼ï¼Œå®ƒä¼šè¿”å›å­—æ®µ f åœ¨å…¶ç›¸åº”ç»“æ„å¯¹è±¡ obj ä¸­çš„å¯¹é½æ–¹å¼ã€‚
 func Alignof(v ArbitraryType) uintptr

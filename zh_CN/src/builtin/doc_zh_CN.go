@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build ingore
+
 /*
 	Package builtin provides documentation for Go's predeclared identifiers.
 	The items documented here are not actually in package builtin
@@ -10,22 +12,22 @@
 */
 
 /*
-	builtin °üÎªGoµÄÔ¤ÉùÃ÷±êÊ¶·ûÌá¹©ÁËÎÄµµ.
-	´Ë´¦ÁĞ³öµÄÌõÄ¿ÆäÊµ²¢²»ÔÚ buildin °üÖĞ£¬¶ÔËüÃÇµÄÃèÊöÖ»ÊÇÎªÁËÈÃ godoc
-	¸ø¸ÃÓïÑÔµÄÌØÊâ±êÊ¶·ûÌá¹©ÎÄµµ¡£
+	builtin åŒ…ä¸ºGoçš„é¢„å£°æ˜æ ‡è¯†ç¬¦æä¾›äº†æ–‡æ¡£.
+	æ­¤å¤„åˆ—å‡ºçš„æ¡ç›®å…¶å®å¹¶ä¸åœ¨ buildin åŒ…ä¸­ï¼Œå¯¹å®ƒä»¬çš„æè¿°åªæ˜¯ä¸ºäº†è®© godoc
+	ç»™è¯¥è¯­è¨€çš„ç‰¹æ®Šæ ‡è¯†ç¬¦æä¾›æ–‡æ¡£ã€‚
 */
 package builtin
 
 // bool is the set of boolean values, true and false.
 
-// bool ÊÇ²¼¶ûÖµµÄ¼¯ºÏ£¬¼´ true ºÍ false¡£
+// bool æ˜¯å¸ƒå°”å€¼çš„é›†åˆï¼Œå³ true å’Œ falseã€‚
 type bool bool
 
 // true and false are the two untyped boolean values.
 
-// true ºÍ false ÊÇÁ½¸öÎŞÀàĞÍ²¼¶ûÖµ¡£
+// true å’Œ false æ˜¯ä¸¤ä¸ªæ— ç±»å‹å¸ƒå°”å€¼ã€‚
 const (
-	// ÎŞÀàĞÍ²¼¶û¡£
+	// æ— ç±»å‹å¸ƒå°”ã€‚
 	true  = 0 == 0 // Untyped bool.
 	false = 0 != 0 // Untyped bool.
 )
@@ -33,174 +35,174 @@ const (
 // uint8 is the set of all unsigned 8-bit integers.
 // Range: 0 through 255.
 
-// uint8 ÊÇËùÓĞÎŞ·ûºÅ8Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º0 ÖÁ 255¡£
+// uint8 æ˜¯æ‰€æœ‰æ— ç¬¦å·8ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š0 è‡³ 255ã€‚
 type uint8 uint8
 
 // uint16 is the set of all unsigned 16-bit integers.
 // Range: 0 through 65535.
 
-// uint16 ÊÇËùÓĞÎŞ·ûºÅ16Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º0 ÖÁ 65535¡£
+// uint16 æ˜¯æ‰€æœ‰æ— ç¬¦å·16ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š0 è‡³ 65535ã€‚
 type uint16 uint16
 
 // uint32 is the set of all unsigned 32-bit integers.
 // Range: 0 through 4294967295.
 
-// uint32 ÊÇËùÓĞÎŞ·ûºÅ32Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º0 ÖÁ 4294967295¡£
+// uint32 æ˜¯æ‰€æœ‰æ— ç¬¦å·32ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š0 è‡³ 4294967295ã€‚
 type uint32 uint32
 
 // uint64 is the set of all unsigned 64-bit integers.
 // Range: 0 through 18446744073709551615.
 
-// uint64 ÊÇËùÓĞÎŞ·ûºÅ64Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º0 ÖÁ 18446744073709551615¡£
+// uint64 æ˜¯æ‰€æœ‰æ— ç¬¦å·64ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š0 è‡³ 18446744073709551615ã€‚
 type uint64 uint64
 
 // int8 is the set of all signed 8-bit integers.
 // Range: -128 through 127.
 
-// int8 ÊÇËùÓĞ´ø·ûºÅ8Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º-128 ÖÁ 127¡£
+// int8 æ˜¯æ‰€æœ‰å¸¦ç¬¦å·8ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š-128 è‡³ 127ã€‚
 type int8 int8
 
 // int16 is the set of all signed 16-bit integers.
 // Range: -32768 through 32767.
 
-// int16 ÊÇËùÓĞ´ø·ûºÅ16Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º-32768 ÖÁ 32767¡£
+// int16 æ˜¯æ‰€æœ‰å¸¦ç¬¦å·16ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š-32768 è‡³ 32767ã€‚
 type int16 int16
 
 // int32 is the set of all signed 32-bit integers.
 // Range: -2147483648 through 2147483647.
 
-// int32 ÊÇËùÓĞ´ø·ûºÅ32Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º-2147483648 ÖÁ 2147483647¡£
+// int32 æ˜¯æ‰€æœ‰å¸¦ç¬¦å·32ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š-2147483648 è‡³ 2147483647ã€‚
 type int32 int32
 
 // int64 is the set of all signed 64-bit integers.
 // Range: -9223372036854775808 through 9223372036854775807.
 
-// int64 ÊÇËùÓĞ´ø·ûºÅ64Î»ÕûÊıµÄ¼¯ºÏ¡£
-// ·¶Î§£º-9223372036854775808 ÖÁ 9223372036854775807¡£
+// int64 æ˜¯æ‰€æœ‰å¸¦ç¬¦å·64ä½æ•´æ•°çš„é›†åˆã€‚
+// èŒƒå›´ï¼š-9223372036854775808 è‡³ 9223372036854775807ã€‚
 type int64 int64
 
 // float32 is the set of all IEEE-754 32-bit floating-point numbers.
 
-// float32 ÊÇËùÓĞIEEE-754 32Î»¸¡µãÊıµÄ¼¯ºÏ¡£
+// float32 æ˜¯æ‰€æœ‰IEEE-754 32ä½æµ®ç‚¹æ•°çš„é›†åˆã€‚
 type float32 float32
 
 // float64 is the set of all IEEE-754 64-bit floating-point numbers.
 
-// float64 ÊÇËùÓĞIEEE-754 64Î»¸¡µãÊıµÄ¼¯ºÏ¡£
+// float64 æ˜¯æ‰€æœ‰IEEE-754 64ä½æµ®ç‚¹æ•°çš„é›†åˆã€‚
 type float64 float64
 
 // complex64 is the set of all complex numbers with float32 real and
 // imaginary parts.
 
-// complex64 ÊÇËùÓĞÊµ²¿ºÍĞé²¿Îª float32 µÄ¸´Êı¼¯ºÏ¡£
+// complex64 æ˜¯æ‰€æœ‰å®éƒ¨å’Œè™šéƒ¨ä¸º float32 çš„å¤æ•°é›†åˆã€‚
 type complex64 complex64
 
 // complex128 is the set of all complex numbers with float64 real and
 // imaginary parts.
 
-// complex128 ÊÇËùÓĞÊµ²¿ºÍĞé²¿Îª float64 µÄ¸´Êı¼¯ºÏ¡£
+// complex128 æ˜¯æ‰€æœ‰å®éƒ¨å’Œè™šéƒ¨ä¸º float64 çš„å¤æ•°é›†åˆã€‚
 type complex128 complex128
 
 // string is the set of all strings of 8-bit bytes, conventionally but not
 // necessarily representing UTF-8-encoded text. A string may be empty, but
 // not nil. Values of string type are immutable.
 
-// string ÊÇËùÓĞ8Î»×Ö½ÚµÄ×Ö·û´®¼¯ºÏ£¬Ï°¹ßÉÏÓÃÓÚ´ú±íÒÔUTF-8±àÂëµÄÎÄ±¾£¬µ«²¢²»±ØĞëÈç´Ë¡£
-// string ¿ÉÎª¿Õ£¬µ«²»Îª nil¡£string ÀàĞÍµÄÖµÊÇ²»±äµÄ¡£
+// string æ˜¯æ‰€æœ‰8ä½å­—èŠ‚çš„å­—ç¬¦ä¸²é›†åˆï¼Œä¹ æƒ¯ä¸Šç”¨äºä»£è¡¨ä»¥UTF-8ç¼–ç çš„æ–‡æœ¬ï¼Œä½†å¹¶ä¸å¿…é¡»å¦‚æ­¤ã€‚
+// string å¯ä¸ºç©ºï¼Œä½†ä¸ä¸º nilã€‚string ç±»å‹çš„å€¼æ˜¯ä¸å˜çš„ã€‚
 type string string
 
 // int is a signed integer type that is at least 32 bits in size. It is a
 // distinct type, however, and not an alias for, say, int32.
 
-// int ÊÇ´ø·ûºÅÕûÊıÀàĞÍ£¬Æä´óĞ¡ÖÁÉÙÎª32Î»¡£
-// ËüÊÇÒ»ÖÖÈ·ÇĞµÄÀàĞÍ£¬¶ø²»ÊÇ int32 µÄ±ğÃû¡£
+// int æ˜¯å¸¦ç¬¦å·æ•´æ•°ç±»å‹ï¼Œå…¶å¤§å°è‡³å°‘ä¸º32ä½ã€‚
+// å®ƒæ˜¯ä¸€ç§ç¡®åˆ‡çš„ç±»å‹ï¼Œè€Œä¸æ˜¯ int32 çš„åˆ«åã€‚
 type int int
 
 // uint is an unsigned integer type that is at least 32 bits in size. It is a
 // distinct type, however, and not an alias for, say, uint32.
 
-// uint ÊÇÎŞ·ûºÅÕûÊıÀàĞÍ£¬Æä´óĞ¡ÖÁÉÙÎª32Î»¡£
-// ËüÊÇÒ»ÖÖÈ·ÇĞµÄÀàĞÍ£¬¶ø²»ÊÇ uint32 µÄ±ğÃû¡£
+// uint æ˜¯æ— ç¬¦å·æ•´æ•°ç±»å‹ï¼Œå…¶å¤§å°è‡³å°‘ä¸º32ä½ã€‚
+// å®ƒæ˜¯ä¸€ç§ç¡®åˆ‡çš„ç±»å‹ï¼Œè€Œä¸æ˜¯ uint32 çš„åˆ«åã€‚
 type uint uint
 
 // uintptr is an integer type that is large enough to hold the bit pattern of
 // any pointer.
 
-// uintptr ÎªÕûÊıÀàĞÍ£¬Æä´óĞ¡×ãÒÔÈİÄÉÈÎºÎÖ¸ÕëµÄÎ»Ä£Ê½¡£
+// uintptr ä¸ºæ•´æ•°ç±»å‹ï¼Œå…¶å¤§å°è¶³ä»¥å®¹çº³ä»»ä½•æŒ‡é’ˆçš„ä½æ¨¡å¼ã€‚
 type uintptr uintptr
 
 // byte is an alias for uint8 and is equivalent to uint8 in all ways. It is
 // used, by convention, to distinguish byte values from 8-bit unsigned
 // integer values.
 
-// byte Îª uint8 µÄ±ğÃû£¬ËüÍêÈ«µÈ¼ÛÓÚ uint8¡£
-// Ï°¹ßÉÏÓÃËüÀ´Çø±ğ×Ö½ÚÖµºÍ8Î»ÎŞ·ûºÅÕûÊıÖµ¡£
+// byte ä¸º uint8 çš„åˆ«åï¼Œå®ƒå®Œå…¨ç­‰ä»·äº uint8ã€‚
+// ä¹ æƒ¯ä¸Šç”¨å®ƒæ¥åŒºåˆ«å­—èŠ‚å€¼å’Œ8ä½æ— ç¬¦å·æ•´æ•°å€¼ã€‚
 type byte byte
 
 // rune is an alias for int32 and is equivalent int32 in all ways. It is
 // used, by convention, to distinguish character values from integer values.
 
-// rune Îª int32 µÄ±ğÃû£¬ËüÍêÈ«µÈ¼ÛÓÚ int32¡£
-// Ï°¹ßÉÏÓÃËüÀ´Çø±ğ×Ö·ûÖµºÍÕûÊıÖµ¡£
+// rune ä¸º int32 çš„åˆ«åï¼Œå®ƒå®Œå…¨ç­‰ä»·äº int32ã€‚
+// ä¹ æƒ¯ä¸Šç”¨å®ƒæ¥åŒºåˆ«å­—ç¬¦å€¼å’Œæ•´æ•°å€¼ã€‚
 type rune rune
 
 // iota is a predeclared identifier representing the untyped integer ordinal
 // number of the current const specification in a (usually parenthesized)
 // const declaration. It is zero-indexed.
 
-// iota ÎªÔ¤ÉùÃ÷µÄ±êÊ¶·û£¬Ëü±íÊ¾³£Á¿ÉùÃ÷ÖĞ£¨Ò»°ãÔÚÀ¨ºÅÖĞ£©£¬
-// µ±Ç°³£Á¿¹æ·¶µÄÎŞÀàĞÍ»¯ÕûÊıĞòÊı¡£Ëü´Ó0¿ªÊ¼Ë÷Òı¡£
-const iota = 0 // Untyped int. // ÎŞÀàĞÍ»¯ int¡£
+// iota ä¸ºé¢„å£°æ˜çš„æ ‡è¯†ç¬¦ï¼Œå®ƒè¡¨ç¤ºå¸¸é‡å£°æ˜ä¸­ï¼ˆä¸€èˆ¬åœ¨æ‹¬å·ä¸­ï¼‰ï¼Œ
+// å½“å‰å¸¸é‡è§„èŒƒçš„æ— ç±»å‹åŒ–æ•´æ•°åºæ•°ã€‚å®ƒä»0å¼€å§‹ç´¢å¼•ã€‚
+const iota = 0 // Untyped int. // æ— ç±»å‹åŒ– intã€‚
 
 // nil is a predeclared identifier representing the zero value for a
 // pointer, channel, func, interface, map, or slice type.
 
-// nil ÎªÔ¤ÉùÃ÷µÄ±êÊ¾·û£¬Ëü±íÊ¾Ö¸Õë¡¢ĞÅµÀ¡¢º¯Êı¡¢½Ó¿Ú¡¢Ó³Éä»òÇĞÆ¬ÀàĞÍµÄÁãÖµ¡£
+// nil ä¸ºé¢„å£°æ˜çš„æ ‡ç¤ºç¬¦ï¼Œå®ƒè¡¨ç¤ºæŒ‡é’ˆã€ä¿¡é“ã€å‡½æ•°ã€æ¥å£ã€æ˜ å°„æˆ–åˆ‡ç‰‡ç±»å‹çš„é›¶å€¼ã€‚
 var nil Type // Type must be a pointer, channel, func, interface, map, or slice type
-// Type ±ØĞëÎªÖ¸Õë¡¢ĞÅµÀ¡¢º¯Êı¡¢½Ó¿Ú¡¢Ó³Éä»òÇĞÆ¬ÀàĞÍ¡£
+// Type å¿…é¡»ä¸ºæŒ‡é’ˆã€ä¿¡é“ã€å‡½æ•°ã€æ¥å£ã€æ˜ å°„æˆ–åˆ‡ç‰‡ç±»å‹ã€‚
 
 // Type is here for the purposes of documentation only. It is a stand-in
 // for any Go type, but represents the same type for any given function
 // invocation.
 
-// Type ÔÚ´ËÖ»ÓÃ×÷ÎÄµµÄ¿µÄ¡£
-// Ëü´ú±íËùÓĞGoµÄÀàĞÍ£¬µ«¶ÔÓÚÈÎºÎ¸ø¶¨µÄº¯ÊıÇëÇóÀ´Ëµ£¬Ëü¶¼´ú±íÓëÆäÏàÍ¬µÄÀàĞÍ¡£
+// Type åœ¨æ­¤åªç”¨ä½œæ–‡æ¡£ç›®çš„ã€‚
+// å®ƒä»£è¡¨æ‰€æœ‰Goçš„ç±»å‹ï¼Œä½†å¯¹äºä»»ä½•ç»™å®šçš„å‡½æ•°è¯·æ±‚æ¥è¯´ï¼Œå®ƒéƒ½ä»£è¡¨ä¸å…¶ç›¸åŒçš„ç±»å‹ã€‚
 type Type int
 
 // Type1 is here for the purposes of documentation only. It is a stand-in
 // for any Go type, but represents the same type for any given function
 // invocation.
 
-// Type1 ÔÚ´ËÖ»ÓÃ×÷ÎÄµµÄ¿µÄ¡£
-// Ëü´ú±íËùÓĞGoµÄÀàĞÍ£¬µ«¶ÔÓÚÈÎºÎ¸ø¶¨µÄº¯ÊıÇëÇóÀ´Ëµ£¬Ëü¶¼´ú±íÓëÆäÏàÍ¬µÄÀàĞÍ¡£
+// Type1 åœ¨æ­¤åªç”¨ä½œæ–‡æ¡£ç›®çš„ã€‚
+// å®ƒä»£è¡¨æ‰€æœ‰Goçš„ç±»å‹ï¼Œä½†å¯¹äºä»»ä½•ç»™å®šçš„å‡½æ•°è¯·æ±‚æ¥è¯´ï¼Œå®ƒéƒ½ä»£è¡¨ä¸å…¶ç›¸åŒçš„ç±»å‹ã€‚
 type Type1 int
 
 // IntegerType is here for the purposes of documentation only. It is a stand-in
 // for any integer type: int, uint, int8 etc.
 
-// IntegerType ÔÚ´ËÖ»ÓÃ×÷ÎÄµµÄ¿µÄ¡£
-// Ëü´ú±íËùÓĞµÄÕûÊıÀàĞÍ£ºÈç int¡¢uint¡¢int8 µÈ¡£
+// IntegerType åœ¨æ­¤åªç”¨ä½œæ–‡æ¡£ç›®çš„ã€‚
+// å®ƒä»£è¡¨æ‰€æœ‰çš„æ•´æ•°ç±»å‹ï¼šå¦‚ intã€uintã€int8 ç­‰ã€‚
 type IntegerType int
 
 // FloatType is here for the purposes of documentation only. It is a stand-in
 // for either float type: float32 or float64.
 
-// FloatType ÔÚ´ËÖ»ÓÃ×÷ÎÄµµÄ¿µÄ¡£
-// Ëü´ú±íËùÓĞµÄ¸¡µãÊıÀàĞÍ£º¼´ float32 »ò float64¡£
+// FloatType åœ¨æ­¤åªç”¨ä½œæ–‡æ¡£ç›®çš„ã€‚
+// å®ƒä»£è¡¨æ‰€æœ‰çš„æµ®ç‚¹æ•°ç±»å‹ï¼šå³ float32 æˆ– float64ã€‚
 type FloatType float32
 
 // ComplexType is here for the purposes of documentation only. It is a
 // stand-in for either complex type: complex64 or complex128.
 
-// ComplexType ÔÚ´ËÖ»ÓÃ×÷ÎÄµµÄ¿µÄ¡£
-// Ëü´ú±íËùÓĞµÄ¸´ÊıÀàĞÍ£º¼´ complex64 »ò complex128¡£
+// ComplexType åœ¨æ­¤åªç”¨ä½œæ–‡æ¡£ç›®çš„ã€‚
+// å®ƒä»£è¡¨æ‰€æœ‰çš„å¤æ•°ç±»å‹ï¼šå³ complex64 æˆ– complex128ã€‚
 type ComplexType complex64
 
 // The append built-in function appends elements to the end of a slice. If
@@ -213,12 +215,12 @@ type ComplexType complex64
 // As a special case, it is legal to append a string to a byte slice, like this:
 //	slice = append([]byte("hello "), "world"...)
 
-// append ÄÚ½¨º¯Êı½«ÔªËØ×·¼Óµ½ÇĞÆ¬µÄÄ©Î²¡£
-// ÈôËüÓĞ×ã¹»µÄÈİÁ¿£¬ÆäÄ¿±ê¾Í»áÖØĞÂÇĞÆ¬ÒÔÈİÄÉĞÂµÄÔªËØ¡£·ñÔò£¬¾Í»á·ÖÅäÒ»¸öĞÂµÄ»ù±¾Êı×é¡£
-// append ·µ»Ø¸üĞÂºóµÄÇĞÆ¬¡£Òò´Ë±ØĞë´æ´¢×·¼ÓºóµÄ½á¹û£¬Í¨³£Îª°üº¬¸ÃÇĞÆ¬×ÔÉíµÄ±äÁ¿£º
+// append å†…å»ºå‡½æ•°å°†å…ƒç´ è¿½åŠ åˆ°åˆ‡ç‰‡çš„æœ«å°¾ã€‚
+// è‹¥å®ƒæœ‰è¶³å¤Ÿçš„å®¹é‡ï¼Œå…¶ç›®æ ‡å°±ä¼šé‡æ–°åˆ‡ç‰‡ä»¥å®¹çº³æ–°çš„å…ƒç´ ã€‚å¦åˆ™ï¼Œå°±ä¼šåˆ†é…ä¸€ä¸ªæ–°çš„åŸºæœ¬æ•°ç»„ã€‚
+// append è¿”å›æ›´æ–°åçš„åˆ‡ç‰‡ã€‚å› æ­¤å¿…é¡»å­˜å‚¨è¿½åŠ åçš„ç»“æœï¼Œé€šå¸¸ä¸ºåŒ…å«è¯¥åˆ‡ç‰‡è‡ªèº«çš„å˜é‡ï¼š
 //	slice = append(slice, elem1, elem2)
 //	slice = append(slice, anotherSlice...)
-// ×÷ÎªÒ»ÖÖÌØÊâµÄÇé¿ö£¬½«×Ö·û×·¼Óµ½×Ö½ÚÊı×éÖ®ºóÊÇºÏ·¨µÄ£¬¾ÍÏñÕâÑù£º
+// ä½œä¸ºä¸€ç§ç‰¹æ®Šçš„æƒ…å†µï¼Œå°†å­—ç¬¦è¿½åŠ åˆ°å­—èŠ‚æ•°ç»„ä¹‹åæ˜¯åˆæ³•çš„ï¼Œå°±åƒè¿™æ ·ï¼š
 //	slice = append([]byte("hello "), "world"...)
 func append(slice []Type, elems ...Type) []Type
 
@@ -228,17 +230,17 @@ func append(slice []Type, elems ...Type) []Type
 // returns the number of elements copied, which will be the minimum of
 // len(src) and len(dst).
 
-// copy ÄÚ½¨º¯Êı½«ÔªËØ´ÓÀ´Ô´ÇĞÆ¬¸´ÖÆµ½Ä¿±êÇĞÆ¬ÖĞ¡£
-// £¨ÌØÊâÇé¿öÊÇ£¬ËüÒ²ÄÜ½«×Ö½Ú´Ó×Ö·û´®¸´ÖÆµ½×Ö½ÚÇĞÆ¬ÖĞ£©¡£À´Ô´ºÍÄ¿±ê¿ÉÒÔÖØµş¡£
-// copy ·µ»Ø±»¸´ÖÆµÄÔªËØÊıÁ¿£¬Ëü»áÊÇ len(src) ºÍ len(dst) ÖĞ½ÏĞ¡µÄÄÇ¸ö¡£
+// copy å†…å»ºå‡½æ•°å°†å…ƒç´ ä»æ¥æºåˆ‡ç‰‡å¤åˆ¶åˆ°ç›®æ ‡åˆ‡ç‰‡ä¸­ã€‚
+// ï¼ˆç‰¹æ®Šæƒ…å†µæ˜¯ï¼Œå®ƒä¹Ÿèƒ½å°†å­—èŠ‚ä»å­—ç¬¦ä¸²å¤åˆ¶åˆ°å­—èŠ‚åˆ‡ç‰‡ä¸­ï¼‰ã€‚æ¥æºå’Œç›®æ ‡å¯ä»¥é‡å ã€‚
+// copy è¿”å›è¢«å¤åˆ¶çš„å…ƒç´ æ•°é‡ï¼Œå®ƒä¼šæ˜¯ len(src) å’Œ len(dst) ä¸­è¾ƒå°çš„é‚£ä¸ªã€‚
 func copy(dst, src []Type) int
 
 // The delete built-in function deletes the element with the specified key
 // (m[key]) from the map. If m is nil or there is no such element, delete
 // is a no-op.
 
-// delete ÄÚ½¨º¯Êı°´ÕÕÖ¸¶¨µÄ¼ü½«ÔªËØ´ÓÓ³ÉäÖĞÉ¾³ı¡£
-// Èô m Îª nil »òÎŞ´ËÔªËØ£¬delete ¼´Îª¿Õ²Ù×÷¡£
+// delete å†…å»ºå‡½æ•°æŒ‰ç…§æŒ‡å®šçš„é”®å°†å…ƒç´ ä»æ˜ å°„ä¸­åˆ é™¤ã€‚
+// è‹¥ m ä¸º nil æˆ–æ— æ­¤å…ƒç´ ï¼Œdelete å³ä¸ºç©ºæ“ä½œã€‚
 func delete(m map[Type]Type1, key Type)
 
 // The len built-in function returns the length of v, according to its type:
@@ -249,12 +251,12 @@ func delete(m map[Type]Type1, key Type)
 //	Channel: the number of elements queued (unread) in the channel buffer;
 //	if v is nil, len(v) is zero.
 
-// len ÄÚ½¨º¯Êı·µ»Ø v µÄ³¤¶È£¬ÕâÈ¡¾öÓÚ¾ßÌåÀàĞÍ£º
-//	Êı×é£ºv ÖĞÔªËØµÄÊıÁ¿¡£
-//	Êı×éÖ¸Õë£º*v ÖĞÔªËØµÄÊıÁ¿£¨¼´Ê¹ v Îª nil£©¡£
-//	ÇĞÆ¬»òÓ³Éä£ºv ÖĞÔªËØµÄÊıÁ¿£»Èô v Îª nil£¬len(v) ¼´ÎªÁã¡£
-//	×Ö·û´®£ºv ÖĞ×Ö½ÚµÄÊıÁ¿¡£
-//	ĞÅµÀ£ºĞÅµÀ»º´æÖĞ¶ÓÁĞ£¨Î´¶ÁÈ¡£©ÔªËØµÄÊıÁ¿£»Èô v Îª nil£¬len(v) ¼´ÎªÁã¡£
+// len å†…å»ºå‡½æ•°è¿”å› v çš„é•¿åº¦ï¼Œè¿™å–å†³äºå…·ä½“ç±»å‹ï¼š
+//	æ•°ç»„ï¼šv ä¸­å…ƒç´ çš„æ•°é‡ã€‚
+//	æ•°ç»„æŒ‡é’ˆï¼š*v ä¸­å…ƒç´ çš„æ•°é‡ï¼ˆå³ä½¿ v ä¸º nilï¼‰ã€‚
+//	åˆ‡ç‰‡æˆ–æ˜ å°„ï¼šv ä¸­å…ƒç´ çš„æ•°é‡ï¼›è‹¥ v ä¸º nilï¼Œlen(v) å³ä¸ºé›¶ã€‚
+//	å­—ç¬¦ä¸²ï¼šv ä¸­å­—èŠ‚çš„æ•°é‡ã€‚
+//	ä¿¡é“ï¼šä¿¡é“ç¼“å­˜ä¸­é˜Ÿåˆ—ï¼ˆæœªè¯»å–ï¼‰å…ƒç´ çš„æ•°é‡ï¼›è‹¥ v ä¸º nilï¼Œlen(v) å³ä¸ºé›¶ã€‚
 func len(v Type) int
 
 // The cap built-in function returns the capacity of v, according to its type:
@@ -265,11 +267,11 @@ func len(v Type) int
 //	Channel: the channel buffer capacity, in units of elements;
 //	if v is nil, cap(v) is zero.
 
-// cap ÄÚ½¨º¯Êı·µ»Ø v µÄÈİÁ¿£¬ÕâÈ¡¾öÓÚ¾ßÌåÀàĞÍ£º
-//	Êı×é£ºv ÖĞÔªËØµÄÊıÁ¿£¨Óë len(v) ÏàÍ¬£©¡£
-//	Êı×éÖ¸Õë£º*v ÖĞÔªËØµÄÊıÁ¿£¨Óë len(v) ÏàÍ¬£©¡£
-//	ÇĞÆ¬£ºÔÚÖØĞÂÇĞÆ¬Ê±£¬ÇĞÆ¬ÄÜ¹»´ïµ½µÄ×î´ó³¤¶È£»Èô v Îª nil£¬len(v) ¼´ÎªÁã¡£
-//	ĞÅµÀ£º°´ÕÕÔªËØµÄµ¥Ôª£¬ÏàÓ¦ĞÅµÀ»º´æµÄÈİÁ¿£»Èô v Îª nil£¬len(v) ¼´ÎªÁã¡£
+// cap å†…å»ºå‡½æ•°è¿”å› v çš„å®¹é‡ï¼Œè¿™å–å†³äºå…·ä½“ç±»å‹ï¼š
+//	æ•°ç»„ï¼šv ä¸­å…ƒç´ çš„æ•°é‡ï¼ˆä¸ len(v) ç›¸åŒï¼‰ã€‚
+//	æ•°ç»„æŒ‡é’ˆï¼š*v ä¸­å…ƒç´ çš„æ•°é‡ï¼ˆä¸ len(v) ç›¸åŒï¼‰ã€‚
+//	åˆ‡ç‰‡ï¼šåœ¨é‡æ–°åˆ‡ç‰‡æ—¶ï¼Œåˆ‡ç‰‡èƒ½å¤Ÿè¾¾åˆ°çš„æœ€å¤§é•¿åº¦ï¼›è‹¥ v ä¸º nilï¼Œlen(v) å³ä¸ºé›¶ã€‚
+//	ä¿¡é“ï¼šæŒ‰ç…§å…ƒç´ çš„å•å…ƒï¼Œç›¸åº”ä¿¡é“ç¼“å­˜çš„å®¹é‡ï¼›è‹¥ v ä¸º nilï¼Œlen(v) å³ä¸ºé›¶ã€‚
 func cap(v Type) int
 
 // The make built-in function allocates and initializes an object of type
@@ -289,23 +291,23 @@ func cap(v Type) int
 //	buffer capacity. If zero, or the size is omitted, the channel is
 //	unbuffered.
 
-// make ÄÚ½¨º¯Êı·ÖÅä²¢³õÊ¼»¯Ò»¸öÀàĞÍÎªÇĞÆ¬¡¢Ó³Éä¡¢»ò£¨½ö½öÎª£©ĞÅµÀµÄ¶ÔÏó¡£
-// Óë new ÏàÍ¬µÄÊÇ£¬ÆäµÚÒ»¸öÊµ²ÎÎªÀàĞÍ£¬¶ø·ÇÖµ¡£²»Í¬µÄÊÇ£¬make µÄ·µ»ØÀàĞÍ
-// ÓëÆä²ÎÊıÏàÍ¬£¬¶ø·ÇÖ¸ÏòËüµÄÖ¸Õë¡£Æä¾ßÌå½á¹ûÈ¡¾öÓÚ¾ßÌåµÄÀàĞÍ£º
-//	ÇĞÆ¬£ºsize Ö¸¶¨ÁËÆä³¤¶È¡£¸ÃÇĞÆ¬µÄÈİÁ¿µÈÓÚÆä³¤¶È¡£µÚ¶ş¸öÕûÊıÊµ²Î¿ÉÓÃÀ´Ö¸¶¨
-//		²»Í¬µÄÈİÁ¿£»Ëü±ØĞë²»Ğ¡ÓÚÆä³¤¶È£¬Òò´Ë make([]int, 0, 10) »á·ÖÅäÒ»¸ö³¤¶ÈÎª0£¬
-//		ÈİÁ¿Îª10µÄÇĞÆ¬¡£
-//	Ó³Éä£º³õÊ¼·ÖÅäµÄ´´½¨È¡¾öÓÚ size£¬µ«²úÉúµÄÓ³Éä³¤¶ÈÎª0¡£size ¿ÉÒÔÊ¡ÂÔ£¬ÕâÖÖÇé¿öÏÂ
-//		¾Í»á·ÖÅäÒ»¸öĞ¡µÄÆğÊ¼´óĞ¡¡£
-//	ĞÅµÀ£ºĞÅµÀµÄ»º´æ¸ù¾İÖ¸¶¨µÄ»º´æÈİÁ¿³õÊ¼»¯¡£Èô size ÎªÁã»ò±»Ê¡ÂÔ£¬¸ÃĞÅµÀ¼´ÎªÎŞ»º´æµÄ¡£
+// make å†…å»ºå‡½æ•°åˆ†é…å¹¶åˆå§‹åŒ–ä¸€ä¸ªç±»å‹ä¸ºåˆ‡ç‰‡ã€æ˜ å°„ã€æˆ–ï¼ˆä»…ä»…ä¸ºï¼‰ä¿¡é“çš„å¯¹è±¡ã€‚
+// ä¸ new ç›¸åŒçš„æ˜¯ï¼Œå…¶ç¬¬ä¸€ä¸ªå®å‚ä¸ºç±»å‹ï¼Œè€Œéå€¼ã€‚ä¸åŒçš„æ˜¯ï¼Œmake çš„è¿”å›ç±»å‹
+// ä¸å…¶å‚æ•°ç›¸åŒï¼Œè€ŒéæŒ‡å‘å®ƒçš„æŒ‡é’ˆã€‚å…¶å…·ä½“ç»“æœå–å†³äºå…·ä½“çš„ç±»å‹ï¼š
+//	åˆ‡ç‰‡ï¼šsize æŒ‡å®šäº†å…¶é•¿åº¦ã€‚è¯¥åˆ‡ç‰‡çš„å®¹é‡ç­‰äºå…¶é•¿åº¦ã€‚ç¬¬äºŒä¸ªæ•´æ•°å®å‚å¯ç”¨æ¥æŒ‡å®š
+//		ä¸åŒçš„å®¹é‡ï¼›å®ƒå¿…é¡»ä¸å°äºå…¶é•¿åº¦ï¼Œå› æ­¤ make([]int, 0, 10) ä¼šåˆ†é…ä¸€ä¸ªé•¿åº¦ä¸º0ï¼Œ
+//		å®¹é‡ä¸º10çš„åˆ‡ç‰‡ã€‚
+//	æ˜ å°„ï¼šåˆå§‹åˆ†é…çš„åˆ›å»ºå–å†³äº sizeï¼Œä½†äº§ç”Ÿçš„æ˜ å°„é•¿åº¦ä¸º0ã€‚size å¯ä»¥çœç•¥ï¼Œè¿™ç§æƒ…å†µä¸‹
+//		å°±ä¼šåˆ†é…ä¸€ä¸ªå°çš„èµ·å§‹å¤§å°ã€‚
+//	ä¿¡é“ï¼šä¿¡é“çš„ç¼“å­˜æ ¹æ®æŒ‡å®šçš„ç¼“å­˜å®¹é‡åˆå§‹åŒ–ã€‚è‹¥ size ä¸ºé›¶æˆ–è¢«çœç•¥ï¼Œè¯¥ä¿¡é“å³ä¸ºæ— ç¼“å­˜çš„ã€‚
 func make(Type, size IntegerType) Type
 
 // The new built-in function allocates memory. The first argument is a type,
 // not a value, and the value returned is a pointer to a newly
 // allocated zero value of that type.
 
-// new ÄÚ½¨º¯Êı·ÖÅäÄÚ´æ¡£
-// ÆäµÚÒ»¸öÊµ²ÎÎªÀàĞÍ£¬¶ø·ÇÖµ£¬Æä·µ»ØÖµÎªÖ¸Ïò¸ÃÀàĞÍµÄĞÂ·ÖÅäµÄÁãÖµµÄÖ¸Õë¡£
+// new å†…å»ºå‡½æ•°åˆ†é…å†…å­˜ã€‚
+// å…¶ç¬¬ä¸€ä¸ªå®å‚ä¸ºç±»å‹ï¼Œè€Œéå€¼ï¼Œå…¶è¿”å›å€¼ä¸ºæŒ‡å‘è¯¥ç±»å‹çš„æ–°åˆ†é…çš„é›¶å€¼çš„æŒ‡é’ˆã€‚
 func new(Type) *Type
 
 // The complex built-in function constructs a complex value from two
@@ -314,24 +316,24 @@ func new(Type) *Type
 // value will be the corresponding complex type (complex64 for float32,
 // complex128 for float64).
 
-// complex ÄÚ½¨º¯Êı½«Á½¸ö¸¡µãÊıÖµ¹¹Ôì³ÉÒ»¸ö¸´ÊıÖµ¡£
-// ÆäÊµ²¿ºÍĞé²¿µÄ´óĞ¡±ØĞëÏàÍ¬£¬¼´ float32 »ò float64£¨»ò¿É¸³ÓèËüÃÇµÄ£©£¬Æä·µ»ØÖµ
-// ¼´Îª¶ÔÓ¦µÄ¸´ÊıÀàĞÍ£¨complex64 ¶ÔÓ¦ float32£¬complex128 ¶ÔÓ¦ float64£©¡£
+// complex å†…å»ºå‡½æ•°å°†ä¸¤ä¸ªæµ®ç‚¹æ•°å€¼æ„é€ æˆä¸€ä¸ªå¤æ•°å€¼ã€‚
+// å…¶å®éƒ¨å’Œè™šéƒ¨çš„å¤§å°å¿…é¡»ç›¸åŒï¼Œå³ float32 æˆ– float64ï¼ˆæˆ–å¯èµ‹äºˆå®ƒä»¬çš„ï¼‰ï¼Œå…¶è¿”å›å€¼
+// å³ä¸ºå¯¹åº”çš„å¤æ•°ç±»å‹ï¼ˆcomplex64 å¯¹åº” float32ï¼Œcomplex128 å¯¹åº” float64ï¼‰ã€‚
 func complex(r, i FloatType) ComplexType
 
 // The real built-in function returns the real part of the complex number c.
 // The return value will be floating point type corresponding to the type of c.
 
-// real ÄÚ½¨º¯Êı·µ»Ø¸´Êı c µÄÊµ²¿¡£
-// Æä·µ»ØÖµÎª¶ÔÓ¦ÓÚ c ÀàĞÍµÄ¸¡µãÊı¡£
+// real å†…å»ºå‡½æ•°è¿”å›å¤æ•° c çš„å®éƒ¨ã€‚
+// å…¶è¿”å›å€¼ä¸ºå¯¹åº”äº c ç±»å‹çš„æµ®ç‚¹æ•°ã€‚
 func real(c ComplexType) FloatType
 
 // The imag built-in function returns the imaginary part of the complex
 // number c. The return value will be floating point type corresponding to
 // the type of c.
 
-// imag ÄÚ½¨º¯Êı·µ»Ø¸´Êı c µÄĞé²¿¡£
-// Æä·µ»ØÖµÎª¶ÔÓ¦ÓÚ c ÀàĞÍµÄ¸¡µãÊı¡£
+// imag å†…å»ºå‡½æ•°è¿”å›å¤æ•° c çš„è™šéƒ¨ã€‚
+// å…¶è¿”å›å€¼ä¸ºå¯¹åº”äº c ç±»å‹çš„æµ®ç‚¹æ•°ã€‚
 func imag(c ComplexType) FloatType
 
 // The close built-in function closes a channel, which must be either
@@ -343,12 +345,12 @@ func imag(c ComplexType) FloatType
 //	x, ok := <-c
 // will also set ok to false for a closed channel.
 
-// close ÄÚ½¨º¯Êı¹Ø±ÕĞÅµÀ£¬¸ÃĞÅµÀ±ØĞëÎªË«ÏòµÄ»òÖ»·¢ËÍµÄ¡£
-// ËüÓ¦µ±Ö»ÓÉ·¢ËÍÕßÖ´ĞĞ£¬¶ø²»Ó¦ÓÉ½ÓÊÕÕßÖ´ĞĞ£¬ÆäĞ§¹ûÊÇÔÚ×îºó·¢ËÍµÄÖµ±»½ÓÊÕºóÍ£Ö¹¸ÃĞÅµÀ¡£
-// ÔÚ×îºóÒ»¸öÖµ´ÓÒÑ¹Ø±ÕµÄĞÅµÀ c ÖĞ±»½ÓÊÕºó£¬ÈÎºÎ´Ó c µÄ½ÓÊÕ²Ù×÷¶¼»áÎŞ×èÈû³É¹¦£¬
-// Ëü»á·µ»Ø¸ÃĞÅµÀÔªËØÀàĞÍµÄÁãÖµ¡£¶ÔÓÚÒÑ¹Ø±ÕµÄĞÅµÀ£¬ĞÎÊ½
+// close å†…å»ºå‡½æ•°å…³é—­ä¿¡é“ï¼Œè¯¥ä¿¡é“å¿…é¡»ä¸ºåŒå‘çš„æˆ–åªå‘é€çš„ã€‚
+// å®ƒåº”å½“åªç”±å‘é€è€…æ‰§è¡Œï¼Œè€Œä¸åº”ç”±æ¥æ”¶è€…æ‰§è¡Œï¼Œå…¶æ•ˆæœæ˜¯åœ¨æœ€åå‘é€çš„å€¼è¢«æ¥æ”¶ååœæ­¢è¯¥ä¿¡é“ã€‚
+// åœ¨æœ€åä¸€ä¸ªå€¼ä»å·²å…³é—­çš„ä¿¡é“ c ä¸­è¢«æ¥æ”¶åï¼Œä»»ä½•ä» c çš„æ¥æ”¶æ“ä½œéƒ½ä¼šæ— é˜»å¡æˆåŠŸï¼Œ
+// å®ƒä¼šè¿”å›è¯¥ä¿¡é“å…ƒç´ ç±»å‹çš„é›¶å€¼ã€‚å¯¹äºå·²å…³é—­çš„ä¿¡é“ï¼Œå½¢å¼
 //	x, ok := <-c
-// »¹»á½« ok ÖÃÎª false¡£
+// è¿˜ä¼šå°† ok ç½®ä¸º falseã€‚
 func close(c chan<- Type)
 
 // The panic built-in function stops normal execution of the current
@@ -363,12 +365,12 @@ func close(c chan<- Type)
 // is called panicking and can be controlled by the built-in function
 // recover.
 
-// panic ÄÚ½¨º¯ÊıÍ£Ö¹µ±Ç°Go³ÌµÄÕı³£Ö´ĞĞ¡£
-// µ±º¯Êı F µ÷ÓÃ panic Ê±£¬F µÄÕı³£Ö´ĞĞ¾Í»áÁ¢¿ÌÍ£Ö¹¡£ÈÎºÎÓÉ F ÍÆ³ÙµÄº¯ÊıÖ´ĞĞ¶¼»á
-// °´ÕÕÒ»°ãµÄ·½Ê½ÔËĞĞ£¬½Ó×Å F ·µ»Ø¸øÆäµ÷ÓÃÕß¡£¶ÔÓÚÆäµ÷ÓÃÕß G£¬F µÄÇëÇóĞĞÎªÈçÍ¬
-// ¶Ô panic µÄµ÷ÓÃ£¬¼´ÖÕÖ¹ G µÄÖ´ĞĞ²¢ÔËĞĞÈÎºÎ±»ÍÆ³ÙµÄº¯Êı¡£Õâ»á³ÖĞøµ½¸ÃGo³Ì
-// ÖĞËùÓĞº¯Êı¶¼°´Ïà·´µÄË³ĞòÍ£Ö¹Ö´ĞĞÖ®ºó¡£´ËÊ±£¬¸Ã³ÌĞò»á±»ÖÕÖ¹£¬¶ø´íÎóÇé¿ö»á±»±¨¸æ£¬
-// °üÀ¨Òı·¢¸Ã¿Ö»ÅµÄÊµ²ÎÖµ¡£´ËÖÕÖ¹ĞòÁĞ³ÆÎª¿Ö»Å¹ı³Ì£¬²¢¿ÉÍ¨¹ıÄÚ½¨º¯Êı recover ¿ØÖÆ¡£
+// panic å†…å»ºå‡½æ•°åœæ­¢å½“å‰Goç¨‹çš„æ­£å¸¸æ‰§è¡Œã€‚
+// å½“å‡½æ•° F è°ƒç”¨ panic æ—¶ï¼ŒF çš„æ­£å¸¸æ‰§è¡Œå°±ä¼šç«‹åˆ»åœæ­¢ã€‚ä»»ä½•ç”± F æ¨è¿Ÿçš„å‡½æ•°æ‰§è¡Œéƒ½ä¼š
+// æŒ‰ç…§ä¸€èˆ¬çš„æ–¹å¼è¿è¡Œï¼Œæ¥ç€ F è¿”å›ç»™å…¶è°ƒç”¨è€…ã€‚å¯¹äºå…¶è°ƒç”¨è€… Gï¼ŒF çš„è¯·æ±‚è¡Œä¸ºå¦‚åŒ
+// å¯¹ panic çš„è°ƒç”¨ï¼Œå³ç»ˆæ­¢ G çš„æ‰§è¡Œå¹¶è¿è¡Œä»»ä½•è¢«æ¨è¿Ÿçš„å‡½æ•°ã€‚è¿™ä¼šæŒç»­åˆ°è¯¥Goç¨‹
+// ä¸­æ‰€æœ‰å‡½æ•°éƒ½æŒ‰ç›¸åçš„é¡ºåºåœæ­¢æ‰§è¡Œä¹‹åã€‚æ­¤æ—¶ï¼Œè¯¥ç¨‹åºä¼šè¢«ç»ˆæ­¢ï¼Œè€Œé”™è¯¯æƒ…å†µä¼šè¢«æŠ¥å‘Šï¼Œ
+// åŒ…æ‹¬å¼•å‘è¯¥ææ…Œçš„å®å‚å€¼ã€‚æ­¤ç»ˆæ­¢åºåˆ—ç§°ä¸ºææ…Œè¿‡ç¨‹ï¼Œå¹¶å¯é€šè¿‡å†…å»ºå‡½æ•° recover æ§åˆ¶ã€‚
 func panic(v interface{})
 
 // The recover built-in function allows a program to manage behavior of a
@@ -381,12 +383,12 @@ func panic(v interface{})
 // nil. Thus the return value from recover reports whether the goroutine is
 // panicking.
 
-// recover ÄÚ½¨º¯ÊıÔÊĞí³ÌĞò¹ÜÀí¿Ö»Å¹ı³ÌÖĞµÄGo³Ì¡£
-// ÔÚÒÑÍÆ³Ùº¯Êı£¨¶ø²»ÊÇÈÎºÎ±»Ëüµ÷ÓÃµÄº¯Êı£©ÖĞ£¬Ö´ĞĞ recover µ÷ÓÃ»áÍ¨¹ı»Ö¸´Õı³£µÄÖ´ĞĞ
-// ²¢È¡»Ø´«ÖÁ panic µ÷ÓÃµÄ´íÎóÖµÀ´Í£Ö¹¸Ã¿Ö»Å¹ı³ÌĞòÁĞ¡£Èô recover ÔÚÒÑÍÆ³Ùº¯ÊıÖ®Íâ±»µ÷ÓÃ£¬
-// Ëü½«²»»áÍ£Ö¹¿Ö»Å¹ı³ÌĞòÁĞ¡£ÔÚ´ËÇé¿öÏÂ£¬»òµ±¸ÃGo³Ì²»ÔÚ¿Ö»Å¹ı³ÌÖĞÊ±£¬»òÌá¹©¸ø panic
-// µÄÊµ²ÎÎª nil Ê±£¬recover ¾Í»á·µ»Ø nil¡£Òò´Ë recover µÄ·µ»ØÖµ¾Í±¨¸æÁË¸ÃGo³ÌÊÇ·ñ
-// ÔÚ¿Ö»Å¹ı³ÌÖĞ¡£
+// recover å†…å»ºå‡½æ•°å…è®¸ç¨‹åºç®¡ç†ææ…Œè¿‡ç¨‹ä¸­çš„Goç¨‹ã€‚
+// åœ¨å·²æ¨è¿Ÿå‡½æ•°ï¼ˆè€Œä¸æ˜¯ä»»ä½•è¢«å®ƒè°ƒç”¨çš„å‡½æ•°ï¼‰ä¸­ï¼Œæ‰§è¡Œ recover è°ƒç”¨ä¼šé€šè¿‡æ¢å¤æ­£å¸¸çš„æ‰§è¡Œ
+// å¹¶å–å›ä¼ è‡³ panic è°ƒç”¨çš„é”™è¯¯å€¼æ¥åœæ­¢è¯¥ææ…Œè¿‡ç¨‹åºåˆ—ã€‚è‹¥ recover åœ¨å·²æ¨è¿Ÿå‡½æ•°ä¹‹å¤–è¢«è°ƒç”¨ï¼Œ
+// å®ƒå°†ä¸ä¼šåœæ­¢ææ…Œè¿‡ç¨‹åºåˆ—ã€‚åœ¨æ­¤æƒ…å†µä¸‹ï¼Œæˆ–å½“è¯¥Goç¨‹ä¸åœ¨ææ…Œè¿‡ç¨‹ä¸­æ—¶ï¼Œæˆ–æä¾›ç»™ panic
+// çš„å®å‚ä¸º nil æ—¶ï¼Œrecover å°±ä¼šè¿”å› nilã€‚å› æ­¤ recover çš„è¿”å›å€¼å°±æŠ¥å‘Šäº†è¯¥Goç¨‹æ˜¯å¦
+// åœ¨ææ…Œè¿‡ç¨‹ä¸­ã€‚
 func recover() interface{}
 
 // The print built-in function formats its arguments in an implementation-
@@ -405,5 +407,5 @@ func println(args ...Type)
 // The error built-in interface type is the conventional interface for
 // representing an error condition, with the nil value representing no error.
 
-// error ÄÚ½¨½Ó¿ÚÀàĞÍÊÇ±íÊ¾´íÎóÇé¿öµÄÔ¼¶¨½Ó¿Ú£¬nil Öµ¼´±íÊ¾Ã»ÓĞ´íÎó¡£
-type error interface
+// error å†…å»ºæ¥å£ç±»å‹æ˜¯è¡¨ç¤ºé”™è¯¯æƒ…å†µçš„çº¦å®šæ¥å£ï¼Œnil å€¼å³è¡¨ç¤ºæ²¡æœ‰é”™è¯¯ã€‚
+type error interface{}
