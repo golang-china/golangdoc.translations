@@ -7,7 +7,8 @@
 // Package unicode provides data and functions to test some properties of Unicode
 // code points.
 
-// unicode 包提供了一些测试Unicode码点属性的数据和函数.
+// unicode
+// 包提供了一些测试Unicode码点属性的数据和函数.
 package unicode
 
 const (
@@ -30,9 +31,8 @@ const (
 // If the Delta field of a CaseRange is UpperLower, it means this CaseRange
 // represents a sequence of the form (say) Upper Lower Upper Lower.
 
-// 若 CaseRange 的 Delta 字段为 UpperLower 或
-// LowerUpper，则该 CaseRange 即表示 （所谓的）“Upper
-// Lower Upper Lower”序列。
+// 若 CaseRange 的 Delta 字段为 UpperLower 或 LowerUpper，则该 CaseRange 即表示
+// （所谓的）“Upper Lower Upper Lower”序列。
 const (
 	UpperLower = MaxRune + 1 // (Cannot be a valid delta.)
 )
@@ -267,7 +267,8 @@ var (
 // CaseRanges is the table describing case mappings for all letters with non-self
 // mappings.
 
-// CaseRanges 是描述所有“非自映射字母”的写法映射表。
+// CaseRanges
+// 是描述所有“非自映射字母”的写法映射表。
 var CaseRanges = _CaseRanges
 
 // Categories is the set of Unicode category tables.
@@ -316,7 +317,8 @@ var Categories = map[string]*RangeTable{
 // that are equivalent under simple case folding to code points inside the
 // category. If there is no entry for a category name, there are no such points.
 
-// FoldCategory 将一个类别名映射到该类别外的码点表上，
+// FoldCategory
+// 将一个类别名映射到该类别外的码点表上，
 // 这相当于在简单的情况下对该类别内的码点进行转换。
 // 若一个类别名没有对应的条目，则该码点不存在。
 var FoldCategory = map[string]*RangeTable{
@@ -335,7 +337,8 @@ var FoldCategory = map[string]*RangeTable{
 // are equivalent under simple case folding to code points inside the script. If
 // there is no entry for a script name, there are no such points.
 
-// FoldCategory 将一个书写系统名映射到该书写系统外的码点表上，
+// FoldCategory
+// 将一个书写系统名映射到该书写系统外的码点表上，
 // 这相当于在简单的情况下对该书写系统内的码点进行转换。
 // 若一个书写系统名没有对应的条目，则该码点不存在。
 var FoldScript = map[string]*RangeTable{}
@@ -539,7 +542,8 @@ func Is(rangeTab *RangeTable, r rune) bool
 // category includes more code points such as surrogates; use Is(C, r) to test for
 // them.
 
-// IsControl 报告该字符是否为控制字符。Unicode的C（其它）
+// IsControl
+// 报告该字符是否为控制字符。Unicode的C（其它）
 // 类别包括了更多像替代值这样的码点；请使用 Is(C, r) 来测试它们。
 func IsControl(r rune) bool
 
@@ -593,14 +597,14 @@ func IsOneOf(ranges []*RangeTable, r rune) bool
 // IsPrint
 // 报告该符文是否为Go定义的可打印字符。包括字母、标记、数字、标点、
 // 符号和ASCII空格这样的，类别为L、M、N、P、S和ASCII空格的字符。
-// 除空白字符只有ASCII空格（即U+0020）外，其它的类别与
-// IsGraphic 相同。
+// 除空白字符只有ASCII空格（即U+0020）外，其它的类别与 IsGraphic 相同。
 func IsPrint(r rune) bool
 
 // IsPunct reports whether the rune is a Unicode punctuation character (category
 // P).
 
-// IsPunct 报告该符文是否为Unicode标点字符（类别P）。
+// IsPunct
+// 报告该符文是否为Unicode标点字符（类别P）。
 func IsPunct(r rune) bool
 
 // IsSpace reports whether the rune is a space character as defined by Unicode's
@@ -652,9 +656,8 @@ func IsUpper(r rune) bool
 
 // SimpleFold
 // 遍历Unicode码点，等价于Unicode定义下的简单写法转换。
-// 其中的码点等价于符文（包括符文自身），若存在最小的 >= r
-// 的符文，SimpleFold 返回就会返回它，否则就会返回最小的 >= 0
-// 的符文。
+// 其中的码点等价于符文（包括符文自身），若存在最小的 >= r 的符文，SimpleFold
+// 返回就会返回它，否则就会返回最小的 >= 0 的符文。
 //
 // 例如：
 //
@@ -670,8 +673,8 @@ func SimpleFold(r rune) rune
 
 // To maps the rune to the specified case: UpperCase, LowerCase, or TitleCase.
 
-// To 将该符文映射为指定的写法：UpperCase、LowerCase、或
-// TitleCase。
+// To
+// 将该符文映射为指定的写法：UpperCase、LowerCase、或 TitleCase。
 func To(_case int, r rune) rune
 
 // ToLower maps the rune to lower case.
@@ -702,15 +705,14 @@ func ToUpper(r rune) rune
 // The constant UpperLower has an otherwise impossible delta value.
 
 // CaseRange
-// 表示Unicode码点中，简单的（即一对一的）大小写转换的范围。该范围从 Lo
-// 连续到 Hi，包括一个固定的间距。Delta 为添加的码点数量，
+// 表示Unicode码点中，简单的（即一对一的）大小写转换的范围。该范围从 Lo 连续到
+// Hi，包括一个固定的间距。Delta 为添加的码点数量，
 // 以便于该字符不同写法间的转换。它们可为负数。若为零，即表示该字符的写法一致。
 // 还有种特殊的写法，表示一对大小写交替对应的序列。它会与像
 //
 //	{UpperLower, UpperLower, UpperLower}
 //
-// 这样固定的 Delta 一同出现。常量 UpperLower 可能拥有其它的
-// delta 值。
+// 这样固定的 Delta 一同出现。常量 UpperLower 可能拥有其它的 delta 值。
 type CaseRange struct {
 	Lo    uint32
 	Hi    uint32
@@ -720,8 +722,8 @@ type CaseRange struct {
 // Range16 represents of a range of 16-bit Unicode code points. The range runs from
 // Lo to Hi inclusive and has the specified stride.
 
-// Range16 表示16位Unicode码点的范围。该范围从 Lo 连续到 Hi
-// 且包括两端， 还有一个指定的间距。
+// Range16 表示16位Unicode码点的范围。该范围从 Lo 连续到 Hi 且包括两端，
+// 还有一个指定的间距。
 type Range16 struct {
 	Lo     uint16
 	Hi     uint16
@@ -733,9 +735,8 @@ type Range16 struct {
 // inclusive and has the specified stride. Lo and Hi must always be >= 1<<16.
 
 // Range32
-// 表示Unicode码点的范围，它在一个或多个值不能用16位容纳时使用。该范围从
-// Lo 连续到 Hi 且包括两端，还有一个指定的间距。Lo 和 Hi 都必须满足
-// >= 1<<16。
+// 表示Unicode码点的范围，它在一个或多个值不能用16位容纳时使用。该范围从 Lo 连续到 Hi
+// 且包括两端，还有一个指定的间距。Lo 和 Hi 都必须满足 >= 1<<16。
 type Range32 struct {
 	Lo     uint32
 	Hi     uint32
@@ -750,8 +751,8 @@ type Range32 struct {
 
 // RangeTable
 // 通过列出码点范围，定义了Unicode码点的集合。为了节省空间，
-// 其范围分别在16位、32位这两个切片中列出。这两个切片必须已经排序且无重叠的部分。
-// 此外，R32只包含 >= 0x10000 (1<<16) 的值。
+// 其范围分别在16位、32位这两个切片中列出。这两个切片必须已经排序且无重叠的部分。 此外，R32只包含 >= 0x10000 (1<<16)
+// 的值。
 type RangeTable struct {
 	R16         []Range16
 	R32         []Range32
@@ -762,8 +763,7 @@ type RangeTable struct {
 // of SpecialCase customize (by overriding) the standard mappings.
 
 // SpecialCase
-// 表示语言相关的写法映射，例如土耳其语。SpecialCase 的方法（通过覆盖）
-// 来定制标准的映射。
+// 表示语言相关的写法映射，例如土耳其语。SpecialCase 的方法（通过覆盖） 来定制标准的映射。
 type SpecialCase []CaseRange
 
 var AzeriCase SpecialCase = _TurkishCase
@@ -772,15 +772,18 @@ var TurkishCase SpecialCase = _TurkishCase
 
 // ToLower maps the rune to lower case giving priority to the special mapping.
 
-// ToLower 将该符文映射为大写形式，优先考虑特殊的映射。
+// ToLower
+// 将该符文映射为大写形式，优先考虑特殊的映射。
 func (special SpecialCase) ToLower(r rune) rune
 
 // ToTitle maps the rune to title case giving priority to the special mapping.
 
-// ToTitle 将该符文映射为标题形式，优先考虑特殊的映射。
+// ToTitle
+// 将该符文映射为标题形式，优先考虑特殊的映射。
 func (special SpecialCase) ToTitle(r rune) rune
 
 // ToUpper maps the rune to upper case giving priority to the special mapping.
 
-// ToUpper 将该符文映射为大写形式，优先考虑特殊的映射。
+// ToUpper
+// 将该符文映射为大写形式，优先考虑特殊的映射。
 func (special SpecialCase) ToUpper(r rune) rune

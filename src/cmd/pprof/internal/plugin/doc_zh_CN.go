@@ -6,30 +6,15 @@
 
 // Package plugin defines the plugin implementations that the main pprof driver
 // requires.
-
-// Package plugin defines the plugin
-// implementations that the main pprof
-// driver requires.
 package plugin
 
 // A Fetcher reads and returns the profile named by src. It gives up after the
 // given timeout, unless src contains a timeout override (as defined by the
 // implementation). It can print messages to ui.
-
-// A Fetcher reads and returns the profile
-// named by src. It gives up after the
-// given timeout, unless src contains a
-// timeout override (as defined by the
-// implementation). It can print messages
-// to ui.
 type Fetcher func(src string, timeout time.Duration, ui UI) (*profile.Profile, error)
 
 // A FlagSet creates and parses command-line flags. It is similar to the standard
 // flag.FlagSet.
-
-// A FlagSet creates and parses
-// command-line flags. It is similar to the
-// standard flag.FlagSet.
 type FlagSet interface {
 	// Bool, Int, Float64, and String define new flags,
 	// like the functions of the same name in package flag.
@@ -52,9 +37,6 @@ type FlagSet interface {
 }
 
 // A Frame describes a single line in a source file.
-
-// A Frame describes a single line in a
-// source file.
 type Frame struct {
 	Func string // name of function
 	File string // source file name
@@ -62,9 +44,6 @@ type Frame struct {
 }
 
 // An Inst is a single instruction in an assembly listing.
-
-// An Inst is a single instruction in an
-// assembly listing.
 type Inst struct {
 	Addr uint64 // virtual address of instruction
 	Text string // instruction text
@@ -73,9 +52,6 @@ type Inst struct {
 }
 
 // An ObjFile is a single object file: a shared library or executable.
-
-// An ObjFile is a single object file: a
-// shared library or executable.
 type ObjFile interface {
 	// Name returns the underlyinf file name, if available
 	Name() string
@@ -104,9 +80,6 @@ type ObjFile interface {
 }
 
 // An ObjTool inspects shared libraries and executable files.
-
-// An ObjTool inspects shared libraries and
-// executable files.
 type ObjTool interface {
 	// Open opens the named object file.
 	// If the object is a shared library, start is the address where
@@ -131,20 +104,9 @@ type ObjTool interface {
 // returns an error indicating that the requested file does not exist. Demangle
 // returns an empty map and a nil error. Disasm returns an error. SetConfig is a
 // no-op.
-
-// NoObjTool returns a trivial
-// implementation of the ObjTool interface.
-// Open returns an error indicating that
-// the requested file does not exist.
-// Demangle returns an empty map and a nil
-// error. Disasm returns an error.
-// SetConfig is a no-op.
 func NoObjTool() ObjTool
 
 // A Sym describes a single symbol in an object file.
-
-// A Sym describes a single symbol in an
-// object file.
 type Sym struct {
 	Name  []string // names of symbol (many if symbol was dedup'ed)
 	File  string   // object file containing symbol
@@ -154,14 +116,7 @@ type Sym struct {
 
 // A Symbolizer annotates a profile with symbol information. The profile was fetch
 // from src. The meaning of mode is defined by the implementation.
-
-// A Symbolizer annotates a profile with
-// symbol information. The profile was
-// fetch from src. The meaning of mode is
-// defined by the implementation.
 type Symbolizer func(mode, src string, prof *profile.Profile, obj ObjTool, ui UI) error
-
-// A UI manages user interactions.
 
 // A UI manages user interactions.
 type UI interface {
@@ -190,11 +145,5 @@ type UI interface {
 
 // StandardUI returns a UI that reads from standard input, prints messages to
 // standard output, prints errors to standard error, and doesn't use
-// auto-completion.
-
-// StandardUI returns a UI that reads from
-// standard input, prints messages to
-// standard output, prints errors to
-// standard error, and doesn't use
 // auto-completion.
 func StandardUI() UI

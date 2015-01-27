@@ -35,8 +35,7 @@ func ParseAddressList(list string) ([]*Address, error)
 // <bg@example.com>" is represented as Address{Name: "Barry Gibbs", Address:
 // "bg@example.com"}.
 
-// Address代表单个的邮件地址。 一个地址例如"Barry Gibbs
-// <bg@example.com>"代表一个地址 {Name: "Barry
+// Address代表单个的邮件地址。 一个地址例如"Barry Gibbs <bg@example.com>"代表一个地址 {Name: "Barry
 // Gibbs", Address: "bg@example.com"}。
 type Address struct {
 	Name    string // Proper name; may be empty.
@@ -45,8 +44,7 @@ type Address struct {
 
 // Parses a single RFC 5322 address, e.g. "Barry Gibbs <bg@example.com>"
 
-// 解析一个单独的RFC 5322地址，例如 “Barry Gibbs
-// <bg@example.com>”
+// 解析一个单独的RFC 5322地址，例如 “Barry Gibbs <bg@example.com>”
 func ParseAddress(address string) (*Address, error)
 
 // String formats the address as a valid RFC 5322 address. If the address's name
@@ -88,5 +86,6 @@ type Message struct {
 // ReadMessage reads a message from r. The headers are parsed, and the body of the
 // message will be available for reading from r.
 
-// ReadMessage从r中读取一个邮件。 头部已经被解析了，而邮件体是可见的。
+// ReadMessage从r中读取一个邮件。
+// 头部已经被解析了，而邮件体是可见的。
 func ReadMessage(r io.Reader) (msg *Message, err error)

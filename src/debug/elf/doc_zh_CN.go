@@ -5,12 +5,7 @@
 // +build ingore
 
 // Package elf implements access to ELF object files.
-
-// Package elf implements access to ELF
-// object files.
 package elf
-
-// Indexes into the Header.Ident array.
 
 // Indexes into the Header.Ident array.
 const (
@@ -24,12 +19,7 @@ const (
 )
 
 // Magic number for the elf trampoline, chosen wisely to be an immediate value.
-
-// Magic number for the elf trampoline,
-// chosen wisely to be an immediate value.
 const ARM_MAGIC_TRAMP_NUMBER = 0x5c000003
-
-// Initial magic number for ELF files.
 
 // Initial magic number for ELF files.
 const ELFMAG = "\177ELF"
@@ -39,10 +29,6 @@ const Sym32Size = 16
 const Sym64Size = 24
 
 // ErrNoSymbols is returned by File.Symbols and File.DynamicSymbols if there is no
-// such section in the File.
-
-// ErrNoSymbols is returned by File.Symbols
-// and File.DynamicSymbols if there is no
 // such section in the File.
 var ErrNoSymbols = errors.New("no symbol section")
 
@@ -61,9 +47,6 @@ func R_TYPE64(info uint64) uint32
 func ST_INFO(bind SymBind, typ SymType) uint8
 
 // Class is found in Header.Ident[EI_CLASS] and Header.Class.
-
-// Class is found in Header.Ident[EI_CLASS]
-// and Header.Class.
 type Class byte
 
 const (
@@ -77,9 +60,6 @@ func (i Class) GoString() string
 func (i Class) String() string
 
 // Data is found in Header.Ident[EI_DATA] and Header.Data.
-
-// Data is found in Header.Ident[EI_DATA]
-// and Header.Data.
 type Data byte
 
 const (
@@ -93,24 +73,16 @@ func (i Data) GoString() string
 func (i Data) String() string
 
 // ELF32 Dynamic structure. The ".dynamic" section contains an array of them.
-
-// ELF32 Dynamic structure. The ".dynamic"
-// section contains an array of them.
 type Dyn32 struct {
 	Tag int32  /* Entry type. */
 	Val uint32 /* Integer/Address value. */
 }
 
 // ELF64 Dynamic structure. The ".dynamic" section contains an array of them.
-
-// ELF64 Dynamic structure. The ".dynamic"
-// section contains an array of them.
 type Dyn64 struct {
 	Tag int64  /* Entry type. */
 	Val uint64 /* Integer/address value */
 }
-
-// DT_FLAGS values.
 
 // DT_FLAGS values.
 type DynFlag int
@@ -133,8 +105,6 @@ const (
 func (i DynFlag) GoString() string
 
 func (i DynFlag) String() string
-
-// Dyn.Tag
 
 // Dyn.Tag
 type DynTag int
@@ -192,8 +162,6 @@ func (i DynTag) GoString() string
 func (i DynTag) String() string
 
 // A File represents an open ELF file.
-
-// A File represents an open ELF file.
 type File struct {
 	FileHeader
 	Sections []*Section
@@ -203,27 +171,14 @@ type File struct {
 
 // NewFile creates a new File for accessing an ELF binary in an underlying reader.
 // The ELF binary is expected to start at position 0 in the ReaderAt.
-
-// NewFile creates a new File for accessing
-// an ELF binary in an underlying reader.
-// The ELF binary is expected to start at
-// position 0 in the ReaderAt.
 func NewFile(r io.ReaderAt) (*File, error)
 
 // Open opens the named file using os.Open and prepares it for use as an ELF
-// binary.
-
-// Open opens the named file using os.Open
-// and prepares it for use as an ELF
 // binary.
 func Open(name string) (*File, error)
 
 // Close closes the File. If the File was created using NewFile directly instead of
 // Open, Close has no effect.
-
-// Close closes the File. If the File was
-// created using NewFile directly instead
-// of Open, Close has no effect.
 func (f *File) Close() error
 
 func (f *File) DWARF() (*dwarf.Data, error)
@@ -233,14 +188,6 @@ func (f *File) DWARF() (*dwarf.Data, error)
 //
 // The tag must be one that takes string values: DT_NEEDED, DT_SONAME, DT_RPATH, or
 // DT_RUNPATH.
-
-// DynString returns the strings listed for
-// the given tag in the file's dynamic
-// section.
-//
-// The tag must be one that takes string
-// values: DT_NEEDED, DT_SONAME, DT_RPATH,
-// or DT_RUNPATH.
 func (f *File) DynString(tag DynTag) ([]string, error)
 
 // DynamicSymbols returns the dynamic symbol table for f. The symbols will be
@@ -249,50 +196,21 @@ func (f *File) DynString(tag DynTag) ([]string, error)
 // For compatibility with Symbols, DynamicSymbols omits the null symbol at index 0.
 // After retrieving the symbols as symtab, an externally supplied index x
 // corresponds to symtab[x-1], not symtab[x].
-
-// DynamicSymbols returns the dynamic
-// symbol table for f. The symbols will be
-// listed in the order they appear in f.
-//
-// For compatibility with Symbols,
-// DynamicSymbols omits the null symbol at
-// index 0. After retrieving the symbols as
-// symtab, an externally supplied index x
-// corresponds to symtab[x-1], not
-// symtab[x].
 func (f *File) DynamicSymbols() ([]Symbol, error)
 
 // ImportedLibraries returns the names of all libraries referred to by the binary f
 // that are expected to be linked with the binary at dynamic link time.
-
-// ImportedLibraries returns the names of
-// all libraries referred to by the binary
-// f that are expected to be linked with
-// the binary at dynamic link time.
 func (f *File) ImportedLibraries() ([]string, error)
 
 // ImportedSymbols returns the names of all symbols referred to by the binary f
 // that are expected to be satisfied by other libraries at dynamic load time. It
 // does not return weak symbols.
-
-// ImportedSymbols returns the names of all
-// symbols referred to by the binary f that
-// are expected to be satisfied by other
-// libraries at dynamic load time. It does
-// not return weak symbols.
 func (f *File) ImportedSymbols() ([]ImportedSymbol, error)
 
 // Section returns a section with the given name, or nil if no such section exists.
-
-// Section returns a section with the given
-// name, or nil if no such section exists.
 func (f *File) Section(name string) *Section
 
 // SectionByType returns the first section in f with the given type, or nil if
-// there is no such section.
-
-// SectionByType returns the first section
-// in f with the given type, or nil if
 // there is no such section.
 func (f *File) SectionByType(typ SectionType) *Section
 
@@ -302,22 +220,9 @@ func (f *File) SectionByType(typ SectionType) *Section
 // For compatibility with Go 1.0, Symbols omits the null symbol at index 0. After
 // retrieving the symbols as symtab, an externally supplied index x corresponds to
 // symtab[x-1], not symtab[x].
-
-// Symbols returns the symbol table for f.
-// The symbols will be listed in the order
-// they appear in f.
-//
-// For compatibility with Go 1.0, Symbols
-// omits the null symbol at index 0. After
-// retrieving the symbols as symtab, an
-// externally supplied index x corresponds
-// to symtab[x-1], not symtab[x].
 func (f *File) Symbols() ([]Symbol, error)
 
 // A FileHeader represents an ELF file header.
-
-// A FileHeader represents an ELF file
-// header.
 type FileHeader struct {
 	Class      Class
 	Data       Data
@@ -337,8 +242,6 @@ type FormatError struct {
 func (e *FormatError) Error() string
 
 // ELF32 File header.
-
-// ELF32 File header.
 type Header32 struct {
 	Ident     [EI_NIDENT]byte /* File identification. */
 	Type      uint16          /* File type. */
@@ -355,8 +258,6 @@ type Header32 struct {
 	Shnum     uint16          /* Number of section header entries. */
 	Shstrndx  uint16          /* Section name strings section. */
 }
-
-// ELF64 file header.
 
 // ELF64 file header.
 type Header64 struct {
@@ -381,8 +282,6 @@ type ImportedSymbol struct {
 	Version string
 	Library string
 }
-
-// Machine is found in Header.Machine.
 
 // Machine is found in Header.Machine.
 type Machine uint16
@@ -445,8 +344,6 @@ func (i Machine) GoString() string
 func (i Machine) String() string
 
 // NType values; used in core files.
-
-// NType values; used in core files.
 type NType int
 
 const (
@@ -460,9 +357,6 @@ func (i NType) GoString() string
 func (i NType) String() string
 
 // OSABI is found in Header.Ident[EI_OSABI] and Header.OSABI.
-
-// OSABI is found in Header.Ident[EI_OSABI]
-// and Header.OSABI.
 type OSABI byte
 
 const (
@@ -490,9 +384,6 @@ func (i OSABI) GoString() string
 func (i OSABI) String() string
 
 // A Prog represents a single ELF program header in an ELF binary.
-
-// A Prog represents a single ELF program
-// header in an ELF binary.
 type Prog struct {
 	ProgHeader
 
@@ -507,12 +398,7 @@ type Prog struct {
 }
 
 // Open returns a new ReadSeeker reading the ELF program body.
-
-// Open returns a new ReadSeeker reading
-// the ELF program body.
 func (p *Prog) Open() io.ReadSeeker
-
-// ELF32 Program header.
 
 // ELF32 Program header.
 type Prog32 struct {
@@ -527,8 +413,6 @@ type Prog32 struct {
 }
 
 // ELF64 Program header.
-
-// ELF64 Program header.
 type Prog64 struct {
 	Type   uint32 /* Entry type. */
 	Flags  uint32 /* Access permission flags. */
@@ -539,8 +423,6 @@ type Prog64 struct {
 	Memsz  uint64 /* Size of contents in memory. */
 	Align  uint64 /* Alignment in memory and file. */
 }
-
-// Prog.Flag
 
 // Prog.Flag
 type ProgFlag uint32
@@ -558,9 +440,6 @@ func (i ProgFlag) GoString() string
 func (i ProgFlag) String() string
 
 // A ProgHeader represents a single ELF program header.
-
-// A ProgHeader represents a single ELF
-// program header.
 type ProgHeader struct {
 	Type   ProgType
 	Flags  ProgFlag
@@ -571,8 +450,6 @@ type ProgHeader struct {
 	Memsz  uint64
 	Align  uint64
 }
-
-// Prog.Type
 
 // Prog.Type
 type ProgType int
@@ -595,8 +472,6 @@ const (
 func (i ProgType) GoString() string
 
 func (i ProgType) String() string
-
-// Relocation types for 386.
 
 // Relocation types for 386.
 type R_386 int
@@ -638,8 +513,6 @@ const (
 func (i R_386) GoString() string
 
 func (i R_386) String() string
-
-// Relocation types for AArch64 (aka arm64)
 
 // Relocation types for AArch64 (aka arm64)
 type R_AARCH64 int
@@ -771,8 +644,6 @@ func (i R_AARCH64) GoString() string
 func (i R_AARCH64) String() string
 
 // Relocation types for Alpha.
-
-// Relocation types for Alpha.
 type R_ALPHA int
 
 const (
@@ -809,8 +680,6 @@ const (
 func (i R_ALPHA) GoString() string
 
 func (i R_ALPHA) String() string
-
-// Relocation types for ARM.
 
 // Relocation types for ARM.
 type R_ARM int
@@ -854,8 +723,6 @@ const (
 func (i R_ARM) GoString() string
 
 func (i R_ARM) String() string
-
-// Relocation types for PowerPC.
 
 // Relocation types for PowerPC.
 type R_PPC int
@@ -945,8 +812,6 @@ func (i R_PPC) GoString() string
 func (i R_PPC) String() string
 
 // Relocation types for SPARC.
-
-// Relocation types for SPARC.
 type R_SPARC int
 
 const (
@@ -1013,8 +878,6 @@ func (i R_SPARC) GoString() string
 func (i R_SPARC) String() string
 
 // Relocation types for x86-64.
-
-// Relocation types for x86-64.
 type R_X86_64 int
 
 const (
@@ -1049,27 +912,18 @@ func (i R_X86_64) GoString() string
 func (i R_X86_64) String() string
 
 // ELF32 Relocations that don't need an addend field.
-
-// ELF32 Relocations that don't need an
-// addend field.
 type Rel32 struct {
 	Off  uint32 /* Location to be relocated. */
 	Info uint32 /* Relocation type and symbol index. */
 }
 
 // ELF64 relocations that don't need an addend field.
-
-// ELF64 relocations that don't need an
-// addend field.
 type Rel64 struct {
 	Off  uint64 /* Location to be relocated. */
 	Info uint64 /* Relocation type and symbol index. */
 }
 
 // ELF32 Relocations that need an addend field.
-
-// ELF32 Relocations that need an addend
-// field.
 type Rela32 struct {
 	Off    uint32 /* Location to be relocated. */
 	Info   uint32 /* Relocation type and symbol index. */
@@ -1077,9 +931,6 @@ type Rela32 struct {
 }
 
 // ELF64 relocations that need an addend field.
-
-// ELF64 relocations that need an addend
-// field.
 type Rela64 struct {
 	Off    uint64 /* Location to be relocated. */
 	Info   uint64 /* Relocation type and symbol index. */
@@ -1087,9 +938,6 @@ type Rela64 struct {
 }
 
 // A Section represents a single section in an ELF file.
-
-// A Section represents a single section in
-// an ELF file.
 type Section struct {
 	SectionHeader
 
@@ -1104,18 +952,10 @@ type Section struct {
 }
 
 // Data reads and returns the contents of the ELF section.
-
-// Data reads and returns the contents of
-// the ELF section.
 func (s *Section) Data() ([]byte, error)
 
 // Open returns a new ReadSeeker reading the ELF section.
-
-// Open returns a new ReadSeeker reading
-// the ELF section.
 func (s *Section) Open() io.ReadSeeker
-
-// ELF32 Section header.
 
 // ELF32 Section header.
 type Section32 struct {
@@ -1132,8 +972,6 @@ type Section32 struct {
 }
 
 // ELF64 Section header.
-
-// ELF64 Section header.
 type Section64 struct {
 	Name      uint32 /* Section name (index into the section header string table). */
 	Type      uint32 /* Section type. */
@@ -1146,8 +984,6 @@ type Section64 struct {
 	Addralign uint64 /* Alignment in bytes. */
 	Entsize   uint64 /* Size of each entry in section. */
 }
-
-// Section flags.
 
 // Section flags.
 type SectionFlag uint32
@@ -1172,9 +1008,6 @@ func (i SectionFlag) GoString() string
 func (i SectionFlag) String() string
 
 // A SectionHeader represents a single ELF section header.
-
-// A SectionHeader represents a single ELF
-// section header.
 type SectionHeader struct {
 	Name      string
 	Type      SectionType
@@ -1187,8 +1020,6 @@ type SectionHeader struct {
 	Addralign uint64
 	Entsize   uint64
 }
-
-// Special section indices.
 
 // Special section indices.
 type SectionIndex int
@@ -1209,8 +1040,6 @@ const (
 func (i SectionIndex) GoString() string
 
 func (i SectionIndex) String() string
-
-// Section type.
 
 // Section type.
 type SectionType uint32
@@ -1252,8 +1081,6 @@ func (i SectionType) GoString() string
 func (i SectionType) String() string
 
 // ELF32 Symbol.
-
-// ELF32 Symbol.
 type Sym32 struct {
 	Name  uint32
 	Value uint32
@@ -1264,8 +1091,6 @@ type Sym32 struct {
 }
 
 // ELF64 symbol table entries.
-
-// ELF64 symbol table entries.
 type Sym64 struct {
 	Name  uint32 /* String table index of name. */
 	Info  uint8  /* Type and binding information. */
@@ -1274,8 +1099,6 @@ type Sym64 struct {
 	Value uint64 /* Symbol value. */
 	Size  uint64 /* Size of associated object. */
 }
-
-// Symbol Binding - ELFNN_ST_BIND - st_info
 
 // Symbol Binding - ELFNN_ST_BIND - st_info
 type SymBind int
@@ -1295,8 +1118,6 @@ func ST_BIND(info uint8) SymBind
 func (i SymBind) GoString() string
 
 func (i SymBind) String() string
-
-// Symbol type - ELFNN_ST_TYPE - st_info
 
 // Symbol type - ELFNN_ST_TYPE - st_info
 type SymType int
@@ -1322,9 +1143,6 @@ func (i SymType) GoString() string
 func (i SymType) String() string
 
 // Symbol visibility - ELFNN_ST_VISIBILITY - st_other
-
-// Symbol visibility - ELFNN_ST_VISIBILITY
-// - st_other
 type SymVis int
 
 const (
@@ -1341,17 +1159,12 @@ func (i SymVis) GoString() string
 func (i SymVis) String() string
 
 // A Symbol represents an entry in an ELF symbol table section.
-
-// A Symbol represents an entry in an ELF
-// symbol table section.
 type Symbol struct {
 	Name        string
 	Info, Other byte
 	Section     SectionIndex
 	Value, Size uint64
 }
-
-// Type is found in Header.Type.
 
 // Type is found in Header.Type.
 type Type uint16
@@ -1373,10 +1186,6 @@ func (i Type) GoString() string
 func (i Type) String() string
 
 // Version is found in Header.Ident[EI_VERSION] and Header.Version.
-
-// Version is found in
-// Header.Ident[EI_VERSION] and
-// Header.Version.
 type Version byte
 
 const (

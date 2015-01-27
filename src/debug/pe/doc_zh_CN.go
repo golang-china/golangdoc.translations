@@ -6,10 +6,6 @@
 
 // Package pe implements access to PE (Microsoft Windows Portable Executable)
 // files.
-
-// Package pe implements access to PE
-// (Microsoft Windows Portable Executable)
-// files.
 package pe
 
 const (
@@ -52,8 +48,6 @@ type DataDirectory struct {
 }
 
 // A File represents an open PE file.
-
-// A File represents an open PE file.
 type File struct {
 	FileHeader
 	OptionalHeader interface{} // of type *OptionalHeader32 or *OptionalHeader64
@@ -63,53 +57,28 @@ type File struct {
 }
 
 // NewFile creates a new File for accessing a PE binary in an underlying reader.
-
-// NewFile creates a new File for accessing
-// a PE binary in an underlying reader.
 func NewFile(r io.ReaderAt) (*File, error)
 
 // Open opens the named file using os.Open and prepares it for use as a PE binary.
-
-// Open opens the named file using os.Open
-// and prepares it for use as a PE binary.
 func Open(name string) (*File, error)
 
 // Close closes the File. If the File was created using NewFile directly instead of
 // Open, Close has no effect.
-
-// Close closes the File. If the File was
-// created using NewFile directly instead
-// of Open, Close has no effect.
 func (f *File) Close() error
 
 func (f *File) DWARF() (*dwarf.Data, error)
 
 // ImportedLibraries returns the names of all libraries referred to by the binary f
 // that are expected to be linked with the binary at dynamic link time.
-
-// ImportedLibraries returns the names of
-// all libraries referred to by the binary
-// f that are expected to be linked with
-// the binary at dynamic link time.
 func (f *File) ImportedLibraries() ([]string, error)
 
 // ImportedSymbols returns the names of all symbols referred to by the binary f
 // that are expected to be satisfied by other libraries at dynamic load time. It
 // does not return weak symbols.
-
-// ImportedSymbols returns the names of all
-// symbols referred to by the binary f that
-// are expected to be satisfied by other
-// libraries at dynamic load time. It does
-// not return weak symbols.
 func (f *File) ImportedSymbols() ([]string, error)
 
 // Section returns the first section with the given name, or nil if no such section
 // exists.
-
-// Section returns the first section with
-// the given name, or nil if no such
-// section exists.
 func (f *File) Section(name string) *Section
 
 type FileHeader struct {
@@ -218,15 +187,9 @@ type Section struct {
 }
 
 // Data reads and returns the contents of the PE section.
-
-// Data reads and returns the contents of
-// the PE section.
 func (s *Section) Data() ([]byte, error)
 
 // Open returns a new ReadSeeker reading the PE section.
-
-// Open returns a new ReadSeeker reading
-// the PE section.
 func (s *Section) Open() io.ReadSeeker
 
 type SectionHeader struct {

@@ -5,15 +5,9 @@
 // +build ingore
 
 // Package hash provides interfaces for hash functions.
-
-// Package hash provides interfaces for
-// hash functions.
 package hash
 
 // Hash is the common interface implemented by all hash functions.
-
-// Hash is the common interface implemented
-// by all hash functions.
 type Hash interface {
 	// Write (via the embedded io.Writer interface) adds more data to the running hash.
 	// It never returns an error.
@@ -37,20 +31,12 @@ type Hash interface {
 }
 
 // Hash32 is the common interface implemented by all 32-bit hash functions.
-
-// Hash32 is the common interface
-// implemented by all 32-bit hash
-// functions.
 type Hash32 interface {
 	Hash
 	Sum32() uint32
 }
 
 // Hash64 is the common interface implemented by all 64-bit hash functions.
-
-// Hash64 is the common interface
-// implemented by all 64-bit hash
-// functions.
 type Hash64 interface {
 	Hash
 	Sum64() uint64

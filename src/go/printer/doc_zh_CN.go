@@ -5,35 +5,20 @@
 // +build ingore
 
 // Package printer implements printing of AST nodes.
-
-// Package printer implements printing of
-// AST nodes.
 package printer
 
 // Fprint "pretty-prints" an AST node to output. It calls Config.Fprint with
-// default settings.
-
-// Fprint "pretty-prints" an AST node to
-// output. It calls Config.Fprint with
 // default settings.
 func Fprint(output io.Writer, fset *token.FileSet, node interface{}) error
 
 // A CommentedNode bundles an AST node and corresponding comments. It may be
 // provided as argument to any of the Fprint functions.
-
-// A CommentedNode bundles an AST node and
-// corresponding comments. It may be
-// provided as argument to any of the
-// Fprint functions.
 type CommentedNode struct {
 	Node     interface{} // *ast.File, or ast.Expr, ast.Decl, ast.Spec, or ast.Stmt
 	Comments []*ast.CommentGroup
 }
 
 // A Config node controls the output of Fprint.
-
-// A Config node controls the output of
-// Fprint.
 type Config struct {
 	Mode     Mode // default: 0
 	Tabwidth int  // default: 8
@@ -44,21 +29,9 @@ type Config struct {
 // Position information is interpreted relative to the file set fset. The node type
 // must be *ast.File, *CommentedNode, []ast.Decl, []ast.Stmt, or
 // assignment-compatible to ast.Expr, ast.Decl, ast.Spec, or ast.Stmt.
-
-// Fprint "pretty-prints" an AST node to
-// output for a given configuration cfg.
-// Position information is interpreted
-// relative to the file set fset. The node
-// type must be *ast.File, *CommentedNode,
-// []ast.Decl, []ast.Stmt, or
-// assignment-compatible to ast.Expr,
-// ast.Decl, ast.Spec, or ast.Stmt.
 func (cfg *Config) Fprint(output io.Writer, fset *token.FileSet, node interface{}) error
 
 // A Mode value is a set of flags (or 0). They control printing.
-
-// A Mode value is a set of flags (or 0).
-// They control printing.
 type Mode uint
 
 const (

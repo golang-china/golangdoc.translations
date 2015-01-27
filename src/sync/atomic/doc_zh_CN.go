@@ -37,10 +37,11 @@
 // The load and store operations, implemented by the LoadT and StoreT functions,
 // are the atomic equivalents of "return *addr" and "*addr = val".
 
-// atomic 包提供了底层的原子性内存原语，这对于同步算法的实现很有用.
+// atomic
+// 包提供了底层的原子性内存原语，这对于同步算法的实现很有用.
 //
-// 这些函数一定要非常小心地，正确地使用。特别是对于底层应用来说，最好使用信道或
-// sync 包中提供的功能来完成。
+// 这些函数一定要非常小心地，正确地使用。特别是对于底层应用来说，最好使用信道或 sync
+// 包中提供的功能来完成。
 //
 // 不要通过共享内存来通信，应该通过通信来共享内存。
 //
@@ -83,9 +84,8 @@ func AddInt64(addr *int64, delta int64) (new int64)
 // particular, to decrement x, do AddUint32(&x, ^uint32(0)).
 
 // AddUint32 自动将 delta 加上 *addr 并返回新值。 要从 x
-// 中减去一个带符号正整数常量 c，需执行 AddUint32(&x,
-// ^uint32(c-1))。 特别地，要减量 x，需执行
-// AddUint32(&x, ^uint32(0))。
+// 中减去一个带符号正整数常量 c，需执行 AddUint32(&x, ^uint32(c-1))。 特别地，要减量 x，需执行 AddUint32(&x,
+// ^uint32(0))。
 func AddUint32(addr *uint32, delta uint32) (new uint32)
 
 // AddUint64 atomically adds delta to *addr and returns the new value. To subtract
@@ -93,9 +93,8 @@ func AddUint32(addr *uint32, delta uint32) (new uint32)
 // particular, to decrement x, do AddUint64(&x, ^uint64(0)).
 
 // AddUint64 自动将 delta 加上 *addr 并返回新值。 要从 x
-// 中减去一个带符号正整数常量 c，需执行 AddUint64(&x,
-// ^uint64(c-1))。 特别地，要减量 x，需执行
-// AddUint64(&x, ^uint64(0))。
+// 中减去一个带符号正整数常量 c，需执行 AddUint64(&x, ^uint64(c-1))。 特别地，要减量 x，需执行 AddUint64(&x,
+// ^uint64(0))。
 func AddUint64(addr *uint64, delta uint64) (new uint64)
 
 // AddUintptr atomically adds delta to *addr and returns the new value.
@@ -203,75 +202,50 @@ func StoreUintptr(addr *uintptr, val uintptr)
 
 // SwapInt32 atomically stores new into *addr and returns the previous *addr value.
 
-// SwapInt32 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapInt32 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapInt32(addr *int32, new int32) (old int32)
 
 // SwapInt64 atomically stores new into *addr and returns the previous *addr value.
 
-// SwapInt64 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapInt64 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapInt64(addr *int64, new int64) (old int64)
 
 // SwapPointer atomically stores new into *addr and returns the previous *addr
 // value.
 
-// SwapPointer 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapPointer 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapPointer(addr *unsafe.Pointer, new unsafe.Pointer) (old unsafe.Pointer)
 
 // SwapUint32 atomically stores new into *addr and returns the previous *addr
 // value.
 
-// SwapUint32 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapUint32 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapUint32(addr *uint32, new uint32) (old uint32)
 
 // SwapUint64 atomically stores new into *addr and returns the previous *addr
 // value.
 
-// SwapUint64 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapUint64 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapUint64(addr *uint64, new uint64) (old uint64)
 
 // SwapUintptr atomically stores new into *addr and returns the previous *addr
 // value.
 
-// SwapUintptr 自动将 new 存储到 *addr 中并返回上一个
-// *addr 值。
+// SwapUintptr 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapUintptr(addr *uintptr, new uintptr) (old uintptr)
 
 // A Value provides an atomic load and store of a consistently typed value. Values
 // can be created as part of other data structures. The zero value for a Value
 // returns nil from Load. Once Store has been called, a Value must not be copied.
-
-// A Value provides an atomic load and
-// store of a consistently typed value.
-// Values can be created as part of other
-// data structures. The zero value for a
-// Value returns nil from Load. Once Store
-// has been called, a Value must not be
-// copied.
 type Value struct {
 	// contains filtered or unexported fields
 }
 
 // Load returns the value set by the most recent Store. It returns nil if there has
 // been no call to Store for this Value.
-
-// Load returns the value set by the most
-// recent Store. It returns nil if there
-// has been no call to Store for this
-// Value.
 func (v *Value) Load() (x interface{})
 
 // Store sets the value of the Value to x. All calls to Store for a given Value
 // must use values of the same concrete type. Store of an inconsistent type panics,
 // as does Store(nil).
-
-// Store sets the value of the Value to x.
-// All calls to Store for a given Value
-// must use values of the same concrete
-// type. Store of an inconsistent type
-// panics, as does Store(nil).
 func (v *Value) Store(x interface{})

@@ -89,16 +89,15 @@ func Cmdline(w http.ResponseWriter, r *http.Request)
 
 // Handler returns an HTTP handler that serves the named profile.
 
-// Handler返回HTTP
-// handler，这个handler会处理参数name的统计。
+// Handler返回HTTP handler，这个handler会处理参数name的统计。
 func Handler(name string) http.Handler
 
 // Index responds with the pprof-formatted profile named by the request. For
 // example, "/debug/pprof/heap" serves the "heap" profile. Index responds to a
 // request for "/debug/pprof/" with an HTML page listing the available profiles.
 
-// Index 返回请求处理中格式化的pprof的统计数据。
-// 例如，“/debug/pprof/heap” 展示的是“heap”统计信息。
+// Index 返回请求处理中格式化的pprof的统计数据。 例如，“/debug/pprof/heap”
+// 展示的是“heap”统计信息。
 // Index对请求“/debug/pprof/”返回一个HTML页面，这个页面展示了所有可见的统计。
 func Index(w http.ResponseWriter, r *http.Request)
 

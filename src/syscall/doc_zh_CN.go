@@ -53,6 +53,7 @@ const (
 	IPPROTO_UDP  = 0x11
 )
 
+// Misc constants expected by package net but not supported.
 const (
 	_ = iota
 	SOL_SOCKET
@@ -206,6 +207,7 @@ const (
 	Stderr = 2
 )
 
+// native_client/src/trusted/service_runtime/include/sys/fcntl.h
 const (
 	O_RDONLY  = 0
 	O_WRONLY  = 1
@@ -228,6 +230,7 @@ const (
 	FD_CLOEXEC = 1
 )
 
+// native_client/src/trusted/service_runtime/include/sys/fcntl.h
 const (
 	F_DUPFD   = 0
 	F_GETFD   = 1
@@ -250,8 +253,7 @@ const (
 	F_UNLKSYS = 4
 )
 
-// Invented values to support what package os expects.
-
+// native_client/src/trusted/service_runtime/include/bits/stat.h
 const (
 	S_IFMT        = 0000370000
 	S_IFSHM_SYSV  = 0000300000
@@ -338,8 +340,6 @@ const (
 	SizeofBpfHdr     = C.sizeof_struct_bpf_hdr
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = C.S_IFMT
 	S_IFIFO  = C.S_IFIFO
@@ -396,8 +396,6 @@ const (
 	SizeofBpfInsn    = C.sizeof_struct_bpf_insn
 	SizeofBpfHdr     = C.sizeof_struct_bpf_hdr
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = C.S_IFMT
@@ -721,8 +719,6 @@ const (
 	SizeofBpfHdr     = C.sizeof_struct_bpf_hdr
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = C.S_IFMT
 	S_IFIFO  = C.S_IFIFO
@@ -778,8 +774,6 @@ const (
 	SizeofBpfInsn    = C.sizeof_struct_bpf_insn
 	SizeofBpfHdr     = C.sizeof_struct_bpf_hdr
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = C.S_IFMT
@@ -1953,8 +1947,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -2065,6 +2058,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -3223,8 +3217,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -3335,6 +3328,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -4603,8 +4597,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -4710,6 +4703,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT     = Signal(0x6)
 	SIGALRM     = Signal(0xe)
@@ -5981,8 +5975,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -6088,6 +6081,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT     = Signal(0x6)
 	SIGALRM     = Signal(0xe)
@@ -7555,8 +7549,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -7659,6 +7652,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -9127,8 +9121,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -9231,6 +9224,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -10698,8 +10692,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -10802,6 +10795,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -12032,8 +12026,7 @@ const (
 	WUNTRACED                        = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -12170,6 +12163,7 @@ const (
 	EXFULL          = Errno(0x36)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -13401,8 +13395,7 @@ const (
 	WUNTRACED                        = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -13539,6 +13532,7 @@ const (
 	EXFULL          = Errno(0x36)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -14781,8 +14775,7 @@ const (
 	WUNTRACED                        = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -14920,6 +14913,7 @@ const (
 	EXFULL          = Errno(0x36)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -16384,8 +16378,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -16487,6 +16480,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -17939,8 +17933,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -18042,6 +18035,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -19480,8 +19474,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -19583,6 +19576,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -20927,8 +20921,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -21025,6 +21018,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -22368,8 +22362,7 @@ const (
 	WUNTRACED                         = 0x2
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -22466,6 +22459,7 @@ const (
 	EXDEV           = Errno(0x12)
 )
 
+// Signals
 const (
 	SIGABRT   = Signal(0x6)
 	SIGALRM   = Signal(0xe)
@@ -22502,6 +22496,7 @@ const (
 	SIGXFSZ   = Signal(0x19)
 )
 
+// Constants
 const (
 	// Invented values to support what package os expects.
 	O_CREAT    = 0x02000
@@ -22521,6 +22516,7 @@ const (
 	S_IFSOCK = 0xc000
 )
 
+// Constants
 const (
 	// Invented values to support what package os expects.
 	O_CREAT    = 0x02000
@@ -23605,8 +23601,7 @@ const (
 	WUNTRACED                     = 0x4
 )
 
-// Invented values to support what package os and others expects.
-
+// Errors
 const (
 	E2BIG           = Errno(0x7)
 	EACCES          = Errno(0xd)
@@ -23732,6 +23727,7 @@ const (
 	EXFULL          = Errno(0x34)
 )
 
+// Signals
 const (
 	SIGABRT    = Signal(0x6)
 	SIGALRM    = Signal(0xe)
@@ -28409,7 +28405,6 @@ const (
 )
 
 // TODO(aram): remove these before Go 1.3.
-
 const (
 	SYS_EXECVE = 59
 	SYS_FCNTL  = 62
@@ -28497,8 +28492,6 @@ const (
 	SizeofBpfHdr     = 0x14
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = 0xf000
 	S_IFIFO  = 0x1000
@@ -28556,8 +28549,6 @@ const (
 	SizeofBpfHdr     = 0x14
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = 0xf000
 	S_IFIFO  = 0x1000
@@ -28614,8 +28605,6 @@ const (
 	SizeofBpfInsn    = 0x8
 	SizeofBpfHdr     = 0x20
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = 0xf000
@@ -28678,8 +28667,6 @@ const (
 	SizeofBpfZbufHeader = 0x20
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = 0xf000
 	S_IFIFO  = 0x1000
@@ -28740,8 +28727,6 @@ const (
 	SizeofBpfHdr        = 0x20
 	SizeofBpfZbufHeader = 0x20
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = 0xf000
@@ -29587,8 +29572,6 @@ const (
 	SizeofBpfHdr     = 0x14
 )
 
-// Invented values to support what package os expects.
-
 const (
 	S_IFMT   = 0xf000
 	S_IFIFO  = 0x1000
@@ -29644,8 +29627,6 @@ const (
 	SizeofBpfInsn    = 0x8
 	SizeofBpfHdr     = 0x14
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = 0xf000
@@ -29703,6 +29684,7 @@ const (
 	SizeofBpfHdr     = 0x14
 )
 
+// Constants
 const (
 	O_RDONLY   = 0
 	O_WRONLY   = 0x1
@@ -29750,6 +29732,7 @@ const (
 	STATFIXLEN = 0x31
 )
 
+// Constants
 const (
 	O_RDONLY   = 0
 	O_WRONLY   = 0x1
@@ -29796,8 +29779,6 @@ const (
 	DMEXEC     = 0x1
 	STATFIXLEN = 0x31
 )
-
-// Invented values to support what package os expects.
 
 const (
 	S_IFMT   = 0xf000
@@ -30095,7 +30076,6 @@ const (
 )
 
 // ShowWindow constants
-
 const (
 	// winuser.h
 	SW_HIDE            = 0
@@ -30180,7 +30160,6 @@ const (
 )
 
 // Invented values to support what package os expects.
-
 const (
 	S_IFMT   = 0x1f000
 	S_IFIFO  = 0x1000
@@ -30391,7 +30370,6 @@ const (
 )
 
 // Windows reserves errors >= 1<<29 for application use.
-
 const APPLICATION_ERROR = 1 << 29
 
 const (
@@ -30408,6 +30386,9 @@ const ImplementsGetwd = false
 
 const ImplementsGetwd = true
 
+// The const provides a compile-time constant so clients can adjust to whether
+// there is a working Getwd and avoid even linking this function into the binary.
+// See ../os/getwd.go.
 const ImplementsGetwd = false
 
 const ImplementsGetwd = true
@@ -30479,7 +30460,6 @@ var (
 )
 
 // Errors
-
 var (
 	EINVAL       = NewError("bad arg in system call")
 	ENOTDIR      = NewError("not a directory")
@@ -30503,7 +30483,6 @@ var (
 )
 
 // Errors
-
 var (
 	EINVAL       = NewError("bad arg in system call")
 	ENOTDIR      = NewError("not a directory")
@@ -30540,24 +30519,18 @@ var ForkLock sync.RWMutex
 
 var ForkLock sync.RWMutex
 
-// For testing: clients can set this flag to force creation of IPv6 sockets to
-// return EAFNOSUPPORT.
-
 var SocketDisableIPv6 bool
 
 // For testing: clients can set this flag to force creation of IPv6 sockets to
 // return EAFNOSUPPORT.
-
 var SocketDisableIPv6 bool
 
 // For testing: clients can set this flag to force creation of IPv6 sockets to
 // return EAFNOSUPPORT.
-
 var SocketDisableIPv6 bool
 
 // For testing: clients can set this flag to force creation of IPv6 sockets to
 // return EAFNOSUPPORT.
-
 var SocketDisableIPv6 bool
 
 var WSAID_CONNECTEX = GUID{
@@ -30584,13 +30557,11 @@ func Adjtimex(buf *Timex) (state int, err error)
 func AttachLsf(fd int, i []SockFilter) error
 
 // sys await(s []byte) (n int, err error)
-
 func Await(w *Waitmsg) (err error)
 
 func Bind(name string, old string, flag int) (err error)
 
 // BindToDevice binds the socket associated with fd to device.
-
 func BindToDevice(fd int, device string) (err error)
 
 func BpfBuflen(fd int) (int, error)
@@ -30604,12 +30575,10 @@ func BpfInterface(fd int, name string) (string, error)
 // BytePtrFromString returns a pointer to a NUL-terminated array of bytes
 // containing the text of s. If s contains a NUL byte at any location, it returns
 // (nil, EINVAL).
-
 func BytePtrFromString(s string) (*byte, error)
 
 // ByteSliceFromString returns a NUL-terminated slice of bytes containing the text
 // of s. If s contains a NUL byte at any location, it returns (nil, EINVAL).
-
 func ByteSliceFromString(s string) ([]byte, error)
 
 func CancelIo(s Handle) (err error)
@@ -30652,12 +30621,10 @@ func Closesocket(s Handle) (err error)
 
 // CmsgLen returns the value to store in the Len field of the Cmsghdr structure,
 // taking into account any necessary alignment.
-
 func CmsgLen(datalen int) int
 
 // CmsgSpace returns the number of bytes an ancillary element with payload of the
 // passed data length occupies.
-
 func CmsgSpace(datalen int) int
 
 func CommandLineToArgv(cmd *uint16, argc *int32) (argv *[8192]*[8192]uint16, err error)
@@ -30735,13 +30702,11 @@ func EpollWait(epfd int, events []EpollEvent, msec int) (n int, err error)
 // with double quotes (arg -> "arg"),
 //
 //	but only if there is space or tab inside s.
-
 func EscapeArg(s string) string
 
 func Exchangedata(path1 string, path2 string, options int) (err error)
 
 // Ordinary exec.
-
 func Exec(argv0 string, argv []string, envv []string) (err error)
 
 func Exit(code int)
@@ -30753,7 +30718,6 @@ func Faccessat(dirfd int, path string, mode uint32, flags int) (err error)
 func Fallocate(fd int, mode uint32, off int64, len int64) (err error)
 
 // TODO(brainman): fix all needed for os
-
 func Fchdir(fd Handle) (err error)
 
 func Fchflags(fd int, flags int) (err error)
@@ -30768,11 +30732,9 @@ func Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
 
 // FcntlFlock performs a fcntl syscall for the F_GETLK, F_SETLK or F_SETLKW
 // command.
-
 func FcntlFlock(fd uintptr, cmd int, lk *Flock_t) error
 
 // sys fd2path(fd int, buf []byte) (err error)
-
 func Fd2path(fd int) (path string, err error)
 
 func Fdatasync(fd int) (err error)
@@ -30790,7 +30752,6 @@ func FlushFileBuffers(handle Handle) (err error)
 func FlushViewOfFile(addr uintptr, length uintptr) (err error)
 
 // Combination of fork and exec, careful to be thread safe.
-
 func ForkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error)
 
 func FormatMessage(flags uint32, msgsrc uint32, msgid uint32, langid uint32, buf []uint16, args *byte) (n uint32, err error)
@@ -30812,7 +30773,6 @@ func Fsync(fd int) (err error)
 func Ftruncate(fd int, length int64) (err error)
 
 // FullPath retrieves the full path of the specified file.
-
 func FullPath(name string) (path string, err error)
 
 func Futimes(fd int, tv []Timeval) (err error)
@@ -30888,7 +30848,6 @@ func Getcwd(buf []byte) (n int, err error)
 func Getdents(fd int, buf []byte, basep *uintptr) (n int, err error)
 
 // sys getdents(fd int, buf []byte) (n int, err error)
-
 func Getdirentries(fd int, buf []byte, basep *uintptr) (n int, err error)
 
 func Getdtablesize() (size int)
@@ -30936,7 +30895,6 @@ func GetsockoptInt(fd Handle, level, opt int) (int, error)
 func Gettid() (tid int)
 
 // sysnb gettimeofday(tp *Timeval) (sec int32, usec int32, err error)
-
 func Gettimeofday(tv *Timeval) (err error)
 
 func Getuid() (uid int)
@@ -31035,23 +30993,19 @@ func NetUserGetInfo(serverName *uint16, userName *uint16, level uint32, buf **by
 
 // NetlinkRIB returns routing information base, as known as RIB, which consists of
 // network facility information, states and parameters.
-
 func NetlinkRIB(proto, family int) ([]byte, error)
 
 // Converts a Go function to a function pointer conforming to the stdcall calling
 // convention. This is useful when interoperating with Windows code requiring
 // callbacks.
-
 func NewCallback(fn interface{}) uintptr
 
 // Converts a Go function to a function pointer conforming to the cdecl calling
 // convention. This is useful when interoperating with Windows code requiring
 // callbacks.
-
 func NewCallbackCDecl(fn interface{}) uintptr
 
 // NewError converts s to an ErrorString, which satisfies the Error interface.
-
 func NewError(s string) error
 
 func Ntohs(netshort uint16) (u uint16)
@@ -31065,36 +31019,29 @@ func Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
 // ParseDirent parses up to max directory entries in buf, appending the names to
 // names. It returns the number bytes consumed from buf, the number of entries
 // added to names, and the new names slice.
-
 func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, newnames []string)
 
 // ParseNetlinkMessage parses b as an array of netlink messages and returns the
 // slice containing the NetlinkMessage structures.
-
 func ParseNetlinkMessage(b []byte) ([]NetlinkMessage, error)
 
 // ParseNetlinkRouteAttr parses m's payload as an array of netlink route attributes
 // and returns the slice containing the NetlinkRouteAttr structures.
-
 func ParseNetlinkRouteAttr(m *NetlinkMessage) ([]NetlinkRouteAttr, error)
 
 // ParseRoutingMessage parses b as routing messages and returns the slice
 // containing the RoutingMessage interfaces.
-
 func ParseRoutingMessage(b []byte) (msgs []RoutingMessage, err error)
 
 // ParseRoutingMessage parses msg's payload as raw sockaddrs and returns the slice
 // containing the Sockaddr interfaces.
-
 func ParseRoutingSockaddr(msg RoutingMessage) (sas []Sockaddr, err error)
 
 // ParseSocketControlMessage parses b as an array of socket control messages.
-
 func ParseSocketControlMessage(b []byte) ([]SocketControlMessage, error)
 
 // ParseUnixRights decodes a socket control message that contains an integer array
 // of open file descriptors from another process.
-
 func ParseUnixRights(m *SocketControlMessage) ([]int, error)
 
 func Pathconf(path string, name int) (val int, err error)
@@ -31102,7 +31049,6 @@ func Pathconf(path string, name int) (val int, err error)
 func Pause() (err error)
 
 // sysnb pipe() (fd1 int, fd2 int, err error)
-
 func Pipe(p []int) (err error)
 
 func Pipe2(p []int, flags int) (err error)
@@ -31112,7 +31058,6 @@ func PivotRoot(newroot string, putold string) (err error)
 func PostQueuedCompletionStatus(cphandle Handle, qty uint32, key uint32, overlapped *Overlapped) (err error)
 
 // sys extpread(fd int, p []byte, flags int, offset int64) (n int, err error)
-
 func Pread(fd int, p []byte, offset int64) (n int, err error)
 
 func Process32First(snapshot Handle, procEntry *ProcessEntry32) (err error)
@@ -31120,7 +31065,6 @@ func Process32First(snapshot Handle, procEntry *ProcessEntry32) (err error)
 func Process32Next(snapshot Handle, procEntry *ProcessEntry32) (err error)
 
 // sys ptrace(request int, pid int, addr uintptr, data uintptr) (err error)
-
 func PtraceAttach(pid int) (err error)
 
 func PtraceCont(pid int, signal int) (err error)
@@ -31148,7 +31092,6 @@ func PtraceSingleStep(pid int) (err error)
 func PtraceSyscall(pid int, signal int) (err error)
 
 // sys extpwrite(fd int, p []byte, flags int, offset int64) (n int, err error)
-
 func Pwrite(fd int, p []byte, offset int64) (n int, err error)
 
 func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
@@ -31166,7 +31109,6 @@ func ReadDirent(fd int, buf []byte) (n int, err error)
 func ReadFile(handle Handle, buf []byte, done *uint32, overlapped *Overlapped) (err error)
 
 // Readlink returns the destination of the named symbolic link.
-
 func Readlink(path string, buf []byte) (n int, err error)
 
 func Reboot(cmd int) (err error)
@@ -31201,7 +31143,6 @@ func Rmdir(path string) (err error)
 
 // RouteRIB returns routing information base, as known as RIB, which consists of
 // network facility information, states and parameters.
-
 func RouteRIB(facility, param int) ([]byte, error)
 
 func Seek(fd int, offset int64, whence int) (newoffset int64, err error)
@@ -31329,7 +31270,6 @@ func Shutdown(s int, how int) (err error)
 // SlicePtrFromStrings converts a slice of strings to a slice of pointers to
 // NUL-terminated byte slices. If any string contains a NUL byte, it returns (nil,
 // EINVAL).
-
 func SlicePtrFromStrings(ss []string) ([]*byte, error)
 
 func Socket(domain, typ, proto int) (fd int, err error)
@@ -31339,7 +31279,6 @@ func Socketpair(domain, typ, proto int) (fd [2]int, err error)
 func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int, err error)
 
 // StartProcess wraps ForkExec for package os.
-
 func StartProcess(argv0 string, argv []string, attr *ProcAttr) (pid int, handle uintptr, err error)
 
 func Stat(path string, stat *Stat_t) (err error)
@@ -31350,27 +31289,22 @@ func StopIO(fd int) error
 
 // StringBytePtr is deprecated. Use BytePtrFromString instead. If s contains a NUL
 // byte this function panics instead of returning an error.
-
 func StringBytePtr(s string) *byte
 
 // StringByteSlice is deprecated. Use ByteSliceFromString instead. If s contains a
 // NUL byte this function panics instead of returning an error.
-
 func StringByteSlice(s string) []byte
 
 // StringSlicePtr is deprecated. Use SlicePtrFromStrings instead. If any string
 // contains a NUL byte this function panics instead of returning an error.
-
 func StringSlicePtr(ss []string) []*byte
 
 // StringToUTF16 is deprecated. Use UTF16FromString instead. If s contains a NUL
 // byte this function panics instead of returning an error.
-
 func StringToUTF16(s string) []uint16
 
 // StringToUTF16Ptr is deprecated. Use UTF16PtrFromString instead. If s contains a
 // NUL byte this function panics instead of returning an error.
-
 func StringToUTF16Ptr(s string) *uint16
 
 func Symlink(path string, link string) (err error)
@@ -31380,7 +31314,6 @@ func Sync() (err error)
 func SyncFileRange(fd int, off int64, n int64, flags int) (err error)
 
 // Implemented in ../runtime/syscall_windows.go.
-
 func Syscall(trap, nargs, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
 
 func Syscall12(trap, nargs, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12 uintptr) (r1, r2 uintptr, err Errno)
@@ -31411,7 +31344,6 @@ func TimevalToNsec(tv Timeval) int64
 
 // TranslateAccountName converts a directory service object name from one format to
 // another.
-
 func TranslateAccountName(username string, from, to uint32, initSize int) (string, error)
 
 func TranslateName(accName *uint16, accNameFormat uint32, desiredNameFormat uint32, translatedName *uint16, nSize *uint32) (err error)
@@ -31423,18 +31355,15 @@ func Truncate(path string, length int64) (err error)
 // UTF16FromString returns the UTF-16 encoding of the UTF-8 string s, with a
 // terminating NUL added. If s contains a NUL byte at any location, it returns
 // (nil, EINVAL).
-
 func UTF16FromString(s string) ([]uint16, error)
 
 // UTF16PtrFromString returns pointer to the UTF-16 encoding of the UTF-8 string s,
 // with a terminating NUL added. If s contains a NUL byte at any location, it
 // returns (nil, EINVAL).
-
 func UTF16PtrFromString(s string) (*uint16, error)
 
 // UTF16ToString returns the UTF-8 encoding of the UTF-16 sequence s, with a
 // terminating NUL removed.
-
 func UTF16ToString(s []uint16) string
 
 func Umask(newmask int) (oldmask int)
@@ -31445,12 +31374,10 @@ func Undelete(path string) (err error)
 
 // UnixCredentials encodes credentials into a socket control message for sending to
 // another process. This can be used for authentication.
-
 func UnixCredentials(ucred *Ucred) []byte
 
 // UnixRights encodes a set of open file descriptors into a socket control message
 // for sending to another process.
-
 func UnixRights(fds ...int) []byte
 
 func Unlink(path string) (err error)
@@ -31502,7 +31429,6 @@ func WaitForSingleObject(handle Handle, waitMilliseconds uint32) (event uint32, 
 // WaitProcess waits until the pid of a running process is found in the queue of
 // wait messages. It is used in conjunction with ForkExec/StartProcess to wait for
 // a running process to exit.
-
 func WaitProcess(pid int, w *Waitmsg) (err error)
 
 func Write(fd Handle, p []byte) (n int, err error)
@@ -31696,7 +31622,6 @@ func (cmsg *Cmsghdr) SetLen(length int)
 
 // Credential holds user and group identities to be assumed by a child process
 // started by StartProcess.
-
 type Credential struct {
 	Uid    uint32   // User ID.
 	Gid    uint32   // Group ID.
@@ -31704,35 +31629,28 @@ type Credential struct {
 }
 
 // A DLL implements access to a single DLL.
-
 type DLL struct {
 	Name   string
 	Handle Handle
 }
 
 // LoadDLL loads DLL file into memory.
-
 func LoadDLL(name string) (dll *DLL, err error)
 
 // MustLoadDLL is like LoadDLL but panics if load operation failes.
-
 func MustLoadDLL(name string) *DLL
 
 // FindProc searches DLL d for procedure named name and returns *Proc if found. It
 // returns an error if search fails.
-
 func (d *DLL) FindProc(name string) (proc *Proc, err error)
 
 // MustFindProc is like FindProc but panics if search fails.
-
 func (d *DLL) MustFindProc(name string) *Proc
 
 // Release unloads DLL d from memory.
-
 func (d *DLL) Release() (err error)
 
 // DLLError describes reasons for DLL load failures.
-
 type DLLError struct {
 	Err     error
 	ObjName string
@@ -31776,7 +31694,6 @@ type DNSTXTData struct {
 }
 
 // A Dir contains the metadata for a file.
-
 type Dir struct {
 	// system-modified data
 	Type uint16 // server type
@@ -31800,18 +31717,15 @@ type Dir struct {
 // If b is too small to hold a valid stat message, ErrShortStat is returned.
 //
 // If the stat message itself is invalid, ErrBadStat is returned.
-
 func UnmarshalDir(b []byte) (*Dir, error)
 
 // Marshal encodes a 9P stat message corresponding to d into b
 //
 // If there isn't enough space in b for a stat message, ErrShortStat is returned.
-
 func (d *Dir) Marshal(b []byte) (n int, err error)
 
 // Null assigns special "don't touch" values to members of d to avoid modifying
 // them during syscall.Wstat.
-
 func (d *Dir) Null()
 
 type Dirent struct {
@@ -31830,11 +31744,9 @@ type EpollEvent struct {
 }
 
 // Errno is the Windows error number.
-
 type Errno uintptr
 
-// Errors
-
+// TODO: Auto-generate some day. (Hard-coded in binaries so not likely to change.)
 const (
 	// native_client/src/trusted/service_runtime/include/sys/errno.h
 	// The errors are mainly copied from Linux.
@@ -31962,15 +31874,13 @@ const (
 	EWOULDBLOCK     Errno = EAGAIN /* Operation would block */
 )
 
-// Errors
-
+// Go names for Windows errors.
 const (
 	ENOENT  Errno = ERROR_FILE_NOT_FOUND
 	ENOTDIR Errno = ERROR_PATH_NOT_FOUND
 )
 
 // Invented values to support what package os and others expects.
-
 const (
 	E2BIG Errno = APPLICATION_ERROR + iota
 	EACCES
@@ -32137,7 +32047,6 @@ func (e Errno) Temporary() bool
 func (e Errno) Timeout() bool
 
 // ErrorString implements Error's String method by returning itself.
-
 type ErrorString string
 
 func (e ErrorString) Error() string
@@ -32172,7 +32081,6 @@ func NsecToFiletime(nsec int64) (ft Filetime)
 
 // Nanoseconds returns Filetime ft in nanoseconds since Epoch (00:00:00 UTC,
 // January 1, 1970).
-
 func (ft *Filetime) Nanoseconds() int64
 
 type Flock_t struct {
@@ -32395,7 +32303,6 @@ type InotifyEvent struct {
 
 // InterfaceAddrMessage represents a routing message containing network interface
 // address entries.
-
 type InterfaceAddrMessage struct {
 	Header IfaMsghdr
 	Data   []byte
@@ -32403,7 +32310,6 @@ type InterfaceAddrMessage struct {
 
 // InterfaceAnnounceMessage represents a routing message containing network
 // interface arrival and departure information.
-
 type InterfaceAnnounceMessage struct {
 	Header IfAnnounceMsghdr
 }
@@ -32417,7 +32323,6 @@ type InterfaceInfo struct {
 
 // InterfaceMessage represents a routing message containing network interface
 // entries.
-
 type InterfaceMessage struct {
 	Header IfMsghdr
 	Data   []byte
@@ -32425,7 +32330,6 @@ type InterfaceMessage struct {
 
 // InterfaceMulticastAddrMessage represents a routing message containing network
 // interface address entries.
-
 type InterfaceMulticastAddrMessage struct {
 	Header IfmaMsghdr
 	Data   []byte
@@ -32484,32 +32388,26 @@ type Kevent_t struct {
 // A LazyDLL implements access to a single DLL. It will delay the load of the DLL
 // until the first call to its Handle method or to one of its LazyProc's Addr
 // method.
-
 type LazyDLL struct {
 	Name string
 	// contains filtered or unexported fields
 }
 
 // NewLazyDLL creates new LazyDLL associated with DLL file.
-
 func NewLazyDLL(name string) *LazyDLL
 
 // Handle returns d's module handle.
-
 func (d *LazyDLL) Handle() uintptr
 
 // Load loads DLL file d.Name into memory. It returns an error if fails. Load will
 // not try to load DLL, if it is already loaded into memory.
-
 func (d *LazyDLL) Load() error
 
 // NewProc returns a LazyProc for accessing the named procedure in the DLL d.
-
 func (d *LazyDLL) NewProc(name string) *LazyProc
 
 // A LazyProc implements access to a procedure inside a LazyDLL. It delays the
 // lookup until the Addr method is called.
-
 type LazyProc struct {
 	Name string
 	// contains filtered or unexported fields
@@ -32517,7 +32415,6 @@ type LazyProc struct {
 
 // Addr returns the address of the procedure represented by p. The return value can
 // be passed to Syscall to run the procedure.
-
 func (p *LazyProc) Addr() uintptr
 
 // Call executes procedure p with arguments a. It will panic, if more then 15
@@ -32528,13 +32425,11 @@ func (p *LazyProc) Addr() uintptr
 // error occurred (according to the semantics of the specific function being
 // called) before consulting the error. The error will be guaranteed to contain
 // syscall.Errno.
-
 func (p *LazyProc) Call(a ...uintptr) (r1, r2 uintptr, lastErr error)
 
 // Find searches DLL for procedure named p.Name. It returns an error if search
 // fails. Find will not search procedure, if it is already found and loaded into
 // memory.
-
 func (p *LazyProc) Find() error
 
 type Linger struct {
@@ -32598,14 +32493,12 @@ type Msghdr struct {
 func (msghdr *Msghdr) SetControllen(length int)
 
 // NetlinkMessage represents a netlink message.
-
 type NetlinkMessage struct {
 	Header NlMsghdr
 	Data   []byte
 }
 
 // NetlinkRouteAttr represents a netlink route attribute.
-
 type NetlinkRouteAttr struct {
 	Attr  RtAttr
 	Value []byte
@@ -32613,7 +32506,6 @@ type NetlinkRouteAttr struct {
 
 // NetlinkRouteRequest represents a request message to receive routing and link
 // states from the kernel.
-
 type NetlinkRouteRequest struct {
 	Header NlMsghdr
 	Data   RtGenmsg
@@ -32639,7 +32531,6 @@ type NlMsghdr struct {
 
 // A Note is a string describing a process note. It implements the os.Signal
 // interface.
-
 type Note string
 
 func (n Note) Signal()
@@ -32655,7 +32546,6 @@ type Overlapped struct {
 }
 
 // A Proc implements access to a procedure inside a DLL.
-
 type Proc struct {
 	Dll  *DLL
 	Name string
@@ -32664,7 +32554,6 @@ type Proc struct {
 
 // Addr returns the address of the procedure represented by p. The return value can
 // be passed to Syscall to run the procedure.
-
 func (p *Proc) Addr() uintptr
 
 // Call executes procedure p with arguments a. It will panic, if more then 15
@@ -32675,11 +32564,9 @@ func (p *Proc) Addr() uintptr
 // error occurred (according to the semantics of the specific function being
 // called) before consulting the error. The error will be guaranteed to contain
 // syscall.Errno.
-
 func (p *Proc) Call(a ...uintptr) (r1, r2 uintptr, lastErr error)
 
 // XXX made up
-
 type ProcAttr struct {
 	Dir   string
 	Env   []string
@@ -32733,7 +32620,6 @@ func (r *PtraceRegs) PC() uint64
 func (r *PtraceRegs) SetPC(pc uint64)
 
 // A Qid represents a 9P server's unique identification for a file.
-
 type Qid struct {
 	Path uint64 // the file server's unique identification for the file
 	Vers uint32 // version number for given Path
@@ -32812,14 +32698,12 @@ type Rlimit struct {
 }
 
 // RouteMessage represents a routing message containing routing entries.
-
 type RouteMessage struct {
 	Header RtMsghdr
 	Data   []byte
 }
 
 // RoutingMessage represents a routing message.
-
 type RoutingMessage interface {
 	// contains filtered or unexported methods
 }
@@ -32902,37 +32786,30 @@ type Rusage struct {
 
 // The security identifier (SID) structure is a variable-length structure used to
 // uniquely identify users or groups.
-
 type SID struct{}
 
 // LookupSID retrieves a security identifier sid for the account and the name of
 // the domain on which the account was found. System specify target computer to
 // search.
-
 func LookupSID(system, account string) (sid *SID, domain string, accType uint32, err error)
 
 // StringToSid converts a string-format security identifier sid into a valid,
 // functional sid.
-
 func StringToSid(s string) (*SID, error)
 
 // Copy creates a duplicate of security identifier sid.
-
 func (sid *SID) Copy() (*SID, error)
 
 // Len returns the length, in bytes, of a valid security identifier sid.
-
 func (sid *SID) Len() int
 
 // LookupAccount retrieves the name of the account for this sid and the name of the
 // first domain on which this sid is found. System specify target computer to
 // search for.
-
 func (sid *SID) LookupAccount(system string) (account, domain string, accType uint32, err error)
 
 // String converts sid to a string format suitable for display, storage, or
 // transmission.
-
 func (sid *SID) String() (string, error)
 
 type SIDAndAttributes struct {
@@ -33051,7 +32928,6 @@ type SockaddrUnix struct {
 }
 
 // SocketControlMessage represents a socket control message.
-
 type SocketControlMessage struct {
 	Header Cmsghdr
 	Data   []byte
@@ -33128,7 +33004,6 @@ type SysProcAttr struct {
 
 // SysProcIDMap holds Container ID to Host ID mappings used for User Namespaces in
 // Linux. See user_namespaces(7).
-
 type SysProcIDMap struct {
 	ContainerID int // Container ID.
 	HostID      int // Host ID.
@@ -33241,7 +33116,6 @@ func (ts *Timespec) Nano() int64
 func (ts *Timespec) Unix() (sec int64, nsec int64)
 
 // Invented values to support what package os expects.
-
 type Timeval struct {
 	Sec  int32
 	Usec int32
@@ -33309,30 +33183,24 @@ type Tms struct {
 // the user's groups, and the user's privileges. The system uses the token to
 // control access to securable objects and to control the ability of the user to
 // perform various system-related operations on the local computer.
-
 type Token Handle
 
 // OpenCurrentProcessToken opens the access token associated with current process.
-
 func OpenCurrentProcessToken() (Token, error)
 
 // Close releases access to access token.
-
 func (t Token) Close() error
 
 // GetTokenPrimaryGroup retrieves access token t primary group information. A
 // pointer to a SID structure representing a group that will become the primary
 // group of any objects created by a process using this access token.
-
 func (t Token) GetTokenPrimaryGroup() (*Tokenprimarygroup, error)
 
 // GetTokenUser retrieves access token t user account information.
-
 func (t Token) GetTokenUser() (*Tokenuser, error)
 
 // GetUserProfileDirectory retrieves path to the root directory of the access token
 // t user's profile.
-
 func (t Token) GetUserProfileDirectory() (string, error)
 
 type Tokenprimarygroup struct {
@@ -33370,7 +33238,6 @@ func GetsockoptUcred(fd, level, opt int) (*Ucred, error)
 // ParseUnixCredentials decodes a socket control message that contains credentials
 // in a Ucred structure. To receive such a message, the SO_PASSCRED option must be
 // enabled on the socket.
-
 func ParseUnixCredentials(m *SocketControlMessage) (*Ucred, error)
 
 type UserInfo10 struct {

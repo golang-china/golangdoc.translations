@@ -6,20 +6,9 @@
 
 // Package driver implements the core pprof functionality. It can be parameterized
 // with a flag implementation, fetch and symbolize mechanisms.
-
-// Package driver implements the core pprof
-// functionality. It can be parameterized
-// with a flag implementation, fetch and
-// symbolize mechanisms.
 package driver
 
 // PProf acquires a profile, and symbolizes it using a profile manager. Then it
 // generates a report formatted according to the options selected through the flags
 // package.
-
-// PProf acquires a profile, and symbolizes
-// it using a profile manager. Then it
-// generates a report formatted according
-// to the options selected through the
-// flags package.
 func PProf(flagset plugin.FlagSet, fetch plugin.Fetcher, sym plugin.Symbolizer, obj plugin.ObjTool, ui plugin.UI, overrides commands.Commands) error

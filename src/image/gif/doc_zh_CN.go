@@ -10,8 +10,7 @@
 
 // gif 包实现了GIF图片的解码.
 //
-// GIF的说明文档在
-// http://www.w3.org/Graphics/GIF/spec-gif89a.txt。
+// GIF的说明文档在 http://www.w3.org/Graphics/GIF/spec-gif89a.txt。
 package gif
 
 // Decode reads a GIF image from r and returns the first embedded image as an
@@ -27,17 +26,10 @@ func Decode(r io.Reader) (image.Image, error)
 func DecodeConfig(r io.Reader) (image.Config, error)
 
 // Encode writes the Image m to w in GIF format.
-
-// Encode writes the Image m to w in GIF
-// format.
 func Encode(w io.Writer, m image.Image, o *Options) error
 
 // EncodeAll writes the images in g to w in GIF format with the given loop count
 // and delay between frames.
-
-// EncodeAll writes the images in g to w in
-// GIF format with the given loop count and
-// delay between frames.
 func EncodeAll(w io.Writer, g *GIF) error
 
 // GIF represents the possibly multiple images stored in a GIF file.
@@ -52,10 +44,9 @@ type GIF struct {
 // DecodeAll reads a GIF image from r and returns the sequential frames and timing
 // information.
 
-// DecodeAll 从r上读取一个GIF图片，并且返回顺序的帧和时间信息。
+// DecodeAll
+// 从r上读取一个GIF图片，并且返回顺序的帧和时间信息。
 func DecodeAll(r io.Reader) (*GIF, error)
-
-// Options are the encoding parameters.
 
 // Options are the encoding parameters.
 type Options struct {

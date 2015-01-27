@@ -7,8 +7,7 @@
 // Package ascii85 implements the ascii85 data encoding as used in the btoa tool
 // and Adobe's PostScript and PDF document formats.
 
-// ascii85 包是对 ascii85 的数据编码的实现. 被用于 btoa (
-// binary to ascii )工具， Adobe 的 PostScript
+// ascii85 包是对 ascii85 的数据编码的实现. 被用于 btoa ( binary to ascii )工具， Adobe 的 PostScript
 // 和PDF文档格式。
 package ascii85
 
@@ -25,17 +24,16 @@ package ascii85
 //
 // NewDecoder wraps an io.Reader interface around Decode.
 
-// Decode 从源解码到目标，返回写入目标和源消耗的字节数. 若源包含无效
-// ascii85 数据， Decode 将返回成功写入的字节数和
-// CorruptInputError 函数。 Decode
-// 忽略源中的空格和控制字符。 通常，ascii85 编码数据用 <~ 和 ~>
-// 符号括起来。 Decode 期望这些被调用器去除。
+// Decode
+// 从源解码到目标，返回写入目标和源消耗的字节数. 若源包含无效 ascii85 数据， Decode
+// 将返回成功写入的字节数和 CorruptInputError 函数。 Decode
+// 忽略源中的空格和控制字符。 通常，ascii85 编码数据用 <~ 和 ~> 符号括起来。 Decode
+// 期望这些被调用器去除。
 //
 // 若 flush 为真， Decode
 // 会假定源表现为输入流结束并立即处理，而不是等待另一个32位块的结束。
 //
-// NewDecoder 包含一个 io.Reader 接口，区别于 Decode
-// 。
+// NewDecoder 包含一个 io.Reader 接口，区别于 Decode 。
 func Decode(dst, src []byte, flush bool) (ndst, nsrc int, err error)
 
 // Encode encodes src into at most MaxEncodedLen(len(src)) bytes of dst, returning
@@ -48,14 +46,13 @@ func Decode(dst, src []byte, flush bool) (ndst, nsrc int, err error)
 // Often, ascii85-encoded data is wrapped in <~ and ~> symbols. Encode does not add
 // these.
 
-// Encode 编码源的最多 MaxEncodedLen(len(src))
-// 字节的到目标， 返回实际的写入字节数。
+// Encode 编码源的最多 MaxEncodedLen(len(src)) 字节的到目标，
+// 返回实际的写入字节数。
 //
 // 通过对最后分段使用特殊的编码来操作4字节的数据块，所以 Encode
 // 用在大型数据流的私有块上是不合适的。用 NewEncoder() 替代。
 //
-// 通常， ascii85 编码的数据用符号 <~ 和 ~> 括起来。 Encode
-// 不加这些。
+// 通常， ascii85 编码的数据用符号 <~ 和 ~> 括起来。 Encode 不加这些。
 func Encode(dst, src []byte) int
 
 // MaxEncodedLen returns the maximum length of an encoding of n source bytes.

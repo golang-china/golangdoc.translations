@@ -120,8 +120,8 @@
 // A server implementation will often provide a simple, type-safe wrapper for the
 // client.
 
-// rpc 包提供了一个方法来通过网络或者其他的I/O连接进入对象的外部方法.
-// 一个server注册一个对象，
+// rpc
+// 包提供了一个方法来通过网络或者其他的I/O连接进入对象的外部方法. 一个server注册一个对象，
 // 标记它成为可见对象类型名字的服务。注册后，对象的外部方法就可以远程调用了。一个server可以注册多个
 // 不同类型的对象，但是却不可以注册多个相同类型的对象。
 //
@@ -318,8 +318,7 @@ func Dial(network, address string) (*Client, error)
 // DialHTTP connects to an HTTP RPC server at the specified network address
 // listening on the default HTTP RPC path.
 
-// DialHttp根据制定的网络地址，连接到一个HTTP
-// RPC服务。并且在默认的HTTP RPC路径进行监听。
+// DialHttp根据制定的网络地址，连接到一个HTTP RPC服务。并且在默认的HTTP RPC路径进行监听。
 func DialHTTP(network, address string) (*Client, error)
 
 // DialHTTPPath connects to an HTTP RPC server at the specified network address and
@@ -331,20 +330,9 @@ func DialHTTPPath(network, address, path string) (*Client, error)
 // NewClient returns a new Client to handle requests to the set of services at the
 // other end of the connection. It adds a buffer to the write side of the
 // connection so the header and payload are sent as a unit.
-
-// NewClient returns a new Client to handle
-// requests to the set of services at the
-// other end of the connection. It adds a
-// buffer to the write side of the
-// connection so the header and payload are
-// sent as a unit.
 func NewClient(conn io.ReadWriteCloser) *Client
 
 // NewClientWithCodec is like NewClient but uses the specified codec to encode
-// requests and decode responses.
-
-// NewClientWithCodec is like NewClient but
-// uses the specified codec to encode
 // requests and decode responses.
 func NewClientWithCodec(codec ClientCodec) *Client
 
@@ -361,8 +349,7 @@ func (client *Client) Close() error
 // complete by returning the same Call object. If done is nil, Go will allocate a
 // new channel. If non-nil, done must be buffered or Go will deliberately crash.
 
-// Go能异步调用功能。它返回Call结构来代表回调。当调用完成，返回相同的Call对象，done
-// channel就会获取到
+// Go能异步调用功能。它返回Call结构来代表回调。当调用完成，返回相同的Call对象，done channel就会获取到
 // 信息。如果done是空的话，Go就会分配一个新的channel。如果非空的话，done必须缓冲起来，或者Go会立即崩溃。
 func (client *Client) Go(serviceMethod string, args interface{}, reply interface{}, done chan *Call) *Call
 

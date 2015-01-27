@@ -15,11 +15,6 @@ package png
 
 // Decode reads a PNG image from r and returns it as an image.Image. The type of
 // Image returned depends on the PNG contents.
-
-// Decode reads a PNG image from r and
-// returns it as an image.Image. The type
-// of Image returned depends on the PNG
-// contents.
 func Decode(r io.Reader) (image.Image, error)
 
 // DecodeConfig returns the color model and dimensions of a PNG image without
@@ -31,8 +26,8 @@ func DecodeConfig(r io.Reader) (image.Config, error)
 // Encode writes the Image m to w in PNG format. Any Image may be encoded, but
 // images that are not image.NRGBA might be encoded lossily.
 
-// Encode将图片m以PNG的格式写到w中。任何图片都可以被编码，但是哪些不是
-// image.NRGBA 的图片编码可能是有损的。
+// Encode将图片m以PNG的格式写到w中。任何图片都可以被编码，但是哪些不是 image.NRGBA
+// 的图片编码可能是有损的。
 func Encode(w io.Writer, m image.Image) error
 
 type CompressionLevel int
@@ -43,8 +38,6 @@ const (
 	BestSpeed          CompressionLevel = -2
 	BestCompression    CompressionLevel = -3
 )
-
-// Encoder configures encoding PNG images.
 
 // Encoder configures encoding PNG images.
 type Encoder struct {

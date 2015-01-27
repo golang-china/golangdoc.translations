@@ -5,27 +5,14 @@
 // +build ingore
 
 // Package crypto collects common cryptographic constants.
-
-// Package crypto collects common
-// cryptographic constants.
 package crypto
 
 // RegisterHash registers a function that returns a new instance of the given hash
 // function. This is intended to be called from the init function in packages that
 // implement hash functions.
-
-// RegisterHash registers a function that
-// returns a new instance of the given hash
-// function. This is intended to be called
-// from the init function in packages that
-// implement hash functions.
 func RegisterHash(h Hash, f func() hash.Hash)
 
 // Hash identifies a cryptographic hash function that is implemented in another
-// package.
-
-// Hash identifies a cryptographic hash
-// function that is implemented in another
 // package.
 type Hash uint
 
@@ -47,56 +34,28 @@ const (
 )
 
 // Available reports whether the given hash function is linked into the binary.
-
-// Available reports whether the given hash
-// function is linked into the binary.
 func (h Hash) Available() bool
 
 // HashFunc simply returns the value of h so that Hash implements SignerOpts.
-
-// HashFunc simply returns the value of h
-// so that Hash implements SignerOpts.
 func (h Hash) HashFunc() Hash
 
 // New returns a new hash.Hash calculating the given hash function. New panics if
 // the hash function is not linked into the binary.
-
-// New returns a new hash.Hash calculating
-// the given hash function. New panics if
-// the hash function is not linked into the
-// binary.
 func (h Hash) New() hash.Hash
 
 // Size returns the length, in bytes, of a digest resulting from the given hash
 // function. It doesn't require that the hash function in question be linked into
 // the program.
-
-// Size returns the length, in bytes, of a
-// digest resulting from the given hash
-// function. It doesn't require that the
-// hash function in question be linked into
-// the program.
 func (h Hash) Size() int
 
 // PrivateKey represents a private key using an unspecified algorithm.
-
-// PrivateKey represents a private key
-// using an unspecified algorithm.
 type PrivateKey interface{}
 
 // PublicKey represents a public key using an unspecified algorithm.
-
-// PublicKey represents a public key using
-// an unspecified algorithm.
 type PublicKey interface{}
 
 // Signer is an interface for an opaque private key that can be used for signing
 // operations. For example, an RSA key kept in a hardware module.
-
-// Signer is an interface for an opaque
-// private key that can be used for signing
-// operations. For example, an RSA key kept
-// in a hardware module.
 type Signer interface {
 	// Public returns the public key corresponding to the opaque,
 	// private key.
@@ -115,9 +74,6 @@ type Signer interface {
 }
 
 // SignerOpts contains options for signing with a Signer.
-
-// SignerOpts contains options for signing
-// with a Signer.
 type SignerOpts interface {
 	// HashFunc returns an identifier for the hash function used to produce
 	// the message passed to Signer.Sign, or else zero to indicate that no

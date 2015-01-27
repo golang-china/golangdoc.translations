@@ -5,9 +5,6 @@
 // +build ingore
 
 // Package palette provides standard color palettes.
-
-// Package palette provides standard color
-// palettes.
 package palette
 
 // Plan9 is a 256-color palette that partitions the 24-bit RGB space into 4×4×4
@@ -20,27 +17,6 @@ package palette
 // representation of continuous tones.
 //
 // This palette was used in the Plan 9 Operating System, described at
-// http://plan9.bell-labs.com/magic/man2html/6/color
-
-// Plan9 is a 256-color palette that
-// partitions the 24-bit RGB space into
-// 4×4×4 subdivision, with 4 shades in each
-// subcube. Compared to the WebSafe, the
-// idea is to reduce the color resolution
-// by dicing the color cube into fewer
-// cells, and to use the extra space to
-// increase the intensity resolution. This
-// results in 16 gray shades (4 gray
-// subcubes with 4 samples in each), 13
-// shades of each primary and secondary
-// color (3 subcubes with 4 samples plus
-// black) and a reasonable selection of
-// colors covering the rest of the color
-// cube. The advantage is better
-// representation of continuous tones.
-//
-// This palette was used in the Plan 9
-// Operating System, described at
 // http://plan9.bell-labs.com/magic/man2html/6/color
 var Plan9 = []color.Color{
 	color.RGBA{0x00, 0x00, 0x00, 0xff},
@@ -305,15 +281,6 @@ var Plan9 = []color.Color{
 // Netscape Navigator. It is also known as the Netscape Color Cube.
 //
 // See http://en.wikipedia.org/wiki/Web_colors#Web-safe_colors for details.
-
-// WebSafe is a 216-color palette that was
-// popularized by early versions of
-// Netscape Navigator. It is also known as
-// the Netscape Color Cube.
-//
-// See
-// http://en.wikipedia.org/wiki/Web_colors#Web-safe_colors
-// for details.
 var WebSafe = []color.Color{
 	color.RGBA{0x00, 0x00, 0x00, 0xff},
 	color.RGBA{0x00, 0x00, 0x33, 0xff},

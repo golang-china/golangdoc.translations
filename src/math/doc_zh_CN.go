@@ -32,8 +32,8 @@ const (
 // the type. SmallestNonzero is the smallest positive, non-zero value representable
 // by the type.
 
-// 浮点数极限值。 Max 为该类型可表示的最大有限值。
-// SmallestNonzero 为该类型可表示的最小（非零）正值。
+// 浮点数极限值。 Max 为该类型可表示的最大有限值。 SmallestNonzero
+// 为该类型可表示的最小（非零）正值。
 const (
 	MaxFloat32             = 3.40282346638528859811704183484516925440e+38  // 2**127 * (2**24 - 1) / 2**23
 	SmallestNonzeroFloat32 = 1.401298464324817070923729583289916131280e-45 // 1 / 2**(127 - 1 + 23)
@@ -173,7 +173,8 @@ func Atan(x float64) float64
 //	Atan2(+Inf, x) = +Pi/2
 //	Atan2(-Inf, x) = -Pi/2
 
-// Atan2 返回 y/x 的反正切值，通过二者的符号决定其返回值的象限。
+// Atan2 返回 y/x
+// 的反正切值，通过二者的符号决定其返回值的象限。
 //
 // 特殊情况为（按顺序）：
 //
@@ -378,8 +379,7 @@ func Exp2(x float64) float64
 //
 // Very large values overflow to -1 or +Inf.
 
-// Expm1 返回 e**x - 1，即以 e 为底的 x 次幂减一。 当 x
-// 接近 0 时，该函数比 Exp(x) - 1 更精确。
+// Expm1 返回 e**x - 1，即以 e 为底的 x 次幂减一。 当 x 接近 0 时，该函数比 Exp(x) - 1 更精确。
 //
 // 特殊情况为：
 //
@@ -398,8 +398,7 @@ func Float32bits(f float32) uint32
 // Float32frombits returns the floating point number corresponding to the IEEE 754
 // binary representation b.
 
-// Float32frombits 返回与IEEE 754二进制表示 b
-// 相应的浮点数。
+// Float32frombits 返回与IEEE 754二进制表示 b 相应的浮点数。
 func Float32frombits(b uint32) float32
 
 // Float64bits returns the IEEE 754 binary representation of f.
@@ -410,8 +409,7 @@ func Float64bits(f float64) uint64
 // Float64frombits returns the floating point number corresponding the IEEE 754
 // binary representation b.
 
-// Float64frombits 返回与IEEE 754二进制表示 b
-// 相应的浮点数。
+// Float64frombits 返回与IEEE 754二进制表示 b 相应的浮点数。
 func Float64frombits(b uint64) float64
 
 // Floor returns the greatest integer value less than or equal to x.
@@ -441,8 +439,7 @@ func Floor(x float64) float64
 //	Frexp(±Inf) = ±Inf, 0
 //	Frexp(NaN) = NaN, 0
 
-// Frexp 将 f 分解为一个规范化的小数和一个 2 的整数次幂。 它返回的
-// frac 和 exp 满足 f == frac × 2**exp，且 frac
+// Frexp 将 f 分解为一个规范化的小数和一个 2 的整数次幂。 它返回的 frac 和 exp 满足 f == frac × 2**exp，且 frac
 // 的绝对值在区间 [½, 1) 内。
 //
 // 特殊情况为：
@@ -515,8 +512,7 @@ func Ilogb(x float64) int
 
 // Inf returns positive infinity if sign >= 0, negative infinity if sign < 0.
 
-// Inf 返回无穷大值（infinity）。若 sign >=
-// 0，则返回正无穷大（positive infinity）； 若 sign <
+// Inf 返回无穷大值（infinity）。若 sign >= 0，则返回正无穷大（positive infinity）； 若 sign <
 // 0，则返回负无穷大（negative infinity）。
 func Inf(sign int) float64
 
@@ -524,16 +520,14 @@ func Inf(sign int) float64
 // reports whether f is positive infinity. If sign < 0, IsInf reports whether f is
 // negative infinity. If sign == 0, IsInf reports whether f is either infinity.
 
-// IsInf 判断 f 是否为无穷大值，视 sign 而定。 若 sign >
-// 0，IsInf 就判断 f 是否为正无穷大。 若 sign < 0，IsInf
-// 就判断 f 是否为负无穷大。 若 sign == 0，IsInf 就判断 f
+// IsInf 判断 f 是否为无穷大值，视 sign 而定。 若 sign > 0，IsInf 就判断 f
+// 是否为正无穷大。 若 sign < 0，IsInf 就判断 f 是否为负无穷大。 若 sign == 0，IsInf 就判断 f
 // 是否为无穷大。
 func IsInf(f float64, sign int) bool
 
 // IsNaN reports whether f is an IEEE 754 ``not-a-number'' value.
 
-// IsNaN 判断 f 是否为IEEE
-// 754定义的“非数值”（Not-a-Number）。
+// IsNaN 判断 f 是否为IEEE 754定义的“非数值”（Not-a-Number）。
 func IsNaN(f float64) (is bool)
 
 // J0 returns the order-zero Bessel function of the first kind.
@@ -657,8 +651,7 @@ func Log10(x float64) float64
 //	Log1p(x < -1) = NaN
 //	Log1p(NaN) = NaN
 
-// Log1p 返回 1 加其实参 x 的自然对数。 当 x 接近 0 时，该函数比
-// Log(1 + x) 精确。
+// Log1p 返回 1 加其实参 x 的自然对数。 当 x 接近 0 时，该函数比 Log(1 + x) 精确。
 //
 // 特殊情况为：
 //
@@ -758,8 +751,8 @@ func Mod(x, y float64) float64
 //	Modf(±Inf) = ±Inf, NaN
 //	Modf(NaN) = NaN, NaN
 
-// Modf 将 f 的整数部分和小数部分分别作为浮点数返回。两值的符号与 f
-// 一致。
+// Modf 将 f
+// 的整数部分和小数部分分别作为浮点数返回。两值的符号与 f 一致。
 //
 // 特殊情况为：
 //
@@ -795,8 +788,7 @@ func Nextafter(x, y float64) (r float64)
 //	     Nextafter32(NaN, y) = NaN
 //	     Nextafter32(x, NaN) = NaN
 
-// Nextafter32 返回从 x 到 y 的下一个可表示的 float32
-// 值。
+// Nextafter32 返回从 x 到 y 的下一个可表示的 float32 值。
 //
 // 特殊情况为：
 //

@@ -9,34 +9,16 @@
 // TODO(rsc): Decide where this package should live. (golang.org/issue/6932)
 // TODO(rsc): Decide the appropriate integer types for various fields. TODO(rsc):
 // Write tests. (File format still up in the air a little.)
-
-// Package goobj implements reading of Go
-// object files and archives.
-//
-// TODO(rsc): Decide where this package
-// should live. (golang.org/issue/6932)
-// TODO(rsc): Decide the appropriate
-// integer types for various fields.
-// TODO(rsc): Write tests. (File format
-// still up in the air a little.)
 package goobj
 
 // A Data is a reference to data stored in an object file. It records the offset
 // and size of the data, so that a client can read the data only if necessary.
-
-// A Data is a reference to data stored in
-// an object file. It records the offset
-// and size of the data, so that a client
-// can read the data only if necessary.
 type Data struct {
 	Offset int64
 	Size   int64
 }
 
 // Func contains additional per-symbol information specific to functions.
-
-// Func contains additional per-symbol
-// information specific to functions.
 type Func struct {
 	Args     int        // size in bytes of argument frame: inputs and outputs
 	Frame    int        // size in bytes of local variable frame
@@ -52,18 +34,12 @@ type Func struct {
 }
 
 // A FuncData is a single function-specific data value.
-
-// A FuncData is a single function-specific
-// data value.
 type FuncData struct {
 	Sym    SymID // symbol holding data
 	Offset int64 // offset into symbol for funcdata pointer
 }
 
 // A Package is a parsed Go object file or archive defining a Go package.
-
-// A Package is a parsed Go object file or
-// archive defining a Go package.
 type Package struct {
 	ImportPath string   // import path denoting this package
 	Imports    []string // packages imported by this package
@@ -73,17 +49,9 @@ type Package struct {
 
 // Parse parses an object file or archive from r, assuming that its import path is
 // pkgpath.
-
-// Parse parses an object file or archive
-// from r, assuming that its import path is
-// pkgpath.
 func Parse(r io.ReadSeeker, pkgpath string) (*Package, error)
 
 // A Reloc describes a relocation applied to a memory image to refer to an address
-// within a particular symbol.
-
-// A Reloc describes a relocation applied
-// to a memory image to refer to an address
 // within a particular symbol.
 type Reloc struct {
 	// The bytes at [Offset, Offset+Size) within the memory image
@@ -101,9 +69,6 @@ type Reloc struct {
 }
 
 // A Sym is a named symbol in an object file.
-
-// A Sym is a named symbol in an object
-// file.
 type Sym struct {
 	SymID         // symbol identifier (name and version)
 	Kind  SymKind // kind of symbol
@@ -116,10 +81,6 @@ type Sym struct {
 }
 
 // A SymID - the combination of Name and Version - uniquely identifies a symbol
-// within a package.
-
-// A SymID - the combination of Name and
-// Version - uniquely identifies a symbol
 // within a package.
 type SymID struct {
 	// Name is the name of a symbol.
@@ -136,18 +97,10 @@ type SymID struct {
 func (s SymID) String() string
 
 // A SymKind describes the kind of memory represented by a symbol.
-
-// A SymKind describes the kind of memory
-// represented by a symbol.
 type SymKind int
 
 // Defined SymKind values. TODO(rsc): Give idiomatic Go names. TODO(rsc): Reduce
 // the number of symbol types in the object files.
-
-// Defined SymKind values. TODO(rsc): Give
-// idiomatic Go names. TODO(rsc): Reduce
-// the number of symbol types in the object
-// files.
 const (
 	_ SymKind = iota
 
@@ -196,10 +149,6 @@ const (
 func (k SymKind) String() string
 
 // A Var describes a variable in a function stack frame: a declared local variable,
-// an input argument, or an output result.
-
-// A Var describes a variable in a function
-// stack frame: a declared local variable,
 // an input argument, or an output result.
 type Var struct {
 	// The combination of Name, Kind, and Offset uniquely

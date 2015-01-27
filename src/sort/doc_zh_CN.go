@@ -7,7 +7,8 @@
 // Package sort provides primitives for sorting slices and user-defined
 // collections.
 
-// sort 包为切片及用户定义的集合的排序操作提供了原语.
+// sort
+// 包为切片及用户定义的集合的排序操作提供了原语.
 package sort
 
 // Float64s sorts a slice of float64s in increasing order.
@@ -18,8 +19,7 @@ func Float64s(a []float64)
 // Float64sAreSorted tests whether a slice of float64s is sorted in increasing
 // order.
 
-// Float64sAreSorted 判断 float64
-// 切片是否已经按升序排列。
+// Float64sAreSorted 判断 float64 切片是否已经按升序排列。
 func Float64sAreSorted(a []float64) bool
 
 // Ints sorts a slice of ints in increasing order.
@@ -83,30 +83,29 @@ func IsSorted(data Interface) bool
 //		fmt.Printf("Your number is %d.\n", answer)
 //	}
 
-// Search 使用二分查找法在 [0, n) 中寻找并返回满足 f(i) ==
-// true 的最小索引 i， 假定该索引在区间 [0, n) 内，则 f(i)
-// == true 就蕴含了 f(i+1) == true。 也就是说，Search
-// 要求 f 对于输入区间 [0, n) （可能为空）的前一部分为 false，
-// 而对于剩余（可能为空）的部分为 true；Search 返回第一个 f 为
-// true 时的索引 i。 若该索引不存在，Search 就返回
-// n。（注意，“未找到”的返回值并不像 strings.Index
-// 这类函数一样返回 -1）。Search 仅当 i 在区间 [0, n)
+// Search 使用二分查找法在 [0, n) 中寻找并返回满足 f(i) == true 的最小索引 i，
+// 假定该索引在区间 [0, n) 内，则 f(i) == true 就蕴含了 f(i+1) == true。 也就是说，Search 要求 f
+// 对于输入区间 [0, n) （可能为空）的前一部分为 false，
+// 而对于剩余（可能为空）的部分为 true；Search 返回第一个 f 为 true 时的索引 i。
+// 若该索引不存在，Search 就返回
+// n。（注意，“未找到”的返回值并不像 strings.Index 这类函数一样返回 -1）。Search 仅当 i 在区间 [0, n)
 // 内时才调用 f(i)。
 //
-// Search 常用于在一个已排序的，可索引的数据结构中寻找索引为 i 的值
-// x，例如数组或切片。 这种情况下，实参
+// Search
+// 常用于在一个已排序的，可索引的数据结构中寻找索引为 i 的值 x，例如数组或切片。 这种情况下，实参
 // f，一般是一个闭包，会捕获所要搜索的值，以及索引并排序该数据结构的方式。
 //
 // 例如，给定一个以升序排列的切片数据，调用
 //
 //	Search(len(data), func(i int) bool { return data[i] >= 23 })
 //
-// 会返回满足 data[i] >= 23 的最小索引 i。若调用者想要判断 23
-// 是否在此切片中， 就必须单独测试 data[i] == 23 的值。
+// 会返回满足 data[i] >= 23 的最小索引 i。若调用者想要判断 23 是否在此切片中， 就必须单独测试 data[i] == 23
+// 的值。
 //
 // 搜索降以序排列的数据，需使用 <= 操作符，而非 >= 操作符。
 //
-// 补全上面的例子, 以下代码试图从以升序排列的整数切片中寻找值 x 的索引：
+// 补全上面的例子,
+// 以下代码试图从以升序排列的整数切片中寻找值 x 的索引：
 //
 //	x := 23
 //	i := sort.Search(len(data), func(i int) bool { return data[i] >= x })
@@ -134,9 +133,8 @@ func Search(n int, f func(int) bool) int
 // index as specified by Search. The return value is the index to insert x if x is
 // not present (it could be len(a)). The slice must be sorted in ascending order.
 
-// SearchFloat64s 在float64s切片中搜索x并返回索引
-// 如Search函数所述. 返回可以插入x值的索引位置，如果x
-// 不存在，返回数组a的长度 切片必须以升序排列
+// SearchFloat64s 在float64s切片中搜索x并返回索引 如Search函数所述.
+// 返回可以插入x值的索引位置，如果x 不存在，返回数组a的长度 切片必须以升序排列
 func SearchFloat64s(a []float64, x float64) int
 
 // SearchInts searches for x in a sorted slice of ints and returns the index as
@@ -151,31 +149,21 @@ func SearchInts(a []int, x int) int
 // as specified by Search. The return value is the index to insert x if x is not
 // present (it could be len(a)). The slice must be sorted in ascending order.
 
-// SearchFloat64s 在strings切片中搜索x并返回索引
-// 如Search函数所述. 返回可以插入x值的索引位置，如果x
-// 不存在，返回数组a的长度 切片必须以升序排列
+// SearchFloat64s 在strings切片中搜索x并返回索引 如Search函数所述.
+// 返回可以插入x值的索引位置，如果x 不存在，返回数组a的长度 切片必须以升序排列
 func SearchStrings(a []string, x string) int
 
 // Sort sorts data. It makes one call to data.Len to determine n, and O(n*log(n))
 // calls to data.Less and data.Swap. The sort is not guaranteed to be stable.
 
-// Sort 对 data 进行排序。 它调用一次 data.Len
-// 来决定排序的长度 n，调用 data.Less 和 data.Swap 的开销为
-// O(n*log(n))。此排序为不稳定排序。
+// Sort 对 data 进行排序。 它调用一次 data.Len 来决定排序的长度 n，调用 data.Less 和 data.Swap
+// 的开销为 O(n*log(n))。此排序为不稳定排序。
 func Sort(data Interface)
 
 // Stable sorts data while keeping the original order of equal elements.
 //
 // It makes one call to data.Len to determine n, O(n*log(n)) calls to data.Less and
 // O(n*log(n)*log(n)) calls to data.Swap.
-
-// Stable sorts data while keeping the
-// original order of equal elements.
-//
-// It makes one call to data.Len to
-// determine n, O(n*log(n)) calls to
-// data.Less and O(n*log(n)*log(n)) calls
-// to data.Swap.
 func Stable(data Interface)
 
 // Strings sorts a slice of strings in increasing order.
@@ -191,7 +179,8 @@ func StringsAreSorted(a []string) bool
 // Float64Slice attaches the methods of Interface to []float64, sorting in
 // increasing order.
 
-// Float64Slice 针对 []float6 实现接口的方法，以升序排列。
+// Float64Slice 针对 []float6
+// 实现接口的方法，以升序排列。
 type Float64Slice []float64
 
 func (p Float64Slice) Len() int
@@ -200,7 +189,8 @@ func (p Float64Slice) Less(i, j int) bool
 
 // Search returns the result of applying SearchFloat64s to the receiver and x.
 
-// Search 返回以调用者和x为参数调用SearchFloat64s后的结果
+// Search
+// 返回以调用者和x为参数调用SearchFloat64s后的结果
 func (p Float64Slice) Search(x float64) int
 
 // Sort is a convenience method.
@@ -222,7 +212,8 @@ func (p IntSlice) Less(i, j int) bool
 
 // Search returns the result of applying SearchInts to the receiver and x.
 
-// Search 返回以调用者和x为参数调用SearchInts后的结果
+// Search
+// 返回以调用者和x为参数调用SearchInts后的结果
 func (p IntSlice) Search(x int) int
 
 // Sort is a convenience method.
@@ -250,9 +241,6 @@ type Interface interface {
 }
 
 // Reverse returns the reverse order for data.
-
-// Reverse returns the reverse order for
-// data.
 func Reverse(data Interface) Interface
 
 // StringSlice attaches the methods of Interface to []string, sorting in increasing
@@ -267,7 +255,8 @@ func (p StringSlice) Less(i, j int) bool
 
 // Search returns the result of applying SearchStrings to the receiver and x.
 
-// Search 返回以调用者和x为参数调用SearchStrings后的结果
+// Search
+// 返回以调用者和x为参数调用SearchStrings后的结果
 func (p StringSlice) Search(x string) int
 
 // Sort is a convenience method.

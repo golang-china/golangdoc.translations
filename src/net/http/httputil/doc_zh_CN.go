@@ -6,10 +6,6 @@
 
 // Package httputil provides HTTP utility functions, complementing the more common
 // ones in the net/http package.
-
-// Package httputil provides HTTP utility
-// functions, complementing the more common
-// ones in the net/http package.
 package httputil
 
 var (
@@ -19,10 +15,6 @@ var (
 )
 
 // ErrLineTooLong is returned when reading malformed chunked data with lines that
-// are too long.
-
-// ErrLineTooLong is returned when reading
-// malformed chunked data with lines that
 // are too long.
 var ErrLineTooLong = internal.ErrLineTooLong
 
@@ -55,18 +47,6 @@ func DumpResponse(resp *http.Response, body bool) (dump []byte, err error)
 //
 // NewChunkedReader is not needed by normal applications. The http package
 // automatically decodes chunking when reading response bodies.
-
-// NewChunkedReader returns a new
-// chunkedReader that translates the data
-// read from r out of HTTP "chunked" format
-// before returning it. The chunkedReader
-// returns io.EOF when the final 0-length
-// chunk is read.
-//
-// NewChunkedReader is not needed by normal
-// applications. The http package
-// automatically decodes chunking when
-// reading response bodies.
 func NewChunkedReader(r io.Reader) io.Reader
 
 // NewChunkedWriter returns a new chunkedWriter that translates writes into HTTP
@@ -77,22 +57,6 @@ func NewChunkedReader(r io.Reader) io.Reader
 // chunking automatically if handlers don't set a Content-Length header. Using
 // NewChunkedWriter inside a handler would result in double chunking or chunking
 // with a Content-Length length, both of which are wrong.
-
-// NewChunkedWriter returns a new
-// chunkedWriter that translates writes
-// into HTTP "chunked" format before
-// writing them to w. Closing the returned
-// chunkedWriter sends the final 0-length
-// chunk that marks the end of the stream.
-//
-// NewChunkedWriter is not needed by normal
-// applications. The http package adds
-// chunking automatically if handlers don't
-// set a Content-Length header. Using
-// NewChunkedWriter inside a handler would
-// result in double chunking or chunking
-// with a Content-Length length, both of
-// which are wrong.
 func NewChunkedWriter(w io.Writer) io.WriteCloser
 
 // A ClientConn sends request and receives headers over an underlying connection,
@@ -107,8 +71,7 @@ func NewChunkedWriter(w io.Writer) io.WriteCloser
 // keepalive的底层连接发送请求，并且接收header。
 // ClientConn支持调用Hijack来劫持连接用于获取底层网络连接的控制来处理net.Conn。
 //
-// ServerConn 是低级而老旧的，应用应当采用 net/http 中的
-// Client 或 Transport 来代替。
+// ServerConn 是低级而老旧的，应用应当采用 net/http 中的 Client 或 Transport 来代替。
 type ClientConn struct {
 	// contains filtered or unexported fields
 }
@@ -121,8 +84,7 @@ type ClientConn struct {
 
 // NewClientConn返回一个新的ClientConnd对c进行读取和写入。如果r非空，则使用缓存对c进行读取。
 //
-// ServerConn 是低级而老旧的，应用应当采用 net/http 中的
-// Client 或 Transport 来代替。
+// ServerConn 是低级而老旧的，应用应当采用 net/http 中的 Client 或 Transport 来代替。
 func NewClientConn(c net.Conn, r *bufio.Reader) *ClientConn
 
 // NewProxyClientConn works like NewClientConn but writes Requests using Request's
@@ -133,8 +95,7 @@ func NewClientConn(c net.Conn, r *bufio.Reader) *ClientConn
 
 // NewProxyClientConn像NewClientConn一样，不同的是使用Request的WriteProxy方法对请求进行写操作。
 //
-// 新代码不应使用 NewProxyClientConn。见 net/http 中的
-// Client 或 Transport。
+// 新代码不应使用 NewProxyClientConn。见 net/http 中的 Client 或 Transport。
 func NewProxyClientConn(c net.Conn, r *bufio.Reader) *ClientConn
 
 // Close calls Hijack and then also closes the underlying connection
@@ -231,14 +192,13 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 // ServerConn is low-level and old. Applications should instead use Server in the
 // net/http package.
 
-// ServerConn 在底层连接之上读取请求，发送回复，直到HTTP
-// keepalive出现了结束命令。 ServerConn
-// 允许靠调用Hijack来对底层连接进行劫持，从而得到连接的控制权。
 // ServerConn
+// 在底层连接之上读取请求，发送回复，直到HTTP keepalive出现了结束命令。 ServerConn
+// 允许靠调用Hijack来对底层连接进行劫持，从而得到连接的控制权。 ServerConn
 // 支持管道连接，例如，当回复发送的时候，请求可以不需要进行同步（但是是在相同的顺序）。
 //
-// ServerConn 是低级而老旧的，大部分应用都不需要它。具体参见
-// Server。
+// ServerConn
+// 是低级而老旧的，大部分应用都不需要它。具体参见 Server。
 type ServerConn struct {
 	// contains filtered or unexported fields
 }
@@ -251,8 +211,8 @@ type ServerConn struct {
 
 // NewServerConn返回一个新的ServerConn来读取和写c。如果r非空，则使用缓存对c进行读取。
 //
-// ServerConn 是低级而老旧的，大部分应用都不需要它。具体参见
-// Server。
+// ServerConn
+// 是低级而老旧的，大部分应用都不需要它。具体参见 Server。
 func NewServerConn(c net.Conn, r *bufio.Reader) *ServerConn
 
 // Close calls Hijack and then also closes the underlying connection

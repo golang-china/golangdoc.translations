@@ -10,7 +10,8 @@
 // is typically less efficient than using a long-running server. This package is
 // intended primarily for compatibility with existing systems.
 
-// cgi 包实现了RFC3875协议描述的CGI（公共网关接口）.
+// cgi
+// 包实现了RFC3875协议描述的CGI（公共网关接口）.
 //
 // 使用CGI就意味开启一个新进程来处理每个请求，这种方法当然比持久运行的服务进程的方式低效些。
 // 这个包主要用来和现有的web系统进行交互。

@@ -13,11 +13,9 @@
 
 // sql 包提供了通用的SQL（或类SQL）数据库接口.
 //
-// sql 包必须与数据库驱动结合使用。驱动列表见
-// http://golang.org/s/sqldrivers。
+// sql 包必须与数据库驱动结合使用。驱动列表见 http://golang.org/s/sqldrivers。
 //
-// 更多使用范例见 http://golang.org/s/sqlwiki
-// 的维基页面。
+// 更多使用范例见 http://golang.org/s/sqlwiki 的维基页面。
 package sql
 
 // ErrNoRows is returned by Scan when QueryRow doesn't return a row. In such a
@@ -31,9 +29,6 @@ var ErrNoRows = errors.New("sql: no rows in result set")
 var ErrTxDone = errors.New("sql: Transaction has already been committed or rolled back")
 
 // Drivers returns a sorted list of the names of the registered drivers.
-
-// Drivers returns a sorted list of the
-// names of the registered drivers.
 func Drivers() []string
 
 // Register makes a database driver available by the provided name. If Register is
@@ -54,24 +49,15 @@ func Register(name string, driver driver.Driver)
 // returned to DB's idle connection pool. The pool size can be controlled with
 // SetMaxIdleConns.
 
-// DB is a database handle representing a
-// pool of zero or more underlying
-// connections. It's safe for concurrent
-// use by multiple goroutines.
+// DB is a database handle representing a pool of zero or more underlying
+// connections. It's safe for concurrent use by multiple goroutines.
 //
-// The sql package creates and frees
-// connections automatically; it also
-// maintains a free pool of idle
-// connections. If the database has a
-// concept of per-connection state, such
-// state can only be reliably observed
-// within a transaction. Once DB.Begin is
-// called, the returned Tx is bound to a
-// single connection. Once Commit or
-// Rollback is called on the transaction,
-// that transaction's connection is
-// returned to DB's idle connection pool.
-// The pool size can be controlled with
+// The sql package creates and frees connections automatically; it also maintains a
+// free pool of idle connections. If the database has a concept of per-connection
+// state, such state can only be reliably observed within a transaction. Once
+// DB.Begin is called, the returned Tx is bound to a single connection. Once Commit
+// or Rollback is called on the transaction, that transaction's connection is
+// returned to DB's idle connection pool. The pool size can be controlled with
 // SetMaxIdleConns. TODO：待译
 type DB struct {
 	// contains filtered or unexported fields
@@ -128,15 +114,15 @@ func (db *DB) Exec(query string, args ...interface{}) (Result, error)
 // Ping verifies a connection to the database is still alive, establishing a
 // connection if necessary.
 
-// Ping verifies a connection to the
-// database is still alive, establishing a
+// Ping verifies a connection to the database is still alive, establishing a
 // connection if necessary. TODO：待译
 func (db *DB) Ping() error
 
 // Prepare creates a prepared statement for later queries or executions. Multiple
 // queries or executions may be run concurrently from the returned statement.
 
-// Prepare 为以后的查询或执行操作事先创建了语句。
+// Prepare
+// 为以后的查询或执行操作事先创建了语句。
 // 多个查询或执行操作可在返回的语句中并发地运行。
 func (db *DB) Prepare(query string) (*Stmt, error)
 
@@ -163,17 +149,13 @@ func (db *DB) QueryRow(query string, args ...interface{}) *Row
 //
 // If n <= 0, no idle connections are retained.
 
-// SetMaxIdleConns sets the maximum number
-// of connections in the idle connection
+// SetMaxIdleConns sets the maximum number of connections in the idle connection
 // pool.
 //
-// If MaxOpenConns is greater than 0 but
-// less than the new MaxIdleConns then the
-// new MaxIdleConns will be reduced to
-// match the MaxOpenConns limit
+// If MaxOpenConns is greater than 0 but less than the new MaxIdleConns then the
+// new MaxIdleConns will be reduced to match the MaxOpenConns limit
 //
-// If n <= 0, no idle connections are
-// retained. TODO：待译
+// If n <= 0, no idle connections are retained. TODO：待译
 func (db *DB) SetMaxIdleConns(n int)
 
 // SetMaxOpenConns sets the maximum number of open connections to the database.
@@ -183,19 +165,6 @@ func (db *DB) SetMaxIdleConns(n int)
 // limit
 //
 // If n <= 0, then there is no limit on the number of open connections. The default
-// is 0 (unlimited).
-
-// SetMaxOpenConns sets the maximum number
-// of open connections to the database.
-//
-// If MaxIdleConns is greater than 0 and
-// the new MaxOpenConns is less than
-// MaxIdleConns, then MaxIdleConns will be
-// reduced to match the new MaxOpenConns
-// limit
-//
-// If n <= 0, then there is no limit on the
-// number of open connections. The default
 // is 0 (unlimited).
 func (db *DB) SetMaxOpenConns(n int)
 
@@ -374,23 +343,21 @@ type Rows struct {
 // the Rows are closed automatically and it will suffice to check the result of
 // Err. Close is idempotent and does not affect the result of Err.
 
-// Close 关闭 Rows，阻止了进一步枚举。若 Next 返回 false，则
-// Rows 会自动关闭并能够检查 Err 的结果。Close 是幂等的，并不会影响
-// Err 的结果。
+// Close 关闭 Rows，阻止了进一步枚举。若 Next 返回 false，则 Rows
+// 会自动关闭并能够检查 Err 的结果。Close 是幂等的，并不会影响 Err 的结果。
 func (rs *Rows) Close() error
 
 // Columns returns the column names. Columns returns an error if the rows are
 // closed, or if the rows are from QueryRow and there was a deferred error.
 
-// Columns返回列名字。
-// 当rows设置了closed，Columns方法会返回error。
+// Columns返回列名字。 当rows设置了closed，Columns方法会返回error。
 func (rs *Rows) Columns() ([]string, error)
 
 // Err returns the error, if any, that was encountered during iteration. Err may be
 // called after an explicit or implicit Close.
 
-// Err 返回错误。如果有错误的话，就会在循环过程中捕获到。 Err
-// 可能会在一个显式或隐式的 Close 后调用。
+// Err
+// 返回错误。如果有错误的话，就会在循环过程中捕获到。 Err 可能会在一个显式或隐式的 Close 后调用。
 func (rs *Rows) Err() error
 
 // Next prepares the next result row for reading with the Scan method. It returns
@@ -401,8 +368,8 @@ func (rs *Rows) Err() error
 // Every call to Scan, even the first one, must be preceded by a call to Next.
 
 // Next获取下一行的数据以便给Scan调用。
-// 在成功的时候返回true，在没有下一行数据，或在准备过程中发生错误时返回false。
-// 应通过 Err 来区分这两种情况。
+// 在成功的时候返回true，在没有下一行数据，或在准备过程中发生错误时返回false。 应通过 Err
+// 来区分这两种情况。
 //
 // 每次调用来Scan获取数据，甚至是第一行数据，都需要调用Next来处理。
 func (rs *Rows) Next() bool
@@ -508,8 +475,8 @@ func (s *Stmt) QueryRow(args ...interface{}) *Row
 //
 // 必须调用Commit或者Rollback来结束事务。
 //
-// 在调用 Commit 或者 Rollback 之后，所有对事务的后续操作就会返回
-// ErrTxDone。
+// 在调用 Commit 或者 Rollback
+// 之后，所有对事务的后续操作就会返回 ErrTxDone。
 type Tx struct {
 	// contains filtered or unexported fields
 }

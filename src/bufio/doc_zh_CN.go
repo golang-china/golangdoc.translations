@@ -28,8 +28,6 @@ var (
 )
 
 // Errors returned by Scanner.
-
-// Errors returned by Scanner.
 var (
 	ErrTooLong         = errors.New("bufio.Scanner: token too long")
 	ErrNegativeAdvance = errors.New("bufio.Scanner: SplitFunc returns negative advance count")
@@ -152,8 +150,8 @@ func (b *Reader) ReadByte() (c byte, err error)
 // ReadBytes读取输入到第一次终止符发生的时候，返回的slice包含从当前到终止符的内容（包括终止符）。
 // 如果ReadBytes在遇到终止符之前就捕获到一个错误，它就会返回遇到错误之前已经读取的数据，和这个捕获
 // 到的错误（经常是
-// io.EOF）。当返回的数据没有以终止符结束的时候，ReadBytes返回err
-// != nil。 对于简单的使用，或许 Scanner 更方便。
+// io.EOF）。当返回的数据没有以终止符结束的时候，ReadBytes返回err != nil。
+// 对于简单的使用，或许 Scanner 更方便。
 func (b *Reader) ReadBytes(delim byte) (line []byte, err error)
 
 // ReadLine is a low-level line-reading primitive. Most callers should use
@@ -181,8 +179,8 @@ func (b *Reader) ReadBytes(delim byte) (line []byte, err error)
 //
 // ReadLine返回的文本不会包含行结尾（"\r\n"或者"\n"）。如果输入没有最终的行结尾的时候，不会返回
 // 任何迹象或者错误。在 ReadLine 之后调用 UnreadByte
-// 将总是放回读取的最后一个字节 （可能是属于该行末的字符），即便该字节并非
-// ReadLine 返回的行的一部分。
+// 将总是放回读取的最后一个字节
+// （可能是属于该行末的字符），即便该字节并非 ReadLine 返回的行的一部分。
 func (b *Reader) ReadLine() (line []byte, isPrefix bool, err error)
 
 // ReadRune reads a single UTF-8 encoded Unicode character and returns the rune and
@@ -190,8 +188,7 @@ func (b *Reader) ReadLine() (line []byte, isPrefix bool, err error)
 // returns unicode.ReplacementChar (U+FFFD) with a size of 1.
 
 // ReadRune读取单个的UTF-8编码的Unicode字节，并且返回rune和它的字节大小。
-// 如果编码的rune是可见的，它消耗一个字节并且返回1字节的unicode.ReplacementChar
-// (U+FFFD)。
+// 如果编码的rune是可见的，它消耗一个字节并且返回1字节的unicode.ReplacementChar (U+FFFD)。
 func (b *Reader) ReadRune() (r rune, size int, err error)
 
 // ReadSlice reads until the first occurrence of delim in the input, returning a
@@ -221,8 +218,8 @@ func (b *Reader) ReadSlice(delim byte) (line []byte, err error)
 // ReadString读取输入到第一次终止符发生的时候，返回的string包含从当前到终止符的内容（包括终止符）。
 // 如果ReadString在遇到终止符之前就捕获到一个错误，它就会返回遇到错误之前已经读取的数据，和这个捕获
 // 到的错误（经常是
-// io.EOF）。当返回的数据没有以终止符结束的时候，ReadString返回err
-// != nil。 对于简单的使用，或许 Scanner 更方便。
+// io.EOF）。当返回的数据没有以终止符结束的时候，ReadString返回err != nil。
+// 对于简单的使用，或许 Scanner 更方便。
 func (b *Reader) ReadString(delim byte) (line string, err error)
 
 // Reset discards any buffered data, resets all state, and switches the buffered
@@ -277,8 +274,7 @@ func (b *Reader) WriteTo(w io.Writer) (n int64, err error)
 //
 // 扫描会在抵达输入流结尾、遇到的第一个I/O错误、token过大不能保存进缓冲时，
 // 不可恢复的停止。当扫描停止后，当前读取位置可能会远在最后一个获得的token后面。
-// 需要更多对错误管理的控制或token很大，或必须从reader连续扫描的程序，
-// 应使用bufio.Reader代替。
+// 需要更多对错误管理的控制或token很大，或必须从reader连续扫描的程序， 应使用bufio.Reader代替。
 type Scanner struct {
 	// contains filtered or unexported fields
 }
@@ -314,10 +310,8 @@ func (s *Scanner) Err() error
 // 并让Scanner的扫描位置移动到下一个token。
 // 当扫描因为抵达输入流结尾或者遇到错误而停止时，
 // 本方法会返回false。在Scan方法返回false后，
-// Err方法将返回扫描时遇到的任何错误；除非是io.EOF，此时Err会返回nil。
-// 若 split 函数返回了 100
-// 个空标记而没有推进输入，那么它就会派错（panic）。这是 scanner
-// 的一个常见错误。
+// Err方法将返回扫描时遇到的任何错误；除非是io.EOF，此时Err会返回nil。 若 split 函数返回了 100
+// 个空标记而没有推进输入，那么它就会派错（panic）。这是 scanner 的一个常见错误。
 func (s *Scanner) Scan() bool
 
 // Split sets the split function for the Scanner. If called, it must be called
@@ -355,8 +349,8 @@ func (s *Scanner) Text() string
 // 参数atEOF表示是否Reader接口不能提供更多的数据。
 // 返回值是解析位置前进的字节数，将要返回给调用者的token切片，
 // 以及可能遇到的错误。如果数据不足以（保证）生成一个完整的token，
-// 例如需要一整行数据但data里没有换行符， SplitFunc可以返回(0,
-// nil, nil)来告诉Scanner读取更多的数据
+// 例如需要一整行数据但data里没有换行符， SplitFunc可以返回(0, nil,
+// nil)来告诉Scanner读取更多的数据
 // 写入切片然后用从同一位置起始、长度更长的切片再试一次（调用SplitFunc类型函数）。
 //
 // 如果返回值err非nil，扫描将终止并将该错误返回给Scanner的调用者。
@@ -372,8 +366,8 @@ type SplitFunc func(data []byte, atEOF bool) (advance int, token []byte, err err
 
 // Writer实现了io.Writer对象的缓存。
 // 如果在写数据到Writer的时候出现了一个错误，不会再有数据被写进来了，
-// 并且所有随后的写操作都会返回error。当所有数据被写入后，客户端应调用
-// Flush 方法以确保所有数据已转为基本的 io.Writer
+// 并且所有随后的写操作都会返回error。当所有数据被写入后，客户端应调用 Flush
+// 方法以确保所有数据已转为基本的 io.Writer
 type Writer struct {
 	// contains filtered or unexported fields
 }
@@ -414,18 +408,14 @@ func (b *Writer) ReadFrom(r io.Reader) (n int64, err error)
 
 // Reset discards any unflushed buffered data, clears any error, and resets b to
 // write its output to w.
-
-// Reset discards any unflushed buffered
-// data, clears any error, and resets b to
-// write its output to w.
 func (b *Writer) Reset(w io.Writer)
 
 // Write writes the contents of p into the buffer. It returns the number of bytes
 // written. If nn < len(p), it also returns an error explaining why the write is
 // short.
 
-// Writer将p中的内容写入到缓存中。 它返回写入的字节数。 如果nn <
-// len(p), 它也会返回错误，用于解释为什么写入的数据会短缺。
+// Writer将p中的内容写入到缓存中。 它返回写入的字节数。 如果nn < len(p),
+// 它也会返回错误，用于解释为什么写入的数据会短缺。
 func (b *Writer) Write(p []byte) (nn int, err error)
 
 // WriteByte writes a single byte.

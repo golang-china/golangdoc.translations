@@ -8,14 +8,14 @@
 // visualization tool. For more information about pprof, see
 // http://code.google.com/p/google-perftools/.
 
-// pprof 包按照可视化工具 pprof 所要求的格式写出运行时分析数据.
-// 更多有关 pprof 的信息见
-// http://code.google.com/p/google-perftools/。
+// pprof 包按照可视化工具 pprof
+// 所要求的格式写出运行时分析数据. 更多有关 pprof 的信息见 http://code.google.com/p/google-perftools/。
 package pprof
 
 // Profiles returns a slice of all the known profiles, sorted by name.
 
-// Profiles 返回所有已知分析的切片，按名称排序。
+// Profiles
+// 返回所有已知分析的切片，按名称排序。
 func Profiles() []*Profile
 
 // StartCPUProfile enables CPU profiling for the current process. While profiling,
@@ -23,22 +23,20 @@ func Profiles() []*Profile
 // if profiling is already enabled.
 
 // StartCPUProfile 为当前进程开启CPU分析。
-// 在分析时，分析报告会缓存并写入到 w
-// 中。若分析已经开启，StartCPUProfile 就会返回错误。
+// 在分析时，分析报告会缓存并写入到 w 中。若分析已经开启，StartCPUProfile 就会返回错误。
 func StartCPUProfile(w io.Writer) error
 
 // StopCPUProfile stops the current CPU profile, if any. StopCPUProfile only
 // returns after all the writes for the profile have completed.
 
-// StopCPUProfile 会停止当前的CPU分析，如果有的话。
-// StopCPUProfile 只会在所有的分析报告写入完毕后才会返回。
+// StopCPUProfile 会停止当前的CPU分析，如果有的话。 StopCPUProfile
+// 只会在所有的分析报告写入完毕后才会返回。
 func StopCPUProfile()
 
 // WriteHeapProfile is shorthand for Lookup("heap").WriteTo(w, 0). It is preserved
 // for backwards compatibility.
 
-// WriteHeapProfile 是
-// Lookup("heap").WriteTo(w, 0) 的简写。
+// WriteHeapProfile 是 Lookup("heap").WriteTo(w, 0) 的简写。
 // 它是为了保持向后兼容性而存在的。
 func WriteHeapProfile(w io.Writer) error
 
@@ -76,8 +74,7 @@ func WriteHeapProfile(w io.Writer) error
 //	threadcreate - 引导新OS的线程创建的栈跟踪
 //	block        - 引导同步原语中阻塞的栈跟踪
 //
-// 这些预声明分析并不能作为 Profile 使用。它有专门的API，即
-// StartCPUProfile 和 StopCPUProfile
+// 这些预声明分析并不能作为 Profile 使用。它有专门的API，即 StartCPUProfile 和 StopCPUProfile
 // 函数，因为它在分析时是以流的形式输出到写入器的。
 type Profile struct {
 	// contains filtered or unexported fields
@@ -86,7 +83,8 @@ type Profile struct {
 // Lookup returns the profile with the given name, or nil if no such profile
 // exists.
 
-// Lookup 返回给定名称的分析，若不存在该分析，则返回 nil。
+// Lookup
+// 返回给定名称的分析，若不存在该分析，则返回 nil。
 func Lookup(name string) *Profile
 
 // NewProfile creates a new profile with the given name. If a profile with that
@@ -94,8 +92,8 @@ func Lookup(name string) *Profile
 // 'import/path.' prefix to create separate name spaces for each package.
 
 // NewProfile 以给定的名称创建一个新的分析。
-// 若拥有该名称的分析已存在，NewProfile 就会引起恐慌。 约定使用一个
-// 'import/path' 导入路径前缀来为每个包创建单独的命名空间。
+// 若拥有该名称的分析已存在，NewProfile 就会引起恐慌。 约定使用一个 'import/path'
+// 导入路径前缀来为每个包创建单独的命名空间。
 func NewProfile(name string) *Profile
 
 // Add adds the current execution stack to the profile, associated with value. Add
@@ -115,7 +113,8 @@ func NewProfile(name string) *Profile
 // Passing skip=0 begins the stack trace at the call to Add inside rpc.NewClient.
 // Passing skip=1 begins the stack trace at the call to NewClient inside mypkg.Run.
 
-// Add 将当前与值相关联的执行栈添加到该分析中。 Add
+// Add
+// 将当前与值相关联的执行栈添加到该分析中。 Add
 // 在一个内部映射中存储值，因此值必须适于用作映射键，且在对应的 Remove
 // 调用之前不会被垃圾收集。若分析已经包含了值的栈，Add 就会引发恐慌。
 //
@@ -128,9 +127,8 @@ func NewProfile(name string) *Profile
 //	调用自 mypkg.Run
 //	调用自 main.main
 //
-// 传入 skip=0 会从 rpc.NewClient 中的 Add
-// 调用处开始栈跟踪。 传入 skip=1 会从 mypkg.Run 中的
-// NewClient 调用处开始栈跟踪。
+// 传入 skip=0 会从 rpc.NewClient 中的 Add 调用处开始栈跟踪。 传入 skip=1 会从 mypkg.Run 中的 NewClient
+// 调用处开始栈跟踪。
 func (p *Profile) Add(value interface{}, skip int)
 
 // Count returns the number of execution stacks currently in the profile.
@@ -165,8 +163,7 @@ func (p *Profile) Remove(value interface{})
 // panic.
 
 // WriteTo 将pprof格式的分析快照写入 w 中。 若一个向 w
-// 的写入返回一个错误，WriteTo 就会返回该错误。 否则，WriteTo
-// 就会返回 nil。
+// 的写入返回一个错误，WriteTo 就会返回该错误。 否则，WriteTo 就会返回 nil。
 //
 // debug 形参用于开启附加的输出。 传入 debug=0
 // 只会打印pprof所需要的十六进制地址。 传入 debug=1

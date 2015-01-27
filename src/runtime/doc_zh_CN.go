@@ -80,9 +80,8 @@
 // in this package, but they do not influence the execution of the run-time system.
 
 // TODO(osc): 需更新 runtime
-// 包含与Go的运行时系统进行交互的操作，例如用于控制Go程的函数. 它也包括用于
-// reflect 包的底层类型信息；运行时类型系统的可编程接口见 reflect
-// 文档。
+// 包含与Go的运行时系统进行交互的操作，例如用于控制Go程的函数. 它也包括用于 reflect
+// 包的底层类型信息；运行时类型系统的可编程接口见 reflect 文档。
 //
 // 环境变量
 //
@@ -92,36 +91,33 @@
 //
 // GOGC
 // 变量用于设置初始垃圾回收的目标百分比。从上次回收后开始，当新分配数据的比例占到剩余实时数据的此百分比时，
-// 就会再次触发回收。默认为 GOGC=100。要完全关闭垃圾回收器，需设置
-// GOGC=off。runtime/debug 包的 SetGCPercent
-// 函数允许在运行时更改此百分比。 详见
-// http://zh.golanger.com/pkg/runtime/debug/#SetGCPercent。
+// 就会再次触发回收。默认为
+// GOGC=100。要完全关闭垃圾回收器，需设置 GOGC=off。runtime/debug 包的 SetGCPercent
+// 函数允许在运行时更改此百分比。 详见 http://zh.golanger.com/pkg/runtime/debug/#SetGCPercent。
 //
-// GOGCTRACE 变量用于控制来自垃圾回收器的调试输出。设置
-// GOGCTRACE=1 会使垃圾回收器发出
-// 每一次回收所产生的单行标准错误输出、概述回收的内存量以及暂停的时长。设置
-// GOGCTRACE=2 不仅会发出同样的概述，还会重复每一次回收。
+// GOGCTRACE
+// 变量用于控制来自垃圾回收器的调试输出。设置 GOGCTRACE=1 会使垃圾回收器发出
+// 每一次回收所产生的单行标准错误输出、概述回收的内存量以及暂停的时长。设置 GOGCTRACE=2
+// 不仅会发出同样的概述，还会重复每一次回收。
 //
 // GOMAXPROCS
 // 变量用于限制可同时执行的用户级Go代码所产生的操作系统线程数。对于Go代码所代表的系统调用而言，
-// 可被阻塞的线程则没有限制；它们不计入 GOMAXPROCS 的限制。本包中的
-// GOMAXPROCS 函数可查询并更改此限制。
+// 可被阻塞的线程则没有限制；它们不计入 GOMAXPROCS 的限制。本包中的 GOMAXPROCS
+// 函数可查询并更改此限制。
 //
 // GOTRACEBACK
 // 用于控制因未恢复的恐慌或意外的运行时状况导致Go程序运行失败时所产生的输出量。
-// 默认情况下，失败会为每个现有的Go程打印出栈跟踪，省略运行时系统的内部函数，并以退出码
-// 2 退出。 若 GOTRACEBACK=0，则每个Go程的栈跟踪都会完全省略。
-// 若 GOTRACEBACK=1，则采用默认的行为。 若
+// 默认情况下，失败会为每个现有的Go程打印出栈跟踪，省略运行时系统的内部函数，并以退出码 2 退出。 若
+// GOTRACEBACK=0，则每个Go程的栈跟踪都会完全省略。 若
+// GOTRACEBACK=1，则采用默认的行为。 若
 // GOTRACEBACK=2，则每个Go程的栈跟踪，包括运行时函数都会输出。 若
 // GOTRACEBACK=crash，则每个Go程的栈跟踪，包括运行时函数，都会输出，
-// 此外程序可能以操作系统特定的方式崩溃而非退出。例如，在Unix系统上，程序会发出
-// SIGABRT 信号，从而触发内核转储。
+// 此外程序可能以操作系统特定的方式崩溃而非退出。例如，在Unix系统上，程序会发出 SIGABRT
+// 信号，从而触发内核转储。
 //
 // GOARCH、GOOS、GOPATH 和 GOROOT
-// 环境变量均为Go的环境变量。它们影响了Go程序的构建 （详见
-// http://golang.org/cmd/go 和
-// http://golang.org/pkg/go/build）。
-// GOARCH、GOOS 和 GOROOT
+// 环境变量均为Go的环境变量。它们影响了Go程序的构建 （详见 http://golang.org/cmd/go 和
+// http://golang.org/pkg/go/build）。 GOARCH、GOOS 和 GOROOT
 // 会在编译时被记录，并使该包中的常量或函数变得可用，
 // 但它们并不影响运行时系统的执行。
 //
@@ -1054,7 +1050,8 @@ const (
 //	gc      The 5g/6g/8g compiler suite at code.google.com/p/go.
 //	gccgo   The gccgo front end, part of the GCC compiler suite.
 
-// Compiler 为构建了可运行二进制文件的编译工具链。已知的工具链为：
+// Compiler
+// 为构建了可运行二进制文件的编译工具链。已知的工具链为：
 //
 //	go       code.google.com/p/go 上的 5g/6g/8g 编译器套件。
 //	gccgo    gccgo前端，GCC编译器条件的一部分。
@@ -1068,8 +1065,7 @@ const GOARCH string = theGoarch
 // GOOS is the running program's operating system target: one of darwin, freebsd,
 // linux, and so on.
 
-// GOOS 为所运行程序的目标操作系统：
-// darwin、freebsd或linux等等。
+// GOOS 为所运行程序的目标操作系统： darwin、freebsd或linux等等。
 const GOOS string = theGoos
 
 const (
@@ -1088,28 +1084,6 @@ const (
 // Programs that change the memory profiling rate should do so just once, as early
 // as possible in the execution of the program (for example, at the beginning of
 // main).
-
-// MemProfileRate controls the fraction of
-// memory allocations that are recorded and
-// reported in the memory profile. The
-// profiler aims to sample an average of
-// one allocation per MemProfileRate bytes
-// allocated.
-//
-// To include every allocated block in the
-// profile, set MemProfileRate to 1. To
-// turn off profiling entirely, set
-// MemProfileRate to 0.
-//
-// The tools that process the memory
-// profiles assume that the profile rate is
-// constant across the lifetime of the
-// program and equal to the current value.
-// Programs that change the memory
-// profiling rate should do so just once,
-// as early as possible in the execution of
-// the program (for example, at the
-// beginning of main).
 var MemProfileRate int = 512 * 1024
 
 // BlockProfile returns n, the number of records in the current blocking profile.
@@ -1118,22 +1092,7 @@ var MemProfileRate int = 512 * 1024
 //
 // Most clients should use the runtime/pprof package or the testing package's
 // -test.blockprofile flag instead of calling BlockProfile directly.
-
-// BlockProfile returns n, the number of
-// records in the current blocking profile.
-// If len(p) >= n, BlockProfile copies the
-// profile into p and returns n, true. If
-// len(p) < n, BlockProfile does not change
-// p and returns n, false.
-//
-// Most clients should use the
-// runtime/pprof package or the testing
-// package's -test.blockprofile flag
-// instead of calling BlockProfile
-// directly.
 func BlockProfile(p []BlockProfileRecord) (n int, ok bool)
-
-// Breakpoint executes a breakpoint trap.
 
 // Breakpoint executes a breakpoint trap.
 func Breakpoint()
@@ -1145,20 +1104,6 @@ func Breakpoint()
 //
 // Most clients should use the runtime/pprof package or the testing package's
 // -test.cpuprofile flag instead of calling CPUProfile directly.
-
-// CPUProfile returns the next chunk of
-// binary CPU profiling stack trace data,
-// blocking until data is available. If
-// profiling is turned off and all the
-// profile data accumulated while it was on
-// has been returned, CPUProfile returns
-// nil. The caller must save the returned
-// data before calling CPUProfile again.
-//
-// Most clients should use the
-// runtime/pprof package or the testing
-// package's -test.cpuprofile flag instead
-// of calling CPUProfile directly.
 func CPUProfile() []byte
 
 // Caller reports file and line number information about function invocations on
@@ -1169,9 +1114,9 @@ func CPUProfile() []byte
 // corresponding call. The boolean ok is false if it was not possible to recover
 // the information.
 
-// Caller 报告关于调用Go程的栈上的函数调用的文件和行号信息。 实参
-// skip 为占用的栈帧数，若为0则表示 Caller
-// 的调用者。（由于历史原因，skip 的意思在 Caller 和 Callers
+// Caller
+// 报告关于调用Go程的栈上的函数调用的文件和行号信息。 实参 skip
+// 为占用的栈帧数，若为0则表示 Caller 的调用者。（由于历史原因，skip 的意思在 Caller 和 Callers
 // 中并不相同。）返回值报告程序计数器，
 // 文件名及对应调用的文件中的行号。若无法获得信息，布尔值 ok 即为 false。
 func Caller(skip int) (pc uintptr, file string, line int, ok bool)
@@ -1190,16 +1135,16 @@ func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 // then pc[i] is the program counter of a faulting instruction and should be used
 // without any subtraction.
 
-// Callers 把调用它的Go程栈上函数请求的返回程序计数器填充到切片 pc
-// 中。 实参 skip 为开始在 pc 中记录之前所要跳过的栈帧数，若为 0
-// 则表示 Callers 自身的栈帧， 若为 1 则表示 Callers
+// Callers
+// 把调用它的Go程栈上函数请求的返回程序计数器填充到切片 pc 中。 实参 skip 为开始在 pc
+// 中记录之前所要跳过的栈帧数，若为 0 则表示 Callers 自身的栈帧， 若为 1 则表示 Callers
 // 的调用者。它返回写入到 pc 中的项数。
 //
-// 注意，由于每个切片项 pc[i] 都是一个返回程序计数器，因此查找 pc[i]
-// 的文件和行（例如，使用
+// 注意，由于每个切片项 pc[i]
+// 都是一个返回程序计数器，因此查找 pc[i] 的文件和行（例如，使用
 // (*Func).FileLine）将会在该调用之后立即返回该指令所在的文件和行号。
-// 要查找该调用本身所在的文件和行号，请使用 pc[i]-1。此规则的一个例外是，若
-// pc[i-1] 对应于函数 runtime.sigpanic，那么 pc[i]
+// 要查找该调用本身所在的文件和行号，请使用 pc[i]-1。此规则的一个例外是，若 pc[i-1] 对应于函数
+// runtime.sigpanic，那么 pc[i]
 // 就是失败指令的程序计数器，因此应当不通过任何减法来使用。
 func Callers(skip int, pc []uintptr) int
 
@@ -1213,9 +1158,10 @@ func GC()
 // setting. The number of logical CPUs on the local machine can be queried with
 // NumCPU. This call will go away when the scheduler improves.
 
-// GOMAXPROCS 设置可同时使用执行的最大CPU数，并返回先前的设置。 若
-// n < 1，它就不会更改当前设置。本地机器的逻辑CPU数可通过 NumCPU
-// 查询。 当调度器改进后，此调用将会消失。
+// GOMAXPROCS
+// 设置可同时使用执行的最大CPU数，并返回先前的设置。 若 n <
+// 1，它就不会更改当前设置。本地机器的逻辑CPU数可通过 NumCPU 查询。
+// 当调度器改进后，此调用将会消失。
 func GOMAXPROCS(n int) int
 
 // GOROOT returns the root of the Go tree. It uses the GOROOT environment variable,
@@ -1234,22 +1180,6 @@ func GOROOT() string
 // main returning. Since func main has not returned, the program continues
 // execution of other goroutines. If all other goroutines exit, the program
 // crashes.
-
-// Goexit terminates the goroutine that
-// calls it. No other goroutine is
-// affected. Goexit runs all deferred calls
-// before terminating the goroutine.
-// Because Goexit is not panic, however,
-// any recover calls in those deferred
-// functions will return nil.
-//
-// Calling Goexit from the main goroutine
-// terminates that goroutine without func
-// main returning. Since func main has not
-// returned, the program continues
-// execution of other goroutines. If all
-// other goroutines exit, the program
-// crashes.
 func Goexit()
 
 // GoroutineProfile returns n, the number of records in the active goroutine stack
@@ -1258,39 +1188,15 @@ func Goexit()
 //
 // Most clients should use the runtime/pprof package instead of calling
 // GoroutineProfile directly.
-
-// GoroutineProfile returns n, the number
-// of records in the active goroutine stack
-// profile. If len(p) >= n,
-// GoroutineProfile copies the profile into
-// p and returns n, true. If len(p) < n,
-// GoroutineProfile does not change p and
-// returns n, false.
-//
-// Most clients should use the
-// runtime/pprof package instead of calling
-// GoroutineProfile directly.
 func GoroutineProfile(p []StackRecord) (n int, ok bool)
 
 // Gosched yields the processor, allowing other goroutines to run. It does not
 // suspend the current goroutine, so execution resumes automatically.
-
-// Gosched yields the processor, allowing
-// other goroutines to run. It does not
-// suspend the current goroutine, so
-// execution resumes automatically.
 func Gosched()
 
 // LockOSThread wires the calling goroutine to its current operating system thread.
 // Until the calling goroutine exits or calls UnlockOSThread, it will always
 // execute in that thread, and no other goroutine can.
-
-// LockOSThread wires the calling goroutine
-// to its current operating system thread.
-// Until the calling goroutine exits or
-// calls UnlockOSThread, it will always
-// execute in that thread, and no other
-// goroutine can.
 func LockOSThread()
 
 // MemProfile returns n, the number of records in the current memory profile. If
@@ -1303,25 +1209,6 @@ func LockOSThread()
 //
 // Most clients should use the runtime/pprof package or the testing package's
 // -test.memprofile flag instead of calling MemProfile directly.
-
-// MemProfile returns n, the number of
-// records in the current memory profile.
-// If len(p) >= n, MemProfile copies the
-// profile into p and returns n, true. If
-// len(p) < n, MemProfile does not change p
-// and returns n, false.
-//
-// If inuseZero is true, the profile
-// includes allocation records where
-// r.AllocBytes > 0 but r.AllocBytes ==
-// r.FreeBytes. These are sites where
-// memory was allocated, but it has all
-// been released back to the runtime.
-//
-// Most clients should use the
-// runtime/pprof package or the testing
-// package's -test.memprofile flag instead
-// of calling MemProfile directly.
 func MemProfile(p []MemProfileRecord, inuseZero bool) (n int, ok bool)
 
 // NumCPU returns the number of logical CPUs on the local machine.
@@ -1343,14 +1230,12 @@ func RaceAcquire(addr unsafe.Pointer)
 
 // RaceDisable disables handling of race events in the current goroutine.
 
-// RaceEnable re-enables handling of race
-// events in the current goroutine.
+// RaceEnable re-enables handling of race events in the current goroutine.
 func RaceDisable()
 
 // RaceEnable re-enables handling of race events in the current goroutine.
 
-// RaceDisable disables handling of race
-// events in the current goroutine.
+// RaceDisable disables handling of race events in the current goroutine.
 func RaceEnable()
 
 func RaceRead(addr unsafe.Pointer)
@@ -1380,17 +1265,6 @@ func ReadMemStats(m *MemStats)
 //
 // To include every blocking event in the profile, pass rate = 1. To turn off
 // profiling entirely, pass rate <= 0.
-
-// SetBlockProfileRate controls the
-// fraction of goroutine blocking events
-// that are reported in the blocking
-// profile. The profiler aims to sample an
-// average of one blocking event per rate
-// nanoseconds spent blocked.
-//
-// To include every blocking event in the
-// profile, pass rate = 1. To turn off
-// profiling entirely, pass rate <= 0.
 func SetBlockProfileRate(rate int)
 
 // SetCPUProfileRate sets the CPU profiling rate to hz samples per second. If hz <=
@@ -1399,18 +1273,6 @@ func SetBlockProfileRate(rate int)
 //
 // Most clients should use the runtime/pprof package or the testing package's
 // -test.cpuprofile flag instead of calling SetCPUProfileRate directly.
-
-// SetCPUProfileRate sets the CPU profiling
-// rate to hz samples per second. If hz <=
-// 0, SetCPUProfileRate turns off
-// profiling. If the profiler is on, the
-// rate cannot be changed without first
-// turning it off.
-//
-// Most clients should use the
-// runtime/pprof package or the testing
-// package's -test.cpuprofile flag instead
-// of calling SetCPUProfileRate directly.
 func SetCPUProfileRate(hz int)
 
 // SetFinalizer sets the finalizer associated with x to f. When the garbage
@@ -1461,20 +1323,20 @@ func SetCPUProfileRate(hz int)
 //
 // SetFinalizer(x, nil) 会清理任何与 x 相关联的终结器。
 //
-// 实参 x 必须是一个对象的指针，该对象通过调用新的或获取一个复合字面地址来分配。
-// 实参 f 必须是一个函数，该函数获取一个 x
+// 实参 x
+// 必须是一个对象的指针，该对象通过调用新的或获取一个复合字面地址来分配。 实参 f
+// 必须是一个函数，该函数获取一个 x
 // 的类型的单一实参，并拥有可任意忽略的返回值。
 // 只要这些条件有一个不满足，SetFinalizer 就会跳过该程序。
 //
-// 终结器按照依赖顺序运行：若 A 指向 B，则二者都有终结器，当只有 A
-// 的终结器运行时， 它们才无法访问；一旦 A 被释放，则 B
+// 终结器按照依赖顺序运行：若 A 指向 B，则二者都有终结器，当只有 A 的终结器运行时，
+// 它们才无法访问；一旦 A 被释放，则 B
 // 的终结器便可运行。若循环依赖的结构包含块及其终结器，
 // 则该循环并不能保证被垃圾回收，而其终结器并不能保证运行，这是因为其依赖没有顺序。
 //
 // x 的终结器预定为在 x
 // 无法访问后的任意时刻运行。无法保证终结器会在程序退出前运行，
-// 因此它们通常只在长时间运行的程序中释放一个关联至对象的非内存资源时使用。
-// 例如，当程序丢弃 os.File 而没有调用 Close 时，该 os.File
+// 因此它们通常只在长时间运行的程序中释放一个关联至对象的非内存资源时使用。 例如，当程序丢弃 os.File 而没有调用 Close 时，该 os.File
 // 对象便可使用一个终结器
 // 来关闭与其相关联的操作系统文件描述符，但依赖终结器去刷新一个内存中的I/O缓存是错误的，
 // 因为该缓存不会在程序退出时被刷新。
@@ -1486,13 +1348,6 @@ func SetFinalizer(obj interface{}, finalizer interface{})
 // Stack formats a stack trace of the calling goroutine into buf and returns the
 // number of bytes written to buf. If all is true, Stack formats stack traces of
 // all other goroutines into buf after the trace for the current goroutine.
-
-// Stack formats a stack trace of the
-// calling goroutine into buf and returns
-// the number of bytes written to buf. If
-// all is true, Stack formats stack traces
-// of all other goroutines into buf after
-// the trace for the current goroutine.
 func Stack(buf []byte, all bool) int
 
 // ThreadCreateProfile returns n, the number of records in the thread creation
@@ -1502,44 +1357,21 @@ func Stack(buf []byte, all bool) int
 //
 // Most clients should use the runtime/pprof package instead of calling
 // ThreadCreateProfile directly.
-
-// ThreadCreateProfile returns n, the
-// number of records in the thread creation
-// profile. If len(p) >= n,
-// ThreadCreateProfile copies the profile
-// into p and returns n, true. If len(p) <
-// n, ThreadCreateProfile does not change p
-// and returns n, false.
-//
-// Most clients should use the
-// runtime/pprof package instead of calling
-// ThreadCreateProfile directly.
 func ThreadCreateProfile(p []StackRecord) (n int, ok bool)
 
 // UnlockOSThread unwires the calling goroutine from its fixed operating system
 // thread. If the calling goroutine has not called LockOSThread, UnlockOSThread is
 // a no-op.
-
-// UnlockOSThread unwires the calling
-// goroutine from its fixed operating
-// system thread. If the calling goroutine
-// has not called LockOSThread,
-// UnlockOSThread is a no-op.
 func UnlockOSThread()
 
 // Version returns the Go tree's version string. It is either the commit hash and
 // date at the time of the build or, when possible, a release tag like "go1.3".
 
 // Version 返回Go目录树的版本字符串。
-// 它一般是一个提交散列值及其构建时间，也可能是一个类似于 "go1.3"
-// 的发行标注。
+// 它一般是一个提交散列值及其构建时间，也可能是一个类似于 "go1.3" 的发行标注。
 func Version() string
 
 // BlockProfileRecord describes blocking events originated at a particular call
-// sequence (stack trace).
-
-// BlockProfileRecord describes blocking
-// events originated at a particular call
 // sequence (stack trace).
 type BlockProfileRecord struct {
 	Count  int64
@@ -1595,39 +1427,21 @@ type Fpxreg C.struct__fpxreg
 type Fpxreg1 C.struct__fpxreg
 
 // A Func represents a Go function in the running binary.
-
-// A Func represents a Go function in the
-// running binary.
 type Func struct {
 	// contains filtered or unexported fields
 }
 
 // FuncForPC returns a *Func describing the function that contains the given
 // program counter address, or else nil.
-
-// FuncForPC returns a *Func describing the
-// function that contains the given program
-// counter address, or else nil.
 func FuncForPC(pc uintptr) *Func
 
 // Entry returns the entry address of the function.
-
-// Entry returns the entry address of the
-// function.
 func (f *Func) Entry() uintptr
 
 // FileLine returns the file name and line number of the source code corresponding
 // to the program counter pc. The result will not be accurate if pc is not a
 // program counter within f.
-
-// FileLine returns the file name and line
-// number of the source code corresponding
-// to the program counter pc. The result
-// will not be accurate if pc is not a
-// program counter within f.
 func (f *Func) FileLine(pc uintptr) (file string, line int)
-
-// Name returns the name of the function.
 
 // Name returns the name of the function.
 func (f *Func) Name() string
@@ -1660,10 +1474,6 @@ type McontextT C.mcontext_t
 
 // A MemProfileRecord describes the live objects allocated by a particular call
 // sequence (stack trace).
-
-// A MemProfileRecord describes the live
-// objects allocated by a particular call
-// sequence (stack trace).
 type MemProfileRecord struct {
 	AllocBytes, FreeBytes     int64       // number of bytes allocated, freed
 	AllocObjects, FreeObjects int64       // number of objects allocated, freed
@@ -1671,22 +1481,12 @@ type MemProfileRecord struct {
 }
 
 // InUseBytes returns the number of bytes in use (AllocBytes - FreeBytes).
-
-// InUseBytes returns the number of bytes
-// in use (AllocBytes - FreeBytes).
 func (r *MemProfileRecord) InUseBytes() int64
 
 // InUseObjects returns the number of objects in use (AllocObjects - FreeObjects).
-
-// InUseObjects returns the number of
-// objects in use (AllocObjects -
-// FreeObjects).
 func (r *MemProfileRecord) InUseObjects() int64
 
 // Stack returns the stack trace associated with the record, a prefix of r.Stack0.
-
-// Stack returns the stack trace associated
-// with the record, a prefix of r.Stack0.
 func (r *MemProfileRecord) Stack() []uintptr
 
 // A MemStats records statistics about the memory allocator.
@@ -1776,22 +1576,14 @@ type Sigset C.sigset_t
 type Sigval C.union_sigval
 
 // A StackRecord describes a single execution stack.
-
-// A StackRecord describes a single
-// execution stack.
 type StackRecord struct {
 	Stack0 [32]uintptr // stack trace for this record; ends at first 0 entry
 }
 
 // Stack returns the stack trace associated with the record, a prefix of r.Stack0.
-
-// Stack returns the stack trace associated
-// with the record, a prefix of r.Stack0.
 func (r *StackRecord) Stack() []uintptr
 
 type StackT C.stack_t
-
-// depends on Timespec, must appear below
 
 // depends on Timespec, must appear below
 type Stat C.struct_stat

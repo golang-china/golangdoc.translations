@@ -6,34 +6,17 @@
 
 // Package exec runs external commands. It wraps os.StartProcess to make it easier
 // to remap stdin and stdout, connect I/O with pipes, and do other adjustments.
-
-// Package exec runs external commands. It
-// wraps os.StartProcess to make it easier
-// to remap stdin and stdout, connect I/O
-// with pipes, and do other adjustments.
 package exec
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
-// file.
-
-// ErrNotFound is the error resulting if a
-// path search failed to find an executable
 // file.
 var ErrNotFound = errors.New("executable file not found in $path")
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
 // file.
-
-// ErrNotFound is the error resulting if a
-// path search failed to find an executable
-// file.
 var ErrNotFound = errors.New("executable file not found in $PATH")
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
-// file.
-
-// ErrNotFound is the error resulting if a
-// path search failed to find an executable
 // file.
 var ErrNotFound = errors.New("executable file not found in %PATH%")
 
@@ -41,21 +24,9 @@ var ErrNotFound = errors.New("executable file not found in %PATH%")
 // by the path environment variable. If file begins with "/", "#", "./", or "../",
 // it is tried directly and the path is not consulted. The result may be an
 // absolute path or a path relative to the current directory.
-
-// LookPath searches for an executable
-// binary named file in the directories
-// named by the path environment variable.
-// If file begins with "/", "#", "./", or
-// "../", it is tried directly and the path
-// is not consulted. The result may be an
-// absolute path or a path relative to the
-// current directory.
 func LookPath(file string) (string, error)
 
 // Cmd represents an external command being prepared or run.
-
-// Cmd represents an external command being
-// prepared or run.
 type Cmd struct {
 	// Path is the path of the command to run.
 	//
@@ -132,39 +103,13 @@ type Cmd struct {
 // The returned Cmd's Args field is constructed from the command name followed by
 // the elements of arg, so arg should not include the command name itself. For
 // example, Command("echo", "hello")
-
-// Command returns the Cmd struct to
-// execute the named program with the given
-// arguments.
-//
-// It sets only the Path and Args in the
-// returned structure.
-//
-// If name contains no path separators,
-// Command uses LookPath to resolve the
-// path to a complete name if possible.
-// Otherwise it uses name directly.
-//
-// The returned Cmd's Args field is
-// constructed from the command name
-// followed by the elements of arg, so arg
-// should not include the command name
-// itself. For example, Command("echo",
-// "hello")
 func Command(name string, arg ...string) *Cmd
 
 // CombinedOutput runs the command and returns its combined standard output and
 // standard error.
-
-// CombinedOutput runs the command and
-// returns its combined standard output and
-// standard error.
 func (c *Cmd) CombinedOutput() ([]byte, error)
 
 // Output runs the command and returns its standard output.
-
-// Output runs the command and returns its
-// standard output.
 func (c *Cmd) Output() ([]byte, error)
 
 // Run starts the specified command and waits for it to complete.
@@ -174,32 +119,12 @@ func (c *Cmd) Output() ([]byte, error)
 //
 // If the command fails to run or doesn't complete successfully, the error is of
 // type *ExitError. Other error types may be returned for I/O problems.
-
-// Run starts the specified command and
-// waits for it to complete.
-//
-// The returned error is nil if the command
-// runs, has no problems copying stdin,
-// stdout, and stderr, and exits with a
-// zero exit status.
-//
-// If the command fails to run or doesn't
-// complete successfully, the error is of
-// type *ExitError. Other error types may
-// be returned for I/O problems.
 func (c *Cmd) Run() error
 
 // Start starts the specified command but does not wait for it to complete.
 //
 // The Wait method will return the exit code and release associated resources once
 // the command exits.
-
-// Start starts the specified command but
-// does not wait for it to complete.
-//
-// The Wait method will return the exit
-// code and release associated resources
-// once the command exits.
 func (c *Cmd) Start() error
 
 // StderrPipe returns a pipe that will be connected to the command's standard error
@@ -210,20 +135,6 @@ func (c *Cmd) Start() error
 // call Wait before all reads from the pipe have completed. For the same reason, it
 // is incorrect to use Run when using StderrPipe. See the StdoutPipe example for
 // idiomatic usage.
-
-// StderrPipe returns a pipe that will be
-// connected to the command's standard
-// error when the command starts.
-//
-// Wait will close the pipe after seeing
-// the command exit, so most callers need
-// not close the pipe themselves; however,
-// an implication is that it is incorrect
-// to call Wait before all reads from the
-// pipe have completed. For the same
-// reason, it is incorrect to use Run when
-// using StderrPipe. See the StdoutPipe
-// example for idiomatic usage.
 func (c *Cmd) StderrPipe() (io.ReadCloser, error)
 
 // StdinPipe returns a pipe that will be connected to the command's standard input
@@ -231,17 +142,6 @@ func (c *Cmd) StderrPipe() (io.ReadCloser, error)
 // the command exit. A caller need only call Close to force the pipe to close
 // sooner. For example, if the command being run will not exit until standard input
 // is closed, the caller must close the pipe.
-
-// StdinPipe returns a pipe that will be
-// connected to the command's standard
-// input when the command starts. The pipe
-// will be closed automatically after Wait
-// sees the command exit. A caller need
-// only call Close to force the pipe to
-// close sooner. For example, if the
-// command being run will not exit until
-// standard input is closed, the caller
-// must close the pipe.
 func (c *Cmd) StdinPipe() (io.WriteCloser, error)
 
 // StdoutPipe returns a pipe that will be connected to the command's standard
@@ -252,20 +152,6 @@ func (c *Cmd) StdinPipe() (io.WriteCloser, error)
 // call Wait before all reads from the pipe have completed. For the same reason, it
 // is incorrect to call Run when using StdoutPipe. See the example for idiomatic
 // usage.
-
-// StdoutPipe returns a pipe that will be
-// connected to the command's standard
-// output when the command starts.
-//
-// Wait will close the pipe after seeing
-// the command exit, so most callers need
-// not close the pipe themselves; however,
-// an implication is that it is incorrect
-// to call Wait before all reads from the
-// pipe have completed. For the same
-// reason, it is incorrect to call Run when
-// using StdoutPipe. See the example for
-// idiomatic usage.
 func (c *Cmd) StdoutPipe() (io.ReadCloser, error)
 
 // Wait waits for the command to exit. It must have been started by Start.
@@ -277,29 +163,9 @@ func (c *Cmd) StdoutPipe() (io.ReadCloser, error)
 // type *ExitError. Other error types may be returned for I/O problems.
 //
 // Wait releases any resources associated with the Cmd.
-
-// Wait waits for the command to exit. It
-// must have been started by Start.
-//
-// The returned error is nil if the command
-// runs, has no problems copying stdin,
-// stdout, and stderr, and exits with a
-// zero exit status.
-//
-// If the command fails to run or doesn't
-// complete successfully, the error is of
-// type *ExitError. Other error types may
-// be returned for I/O problems.
-//
-// Wait releases any resources associated
-// with the Cmd.
 func (c *Cmd) Wait() error
 
 // Error records the name of a binary that failed to be executed and the reason it
-// failed.
-
-// Error records the name of a binary that
-// failed to be executed and the reason it
 // failed.
 type Error struct {
 	Name string
@@ -309,9 +175,6 @@ type Error struct {
 func (e *Error) Error() string
 
 // An ExitError reports an unsuccessful exit by a command.
-
-// An ExitError reports an unsuccessful
-// exit by a command.
 type ExitError struct {
 	*os.ProcessState
 }

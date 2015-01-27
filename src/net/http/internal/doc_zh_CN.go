@@ -7,8 +7,7 @@
 // Package internal contains HTTP internals shared by net/http and
 // net/http/httputil.
 
-// internal 包含 net/http 和 net/http/httputil
-// 共享的 HTTP 内部函数.
+// internal 包含 net/http 和 net/http/httputil 共享的 HTTP 内部函数.
 package internal
 
 var ErrLineTooLong = errors.New("header line too long")
@@ -20,8 +19,8 @@ var ErrLineTooLong = errors.New("header line too long")
 // NewChunkedReader is not needed by normal applications. The http package
 // automatically decodes chunking when reading response bodies.
 
-// NewChunkedReader返回一个新的chunkedReader。这个chunkedReader能翻译从r中的HTTP
-// “chunked” 获取到的数据，并且返回数据。
+// NewChunkedReader返回一个新的chunkedReader。这个chunkedReader能翻译从r中的HTTP “chunked”
+// 获取到的数据，并且返回数据。
 // chunkedReader当读取到最后的0长度的chunk的时候返回io.EOF。
 //
 // NewChunkedReader在通常的应用中并不需要。http包会在读取回复的消息体的时候自动解码。

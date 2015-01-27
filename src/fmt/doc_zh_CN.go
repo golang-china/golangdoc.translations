@@ -352,17 +352,18 @@
 //
 //	%p	十六进制表示，前缀 0x
 //
-// 这里没有 'u' 标记。若整数为无符号类型，他们就会被打印成无符号的。类似地，
+// 这里没有 'u'
+// 标记。若整数为无符号类型，他们就会被打印成无符号的。类似地，
 // 这里也不需要指定操作数的大小（int8，int64）。
 //
-// 宽度与精度的控制格式以Unicode码点为单位。（这点与C的 printf
-// 不同， 它以字节数为单位。）二者或其中之一均可用字符 '*' 表示，
+// 宽度与精度的控制格式以Unicode码点为单位。（这点与C的 printf 不同，
+// 它以字节数为单位。）二者或其中之一均可用字符 '*' 表示，
 // 此时它们的值会从下一个操作数中获取，该操作数的类型必须为 int。
 //
-// 对数值而言，宽度为该数值占用区域的最小宽度；精度为小数点之后的位数。 但对于
-// %g/%G 而言，精度为所有数字的总数。例如，对于123.45，格式 %6.2f
-// 会打印123.45，而 %.4g 会打印123.5。%e 和 %f
-// 的默认精度为6；但对于 %g 而言， 它的默认精度为确定该值所必须的最小位数。
+// 对数值而言，宽度为该数值占用区域的最小宽度；精度为小数点之后的位数。 但对于 %g/%G
+// 而言，精度为所有数字的总数。例如，对于123.45，格式 %6.2f 会打印123.45，而 %.4g 会打印123.5。%e 和 %f
+// 的默认精度为6；但对于 %g 而言，
+// 它的默认精度为确定该值所必须的最小位数。
 //
 // 对大多数值而言，宽度为输出的最小字符数，如果必要的话会为已格式化的形式填充空格。
 // 对字符串而言，精度为输出的最大字符数，如果必要的话会直接截断。
@@ -380,32 +381,32 @@
 //	0	填充前导的0而非空格；
 //		对于数字，这会将填充移到正负号之后
 //
-// 标记有事会被占位符忽略，所以不要指望它们。例如十进制没有备用格式，因此 %#d
-// 与 %d 的行为相同。
+// 标记有事会被占位符忽略，所以不要指望它们。例如十进制没有备用格式，因此 %#d 与 %d 的行为相同。
 //
 // 对于每一个 Printf 类的函数，都有一个 Print
-// 函数，该函数不接受任何格式化， 它等价于对每一个操作数都应用
-// %v。另一个变参函数 Println 会在操作数之间插入空白，
-// 并在末尾追加一个换行符。
+// 函数，该函数不接受任何格式化， 它等价于对每一个操作数都应用 %v。另一个变参函数 Println
+// 会在操作数之间插入空白， 并在末尾追加一个换行符。
 //
-// 不考虑占位符的话，如果操作数是接口值，就会使用其内部的具体值，而非接口本身。
-// 因此：
+// 不考虑占位符的话，如果操作数是接口值，就会使用其内部的具体值，而非接口本身。 因此：
 //
 //	var i interface{} = 23
 //	fmt.Printf("%v\n", i)
 //
 // 会打印 23。
 //
-// 若一个操作数实现了 Formatter 接口，该接口就能更好地用于控制格式化。
+// 若一个操作数实现了 Formatter
+// 接口，该接口就能更好地用于控制格式化。
 //
-// 若其格式（它对于 Println 等函数是隐式的 %v）对于字符串是有效的
-// （%s %q %v %x %X），以下两条规则也适用：
+// 若其格式（它对于 Println 等函数是隐式的 %v）对于字符串是有效的 （%s %q %v %x
+// %X），以下两条规则也适用：
 //
 // 1. 若一个操作数实现了 error 接口，Error
-// 方法就能将该对象转换为字符串， 随后会根据占位符的需要进行格式化。
+// 方法就能将该对象转换为字符串，
+// 随后会根据占位符的需要进行格式化。
 //
 // 2. 若一个操作数实现了 String() string
-// 方法，该方法能将该对象转换为字符串， 随后会根据占位符的需要进行格式化。
+// 方法，该方法能将该对象转换为字符串，
+// 随后会根据占位符的需要进行格式化。
 //
 // 为避免以下这类递归的情况：
 //
@@ -435,17 +436,15 @@
 //
 // 扫描
 //
-// 一组类似的函数通过扫描已格式化的文本来产生值。Scan、Scanf 和
-// Scanln 从 os.Stdin 中读取；Fscan、Fscanf 和
-// Fscanln 从指定的 io.Reader 中读取； Sscan、Sscanf
-// 和 Sscanln 从实参字符串中读取。Scanln、Fscanln 和
-// Sscanln
-// 在换行符处停止扫描，且需要条目紧随换行符之后；Scanf、Fscanf 和
-// Sscanf 需要输入换行符来匹配格式中的换行符；其它函数则将换行符视为空格。
+// 一组类似的函数通过扫描已格式化的文本来产生值。Scan、Scanf 和 Scanln 从 os.Stdin
+// 中读取；Fscan、Fscanf 和 Fscanln 从指定的 io.Reader 中读取； Sscan、Sscanf 和 Sscanln
+// 从实参字符串中读取。Scanln、Fscanln 和 Sscanln
+// 在换行符处停止扫描，且需要条目紧随换行符之后；Scanf、Fscanf 和 Sscanf
+// 需要输入换行符来匹配格式中的换行符；其它函数则将换行符视为空格。
 //
-// Scanf、Fscanf 和 Sscanf 根据格式字符串解析实参，类似于
-// Printf。例如，%x 会将一个整数扫描为十六进制数，而 %v
-// 则会扫描该值的默认表现格式。
+// Scanf、Fscanf 和 Sscanf
+// 根据格式字符串解析实参，类似于 Printf。例如，%x
+// 会将一个整数扫描为十六进制数，而 %v 则会扫描该值的默认表现格式。
 //
 // 格式化行为类似于 Printf，但也有如下例外：
 //
@@ -458,42 +457,40 @@
 // 在或使用 %v
 // 占位符扫描整数时，可接受友好的进制前缀0（八进制）和0x（十六进制）。
 //
-// 宽度被解释为输入的文本（%5s 意为最多从输入中读取5个符文来扫描成字符串），
+// 宽度被解释为输入的文本（%5s
+// 意为最多从输入中读取5个符文来扫描成字符串），
 // 而扫描函数则没有精度的语法（没有 %5.2f，只有 %5f）。
 //
 // 当以某种格式进行扫描时，无论在格式中还是在输入中，所有非空的连续空白字符
 // （除换行符外）都等价于单个空格。由于这种限制，格式字符串文本必须匹配输入的文本，
 // 如果不匹配，扫描过程就会停止，并返回已扫描的实参数。
 //
-// 在所有的扫描参数中，若一个操作数实现了 Scan 方法（即它实现了
-// Scanner 接口），
-// 该操作数将使用该方法扫描其文本。此外，若已扫描的实参数少于所提供的实参数，
-// 就会返回一个错误。
+// 在所有的扫描参数中，若一个操作数实现了 Scan 方法（即它实现了 Scanner 接口），
+// 该操作数将使用该方法扫描其文本。此外，若已扫描的实参数少于所提供的实参数， 就会返回一个错误。
 //
 // 所有需要被扫描的实参都必须是基本类型或 Scanner 接口的实现。
 //
 // 注意：Fscan
 // 等函数会从输入中多读取一个字符（符文），因此，如果循环调用扫描函数，
-// 可能会跳过输入中的某些数据。一般只有在输入的数据中没有空白符时该问题才会出现。
-// 若提供给 Fscan 的读取器实现了
+// 可能会跳过输入中的某些数据。一般只有在输入的数据中没有空白符时该问题才会出现。 若提供给 Fscan 的读取器实现了
 // ReadRune，就会用该方法读取字符。若此读取器还实现了 UnreadRune
-// 方法，就会用该方法保存字符，而连续的调用将不会丢失数据。若要为没有
-// ReadRune 和 UnreadRune 方法的读取器加上这些功能，需使用
-// bufio.NewReader。
+// 方法，就会用该方法保存字符，而连续的调用将不会丢失数据。若要为没有 ReadRune 和 UnreadRune
+// 方法的读取器加上这些功能，需使用 bufio.NewReader。
 package fmt
 
 // Errorf formats according to a format specifier and returns the string as a value
 // that satisfies error.
 
-// Errorf 根据于格式说明符进行格式化并将字符串作为满足 error
-// 的值返回。
+// Errorf
+// 根据于格式说明符进行格式化并将字符串作为满足 error 的值返回。
 func Errorf(format string, a ...interface{}) error
 
 // Fprint formats using the default formats for its operands and writes to w.
 // Spaces are added between operands when neither is a string. It returns the
 // number of bytes written and any write error encountered.
 
-// Fprint 使用其操作数的默认格式进行格式化并写入到 w。
+// Fprint
+// 使用其操作数的默认格式进行格式化并写入到 w。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 // 它返回写入的字节数以及任何遇到的错误。
 func Fprint(w io.Writer, a ...interface{}) (n int, err error)
@@ -509,7 +506,8 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error)
 // Spaces are always added between operands and a newline is appended. It returns
 // the number of bytes written and any write error encountered.
 
-// Fprintln 使用其操作数的默认格式进行格式化并写入到 w。
+// Fprintln
+// 使用其操作数的默认格式进行格式化并写入到 w。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 // 它返回写入的字节数以及任何遇到的错误。
 func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
@@ -519,7 +517,8 @@ func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
 // successfully scanned. If that is less than the number of arguments, err will
 // report why.
 
-// Fscan 扫描从 r 中读取的文本，并将连续由空格分隔的值存储为连续的实参。
+// Fscan 扫描从 r
+// 中读取的文本，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Fscan(r io.Reader, a ...interface{}) (n int, err error)
 
@@ -527,8 +526,9 @@ func Fscan(r io.Reader, a ...interface{}) (n int, err error)
 // successive arguments as determined by the format. It returns the number of items
 // successfully parsed.
 
-// Fscanf 扫描从 r 中读取的文本，并将连续由空格分隔的值存储为连续的实参，
-// 其格式由 format 决定。它返回成功解析的条目数。
+// Fscanf 扫描从 r
+// 中读取的文本，并将连续由空格分隔的值存储为连续的实参， 其格式由 format
+// 决定。它返回成功解析的条目数。
 func Fscanf(r io.Reader, format string, a ...interface{}) (n int, err error)
 
 // Fscanln is similar to Fscan, but stops scanning at a newline and after the final
@@ -542,7 +542,8 @@ func Fscanln(r io.Reader, a ...interface{}) (n int, err error)
 // output. Spaces are added between operands when neither is a string. It returns
 // the number of bytes written and any write error encountered.
 
-// Print 使用其操作数的默认格式进行格式化并写入到标准输出。
+// Print
+// 使用其操作数的默认格式进行格式化并写入到标准输出。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 // 它返回写入的字节数以及任何遇到的错误。
 func Print(a ...interface{}) (n int, err error)
@@ -550,7 +551,8 @@ func Print(a ...interface{}) (n int, err error)
 // Printf formats according to a format specifier and writes to standard output. It
 // returns the number of bytes written and any write error encountered.
 
-// Printf 根据于格式说明符进行格式化并写入到标准输出。
+// Printf
+// 根据于格式说明符进行格式化并写入到标准输出。
 // 它返回写入的字节数以及任何遇到的写入错误。
 func Printf(format string, a ...interface{}) (n int, err error)
 
@@ -559,7 +561,8 @@ func Printf(format string, a ...interface{}) (n int, err error)
 // appended. It returns the number of bytes written and any write error
 // encountered.
 
-// Println 使用其操作数的默认格式进行格式化并写入到标准输出。
+// Println
+// 使用其操作数的默认格式进行格式化并写入到标准输出。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 // 它返回写入的字节数以及任何遇到的错误。
 func Println(a ...interface{}) (n int, err error)
@@ -569,7 +572,8 @@ func Println(a ...interface{}) (n int, err error)
 // of items successfully scanned. If that is less than the number of arguments, err
 // will report why.
 
-// Scan 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参。
+// Scan
+// 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Scan(a ...interface{}) (n int, err error)
 
@@ -577,8 +581,9 @@ func Scan(a ...interface{}) (n int, err error)
 // values into successive arguments as determined by the format. It returns the
 // number of items successfully scanned.
 
-// Scanf 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参，
-// 其格式由 format 决定。它返回成功扫描的条目数。
+// Scanf
+// 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参， 其格式由 format
+// 决定。它返回成功扫描的条目数。
 func Scanf(format string, a ...interface{}) (n int, err error)
 
 // Scanln is similar to Scan, but stops scanning at a newline and after the final
@@ -591,21 +596,24 @@ func Scanln(a ...interface{}) (n int, err error)
 // Sprint formats using the default formats for its operands and returns the
 // resulting string. Spaces are added between operands when neither is a string.
 
-// Sprint 使用其操作数的默认格式进行格式化并返回其结果字符串。
+// Sprint
+// 使用其操作数的默认格式进行格式化并返回其结果字符串。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 func Sprint(a ...interface{}) string
 
 // Sprintf formats according to a format specifier and returns the resulting
 // string.
 
-// Sprintf 根据于格式说明符进行格式化并返回其结果字符串。
+// Sprintf
+// 根据于格式说明符进行格式化并返回其结果字符串。
 func Sprintf(format string, a ...interface{}) string
 
 // Sprintln formats using the default formats for its operands and returns the
 // resulting string. Spaces are always added between operands and a newline is
 // appended.
 
-// Sprintln 使用其操作数的默认格式进行格式化并写返回其结果字符串。
+// Sprintln
+// 使用其操作数的默认格式进行格式化并写返回其结果字符串。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 func Sprintln(a ...interface{}) string
 
@@ -614,7 +622,8 @@ func Sprintln(a ...interface{}) string
 // successfully scanned. If that is less than the number of arguments, err will
 // report why.
 
-// Sscan 扫描实参 string，并将连续由空格分隔的值存储为连续的实参。
+// Sscan 扫描实参
+// string，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Sscan(str string, a ...interface{}) (n int, err error)
 
@@ -622,8 +631,9 @@ func Sscan(str string, a ...interface{}) (n int, err error)
 // successive arguments as determined by the format. It returns the number of items
 // successfully parsed.
 
-// Scanf 扫描实参 string，并将连续由空格分隔的值存储为连续的实参，
-// 其格式由 format 决定。它返回成功解析的条目数。
+// Scanf 扫描实参
+// string，并将连续由空格分隔的值存储为连续的实参， 其格式由 format
+// 决定。它返回成功解析的条目数。
 func Sscanf(str string, format string, a ...interface{}) (n int, err error)
 
 // Sscanln is similar to Sscan, but stops scanning at a newline and after the final
@@ -637,8 +647,9 @@ func Sscanln(str string, a ...interface{}) (n int, err error)
 // implementation of Format may call Sprint(f) or Fprint(f) etc. to generate its
 // output.
 
-// Formatter 接口由带有定制的格式化器的值所实现。 Format
-// 的实现可调用 Sprintf 或 Fprintf(f) 等函数来生成其输出。
+// Formatter
+// 接口由带有定制的格式化器的值所实现。 Format 的实现可调用 Sprintf 或 Fprintf(f)
+// 等函数来生成其输出。
 type Formatter interface {
 	Format(f State, c rune)
 }
@@ -659,8 +670,8 @@ type GoStringer interface {
 // space-delimited token.
 
 // ScanState
-// 表示传递给定制扫描器的扫描状态。扫瞄器可一次扫描一个附文或请求
-// ScanState 发现下一个以空格分隔的标记。
+// 表示传递给定制扫描器的扫描状态。扫瞄器可一次扫描一个附文或请求 ScanState
+// 发现下一个以空格分隔的标记。
 type ScanState interface {
 	// ReadRune reads the next rune (Unicode code point) from the input.
 	// If invoked during Scanln, Fscanln, or Sscanln, ReadRune() will
@@ -698,8 +709,8 @@ type ScanState interface {
 
 // Scanner 由任何拥有 Scan
 // 方法的值实现，它将输入扫描成值的表示，并将其结果存储到接收者中，
-// 该接收者必须为可用的指针。Scan 方法会被 Scan、Scanf 或
-// Scanln 的任何实现了它的实参所调用。
+// 该接收者必须为可用的指针。Scan 方法会被 Scan、Scanf 或 Scanln
+// 的任何实现了它的实参所调用。
 type Scanner interface {
 	Scan(state ScanState, verb rune) error
 }

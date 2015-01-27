@@ -55,8 +55,7 @@ var (
 // A Header represents a single header in a tar archive. Some fields may not be
 // populated.
 
-// Header代表tar档案文件里的单个头。
-// Header类型的某些字段可能未使用。
+// Header代表tar档案文件里的单个头。 Header类型的某些字段可能未使用。
 type Header struct {
 	Name       string    // name of header file entry
 	Mode       int64     // permission and mode bits
@@ -133,8 +132,7 @@ func (tr *Reader) Read(b []byte) (n int, err error)
 // in total.
 
 // Writer类型提供了POSIX.1格式的tar档案文件的顺序写入。
-// 一个tar档案文件包含一系列文件。
-// 调用WriteHeader来写入一个新的文件，
+// 一个tar档案文件包含一系列文件。 调用WriteHeader来写入一个新的文件，
 // 然后调用Write写入文件的数据，该记录写入的数据不能超过hdr.Size字节。
 type Writer struct {
 	// contains filtered or unexported fields
@@ -161,8 +159,7 @@ func (tw *Writer) Flush() error
 // ErrWriteTooLong if more than hdr.Size bytes are written after WriteHeader.
 
 // Write向tar档案文件的当前记录中写入数据。
-// 如果写入的数据总数超出上一次调用WriteHeader的参数hdr.Size字节，
-// 返回ErrWriteTooLong错误。
+// 如果写入的数据总数超出上一次调用WriteHeader的参数hdr.Size字节， 返回ErrWriteTooLong错误。
 func (tw *Writer) Write(b []byte) (n int, err error)
 
 // WriteHeader writes hdr and prepares to accept the file's contents. WriteHeader

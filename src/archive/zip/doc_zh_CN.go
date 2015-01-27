@@ -228,9 +228,4 @@ func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error)
 
 // Flush flushes any buffered data to the underlying writer. Calling Flush is not
 // normally necessary; calling Close is sufficient.
-
-// Flush flushes any buffered data to the
-// underlying writer. Calling Flush is not
-// normally necessary; calling Close is
-// sufficient.
 func (w *Writer) Flush() error

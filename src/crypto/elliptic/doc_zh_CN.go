@@ -5,41 +5,20 @@
 // +build ingore
 
 // Package elliptic implements several standard elliptic curves over prime fields.
-
-// Package elliptic implements several
-// standard elliptic curves over prime
-// fields.
 package elliptic
 
 // GenerateKey returns a public/private key pair. The private key is generated
 // using the given reader, which must return random data.
-
-// GenerateKey returns a public/private key
-// pair. The private key is generated using
-// the given reader, which must return
-// random data.
 func GenerateKey(curve Curve, rand io.Reader) (priv []byte, x, y *big.Int, err error)
 
 // Marshal converts a point into the form specified in section 4.3.6 of ANSI X9.62.
-
-// Marshal converts a point into the form
-// specified in section 4.3.6 of ANSI
-// X9.62.
 func Marshal(curve Curve, x, y *big.Int) []byte
 
 // Unmarshal converts a point, serialized by Marshal, into an x, y pair. On error,
 // x = nil.
-
-// Unmarshal converts a point, serialized
-// by Marshal, into an x, y pair. On error,
-// x = nil.
 func Unmarshal(curve Curve, data []byte) (x, y *big.Int)
 
 // A Curve represents a short-form Weierstrass curve with a=-3. See
-// http://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
-
-// A Curve represents a short-form
-// Weierstrass curve with a=-3. See
 // http://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
 type Curve interface {
 	// Params returns the parameters for the curve.
@@ -58,36 +37,19 @@ type Curve interface {
 }
 
 // P224 returns a Curve which implements P-224 (see FIPS 186-3, section D.2.2)
-
-// P224 returns a Curve which implements
-// P-224 (see FIPS 186-3, section D.2.2)
 func P224() Curve
 
 // P256 returns a Curve which implements P-256 (see FIPS 186-3, section D.2.3)
-
-// P256 returns a Curve which implements
-// P-256 (see FIPS 186-3, section D.2.3)
 func P256() Curve
 
 // P384 returns a Curve which implements P-384 (see FIPS 186-3, section D.2.4)
-
-// P384 returns a Curve which implements
-// P-384 (see FIPS 186-3, section D.2.4)
 func P384() Curve
 
 // P521 returns a Curve which implements P-521 (see FIPS 186-3, section D.2.5)
-
-// P521 returns a Curve which implements
-// P-521 (see FIPS 186-3, section D.2.5)
 func P521() Curve
 
 // CurveParams contains the parameters of an elliptic curve and also provides a
 // generic, non-constant time implementation of Curve.
-
-// CurveParams contains the parameters of
-// an elliptic curve and also provides a
-// generic, non-constant time
-// implementation of Curve.
 type CurveParams struct {
 	P       *big.Int // the order of the underlying field
 	N       *big.Int // the order of the base point

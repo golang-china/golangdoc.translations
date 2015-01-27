@@ -140,14 +140,15 @@ package flag
 // top-level functions such as BoolVar, Arg, and so on are wrappers for the methods
 // of CommandLine.
 
-// CommandLine 是命令行标记的默认集合，从 os.Args 解析而来。像
-// BoolVar、Arg 等这样的顶级函数为 CommandLine 方法的包装。
+// CommandLine 是命令行标记的默认集合，从 os.Args 解析而来。像 BoolVar、Arg
+// 等这样的顶级函数为 CommandLine 方法的包装。
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
 // ErrHelp is the error returned if the -help or -h flag is invoked but no such
 // flag is defined.
 
-// ErrHelp 在 -help 或 -h 标志未定义却调用了它时返回一个错误。
+// ErrHelp 在 -help 或 -h
+// 标志未定义却调用了它时返回一个错误。
 var ErrHelp = errors.New("flag: help requested")
 
 // Usage prints to standard error a usage message documenting all defined
@@ -194,8 +195,8 @@ func BoolVar(p *bool, name string, value bool, usage string)
 // time.ParseDuration.
 
 // Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
-// 返回值是一个存储标签解析值的time.Duration变量地址。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// 返回值是一个存储标签解析值的time.Duration变量地址。 此标记接受一个 time.ParseDuration
+// 可接受的值。
 func Duration(name string, value time.Duration, usage string) *time.Duration
 
 // DurationVar defines a time.Duration flag with specified name, default value, and
@@ -204,8 +205,8 @@ func Duration(name string, value time.Duration, usage string) *time.Duration
 // time.ParseDuration.
 
 // DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
-// 参数p指向一个存储标签解析值的time.Duration变量。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// 参数p指向一个存储标签解析值的time.Duration变量。 此标记接受一个 time.ParseDuration
+// 可接受的值。
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string)
 
 // Float64 defines a float64 flag with specified name, default value, and usage
@@ -394,8 +395,7 @@ func Lookup(name string) *Flag
 // A FlagSet represents a set of defined flags. The zero value of a FlagSet has no
 // name and has ContinueOnError error handling.
 
-// FlagSet 是已经定义好的标签的集合。FlagSet 的零值没有名字且拥有
-// ContinueOnError 错误处理。
+// FlagSet 是已经定义好的标签的集合。FlagSet 的零值没有名字且拥有 ContinueOnError 错误处理。
 type FlagSet struct {
 	// Usage is the function called when an error occurs while parsing flags.
 	// The field is a function (not a method) that may be changed to point to
@@ -444,8 +444,8 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string)
 // time.ParseDuration.
 
 // Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
-// 返回值是一个存储标签解析值的time.Duration变量地址。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// 返回值是一个存储标签解析值的time.Duration变量地址。 此标记接受一个 time.ParseDuration
+// 可接受的值。
 func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time.Duration
 
 // DurationVar defines a time.Duration flag with specified name, default value, and
@@ -454,8 +454,8 @@ func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time
 // time.ParseDuration.
 
 // DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
-// 参数p指向一个存储标签解析值的time.Duration变量。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// 参数p指向一个存储标签解析值的time.Duration变量。 此标记接受一个 time.ParseDuration
+// 可接受的值。
 func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string)
 
 // Float64 defines a float64 flag with specified name, default value, and usage
@@ -535,9 +535,8 @@ func (f *FlagSet) NFlag() int
 // -help or -h were set but not defined.
 
 // Parse从参数列表中解析定义的标签，这个参数列表并不包含执行的命令名字。
-// 这个方法调用时间点必须在FlagSet的所有标签都定义之后，程序访问这些标签之前。
-// 当 -help 或 -h 标签没有定义却被调用了的时候，这个方法返回
-// ErrHelp。
+// 这个方法调用时间点必须在FlagSet的所有标签都定义之后，程序访问这些标签之前。 当 -help 或 -h
+// 标签没有定义却被调用了的时候，这个方法返回 ErrHelp。
 func (f *FlagSet) Parse(arguments []string) error
 
 // Parsed reports whether f.Parse has been called.
@@ -643,14 +642,6 @@ func (f *FlagSet) VisitAll(fn func(*Flag))
 // wraps the Value interface, rather than being part of it, because it appeared
 // after Go 1 and its compatibility rules. All Value types provided by this package
 // satisfy the Getter interface.
-
-// Getter is an interface that allows the
-// contents of a Value to be retrieved. It
-// wraps the Value interface, rather than
-// being part of it, because it appeared
-// after Go 1 and its compatibility rules.
-// All Value types provided by this package
-// satisfy the Getter interface.
 type Getter interface {
 	Value
 	Get() interface{}
@@ -665,8 +656,7 @@ type Getter interface {
 
 // Value接口是定义了标签对应的具体的参数值。 （默认值是string类型）
 //
-// 若 Value 拥有的 IsBoolFlag() bool 方法返回
-// ture，则命令行解析器会使 -name 等价于
+// 若 Value 拥有的 IsBoolFlag() bool 方法返回 ture，则命令行解析器会使 -name 等价于
 // -name=true，而非使用下一个命令行实参。
 type Value interface {
 	String() string

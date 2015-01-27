@@ -32,8 +32,8 @@ const (
 // validation is performed.
 
 // DecodeLastRune 解包 p
-// 中的最后一个UTF-8编码，并返回该符文及其字节宽度。 若此编码无效，它就会返回
-// (RuneError, 1)，即一个对于正确的UTF-8来说不可能的值。
+// 中的最后一个UTF-8编码，并返回该符文及其字节宽度。 若此编码无效，它就会返回 (RuneError,
+// 1)，即一个对于正确的UTF-8来说不可能的值。
 // 若一个编码为错误的UTF-8值，或该符文的编码超出范围，或不是该值可能的最短UTF-8编码，
 // 那么它就是无效的。除此之外，并不进行其它的验证。
 func DecodeLastRune(p []byte) (r rune, size int)
@@ -47,8 +47,8 @@ func DecodeLastRune(p []byte) (r rune, size int)
 // validation is performed.
 
 // DecodeLastRuneInString 类似于
-// DecodeLastRune，但其输入为字符串。 若此编码无效，它就会返回
-// (RuneError, 1)，即一个对于正确的UTF-8来说不可能的值。
+// DecodeLastRune，但其输入为字符串。 若此编码无效，它就会返回 (RuneError,
+// 1)，即一个对于正确的UTF-8来说不可能的值。
 // 若一个编码为错误的UTF-8值，或该符文的编码超出范围，或不是该值可能的最短UTF-8编码，
 // 那么它就是无效的。除此之外，并不进行其它的验证。
 func DecodeLastRuneInString(s string) (r rune, size int)
@@ -63,8 +63,8 @@ func DecodeLastRuneInString(s string) (r rune, size int)
 // validation is performed.
 
 // DecodeRune 解包 p
-// 中的第一个UTF-8编码，并返回该符文及其字节宽度。 若此编码无效，它就会返回
-// (RuneError, 1)，即一个对于正确的UTF-8来说不可能的值。
+// 中的第一个UTF-8编码，并返回该符文及其字节宽度。 若此编码无效，它就会返回 (RuneError,
+// 1)，即一个对于正确的UTF-8来说不可能的值。
 // 若一个编码为错误的UTF-8值，或该符文的编码超出范围，或不是该值可能的最短UTF-8编码，
 // 那么它就是无效的。除此之外，并不进行其它的验证。
 func DecodeRune(p []byte) (r rune, size int)
@@ -77,9 +77,9 @@ func DecodeRune(p []byte) (r rune, size int)
 // range, or is not the shortest possible UTF-8 encoding for the value. No other
 // validation is performed.
 
-// DecodeRuneInString 类似于
-// DecodeRune，但其输入为字符串。 若此编码无效，它就会返回
-// (RuneError, 1)，即一个对于正确的UTF-8来说不可能的值。
+// DecodeRuneInString 类似于 DecodeRune，但其输入为字符串。
+// 若此编码无效，它就会返回 (RuneError,
+// 1)，即一个对于正确的UTF-8来说不可能的值。
 // 若一个编码为错误的UTF-8值，或该符文的编码超出范围，或不是该值可能的最短UTF-8编码，
 // 那么它就是无效的。除此之外，并不进行其它的验证。
 func DecodeRuneInString(s string) (r rune, size int)
@@ -87,15 +87,15 @@ func DecodeRuneInString(s string) (r rune, size int)
 // EncodeRune writes into p (which must be large enough) the UTF-8 encoding of the
 // rune. It returns the number of bytes written.
 
-// EncodeRune 将该符文的UTF-8编码写入到 p 中（它必须足够大）。
-// 它返回写入的字节数。
+// EncodeRune 将该符文的UTF-8编码写入到 p 中（它必须足够大）。 它返回写入的字节数。
 func EncodeRune(p []byte, r rune) int
 
 // FullRune reports whether the bytes in p begin with a full UTF-8 encoding of a
 // rune. An invalid encoding is considered a full Rune since it will convert as a
 // width-1 error rune.
 
-// FullRune 报告 p 中的字节是否以全UTF-8编码的符文开始。
+// FullRune 报告 p
+// 中的字节是否以全UTF-8编码的符文开始。
 // 无效的编码取被视作一个完整的符文，因为它会转换成宽度为1的错误符文。
 func FullRune(p []byte) bool
 
@@ -113,8 +113,7 @@ func RuneCount(p []byte) int
 
 // RuneCountInString is like RuneCount but its input is a string.
 
-// RuneCountInString 类似于
-// RuneCount，但其输入为字符串。
+// RuneCountInString 类似于 RuneCount，但其输入为字符串。
 func RuneCountInString(s string) (n int)
 
 // RuneLen returns the number of bytes required to encode the rune. It returns -1
@@ -127,13 +126,15 @@ func RuneLen(r rune) int
 // RuneStart reports whether the byte could be the first byte of an encoded rune.
 // Second and subsequent bytes always have the top two bits set to 10.
 
-// RuneStart 报告该字节是否为符文编码的第一个字节。
+// RuneStart
+// 报告该字节是否为符文编码的第一个字节。
 // 第二个及后续字节的最高两位总是置为 10。
 func RuneStart(b byte) bool
 
 // Valid reports whether p consists entirely of valid UTF-8-encoded runes.
 
-// Valid 报告 p 是否完全由有效的，UTF-8编码的符文构成。
+// Valid 报告 p
+// 是否完全由有效的，UTF-8编码的符文构成。
 func Valid(p []byte) bool
 
 // ValidRune reports whether r can be legally encoded as UTF-8. Code points that
@@ -145,5 +146,6 @@ func ValidRune(r rune) bool
 
 // ValidString reports whether s consists entirely of valid UTF-8-encoded runes.
 
-// ValidString 报告 s 是否完全由有效的，UTF-8编码的符文构成。
+// ValidString 报告 s
+// 是否完全由有效的，UTF-8编码的符文构成。
 func ValidString(s string) bool

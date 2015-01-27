@@ -34,13 +34,12 @@ func Encode(s []rune) []uint16
 // returns U+FFFD, U+FFFD.
 
 // EncodeRune 返回给定符文的UTF-16替代值对 r1, r2。
-// 若该符文并非有效的Unicode码点或无需编码，EncodeRune 就会返回
-// U+FFFD, U+FFFD。
+// 若该符文并非有效的Unicode码点或无需编码，EncodeRune 就会返回 U+FFFD, U+FFFD。
 func EncodeRune(r rune) (r1, r2 rune)
 
 // IsSurrogate returns true if the specified Unicode code point can appear in a
 // surrogate pair.
 
-// IsSurrogate 在指定的Unicode码点可出现在替代值对中时返回
-// true。
+// IsSurrogate
+// 在指定的Unicode码点可出现在替代值对中时返回 true。
 func IsSurrogate(r rune) bool

@@ -6,18 +6,9 @@
 
 // Package pkix contains shared, low level structures used for ASN.1 parsing and
 // serialization of X.509 certificates, CRL and OCSP.
-
-// Package pkix contains shared, low level
-// structures used for ASN.1 parsing and
-// serialization of X.509 certificates, CRL
-// and OCSP.
 package pkix
 
 // AlgorithmIdentifier represents the ASN.1 structure of the same name. See RFC
-// 5280, section 4.1.1.2.
-
-// AlgorithmIdentifier represents the ASN.1
-// structure of the same name. See RFC
 // 5280, section 4.1.1.2.
 type AlgorithmIdentifier struct {
 	Algorithm  asn1.ObjectIdentifier
@@ -26,10 +17,6 @@ type AlgorithmIdentifier struct {
 
 // AttributeTypeAndValue mirrors the ASN.1 structure of the same name in
 // http://tools.ietf.org/html/rfc5280#section-4.1.2.4
-
-// AttributeTypeAndValue mirrors the ASN.1
-// structure of the same name in
-// http://tools.ietf.org/html/rfc5280#section-4.1.2.4
 type AttributeTypeAndValue struct {
 	Type  asn1.ObjectIdentifier
 	Value interface{}
@@ -37,11 +24,6 @@ type AttributeTypeAndValue struct {
 
 // AttributeTypeAndValueSET represents a set of ASN.1 sequences of
 // AttributeTypeAndValue sequences from RFC 2986 (PKCS #10).
-
-// AttributeTypeAndValueSET represents a
-// set of ASN.1 sequences of
-// AttributeTypeAndValue sequences from RFC
-// 2986 (PKCS #10).
 type AttributeTypeAndValueSET struct {
 	Type  asn1.ObjectIdentifier
 	Value [][]AttributeTypeAndValue `asn1:"set"`
@@ -49,12 +31,6 @@ type AttributeTypeAndValueSET struct {
 
 // CertificateList represents the ASN.1 structure of the same name. See RFC 5280,
 // section 5.1. Use Certificate.CheckCRLSignature to verify the signature.
-
-// CertificateList represents the ASN.1
-// structure of the same name. See RFC
-// 5280, section 5.1. Use
-// Certificate.CheckCRLSignature to verify
-// the signature.
 type CertificateList struct {
 	TBSCertList        TBSCertificateList
 	SignatureAlgorithm AlgorithmIdentifier
@@ -62,16 +38,9 @@ type CertificateList struct {
 }
 
 // HasExpired reports whether now is past the expiry time of certList.
-
-// HasExpired reports whether now is past
-// the expiry time of certList.
 func (certList *CertificateList) HasExpired(now time.Time) bool
 
 // Extension represents the ASN.1 structure of the same name. See RFC 5280, section
-// 4.2.
-
-// Extension represents the ASN.1 structure
-// of the same name. See RFC 5280, section
 // 4.2.
 type Extension struct {
 	Id       asn1.ObjectIdentifier
@@ -81,11 +50,6 @@ type Extension struct {
 
 // Name represents an X.509 distinguished name. This only includes the common
 // elements of a DN. Additional elements in the name are ignored.
-
-// Name represents an X.509 distinguished
-// name. This only includes the common
-// elements of a DN. Additional elements in
-// the name are ignored.
 type Name struct {
 	Country, Organization, OrganizationalUnit []string
 	Locality, Province                        []string
@@ -105,10 +69,6 @@ type RelativeDistinguishedNameSET []AttributeTypeAndValue
 
 // RevokedCertificate represents the ASN.1 structure of the same name. See RFC
 // 5280, section 5.1.
-
-// RevokedCertificate represents the ASN.1
-// structure of the same name. See RFC
-// 5280, section 5.1.
 type RevokedCertificate struct {
 	SerialNumber   *big.Int
 	RevocationTime time.Time
@@ -116,10 +76,6 @@ type RevokedCertificate struct {
 }
 
 // TBSCertificateList represents the ASN.1 structure of the same name. See RFC
-// 5280, section 5.1.
-
-// TBSCertificateList represents the ASN.1
-// structure of the same name. See RFC
 // 5280, section 5.1.
 type TBSCertificateList struct {
 	Raw                 asn1.RawContent

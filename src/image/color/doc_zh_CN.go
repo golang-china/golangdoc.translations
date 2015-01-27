@@ -50,8 +50,7 @@ func (c Alpha16) RGBA() (r, g, b, a uint32)
 // Color can convert itself to alpha-premultiplied 16-bits per channel RGBA. The
 // conversion may be lossy.
 
-// Color可以将它自己转化成每个RGBA通道都预乘透明度。
-// 这种转化可能是有损的。
+// Color可以将它自己转化成每个RGBA通道都预乘透明度。 这种转化可能是有损的。
 type Color interface {
 	// RGBA returns the alpha-premultiplied red, green, blue and alpha values
 	// for the color. Each value ranges within [0, 0xFFFF], but is represented
@@ -81,8 +80,7 @@ func (c Gray16) RGBA() (r, g, b, a uint32)
 // Model can convert any Color to one from its own color model. The conversion may
 // be lossy.
 
-// Model可以在它自己的颜色模型中将一种颜色转化到另一种。
-// 这种转换可能是有损的。
+// Model可以在它自己的颜色模型中将一种颜色转化到另一种。 这种转换可能是有损的。
 type Model interface {
 	Convert(c Color) Color
 }
@@ -144,7 +142,8 @@ func (p Palette) Convert(c Color) Color
 // Index returns the index of the palette color closest to c in Euclidean R,G,B
 // space.
 
-// Index在Euclidean R,G,B空间中找到最接近c的调色板对应的索引。
+// Index在Euclidean
+// R,G,B空间中找到最接近c的调色板对应的索引。
 func (p Palette) Index(c Color) int
 
 // RGBA represents a traditional 32-bit alpha-premultiplied color, having 8 bits

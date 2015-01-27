@@ -8,12 +8,6 @@
 // by package sql.
 //
 // Most code should use package sql.
-
-// Package driver defines interfaces to be
-// implemented by database drivers as used
-// by package sql.
-//
-// Most code should use package sql.
 package driver
 
 // Bool is a ValueConverter that converts input values to bools.
@@ -27,7 +21,6 @@ package driver
 //	     other integers are an error
 //	- for strings and []byte, same rules as strconv.ParseBool
 //	- all other types are an error
-
 var Bool boolType
 
 // DefaultParameterConverter is the default implementation of ValueConverter that's
@@ -36,7 +29,6 @@ var Bool boolType
 // DefaultParameterConverter returns the given value directly if IsValue(value).
 // Otherwise integer type are converted to int64, floats to float64, and strings to
 // []byte. Other types are an error.
-
 var DefaultParameterConverter defaultConverter
 
 // ErrBadConn should be returned by a driver to signal to the sql package that a
@@ -46,79 +38,38 @@ var DefaultParameterConverter defaultConverter
 // To prevent duplicate operations, ErrBadConn should NOT be returned if there's a
 // possibility that the database server might have performed the operation. Even if
 // the server sends back an error, you shouldn't return ErrBadConn.
-
-// ErrBadConn should be returned by a
-// driver to signal to the sql package that
-// a driver.Conn is in a bad state (such as
-// the server having earlier closed the
-// connection) and the sql package should
-// retry on a new connection.
-//
-// To prevent duplicate operations,
-// ErrBadConn should NOT be returned if
-// there's a possibility that the database
-// server might have performed the
-// operation. Even if the server sends back
-// an error, you shouldn't return
-// ErrBadConn.
 var ErrBadConn = errors.New("driver: bad connection")
 
 // ErrSkip may be returned by some optional interfaces' methods to indicate at
 // runtime that the fast path is unavailable and the sql package should continue as
 // if the optional interface was not implemented. ErrSkip is only supported where
 // explicitly documented.
-
-// ErrSkip may be returned by some optional
-// interfaces' methods to indicate at
-// runtime that the fast path is
-// unavailable and the sql package should
-// continue as if the optional interface
-// was not implemented. ErrSkip is only
-// supported where explicitly documented.
 var ErrSkip = errors.New("driver: skip fast-path; continue as if unimplemented")
 
 // Int32 is a ValueConverter that converts input values to int64, respecting the
 // limits of an int32 value.
-
 var Int32 int32Type
 
 // ResultNoRows is a pre-defined Result for drivers to return when a DDL command
 // (such as a CREATE TABLE) succeeds. It returns an error for both LastInsertId and
 // RowsAffected.
-
 var ResultNoRows noRows
 
 // String is a ValueConverter that converts its input to a string. If the value is
 // already a string or []byte, it's unchanged. If the value is of another type,
 // conversion to string is done with fmt.Sprintf("%v", v).
-
 var String stringType
 
 // IsScanValue reports whether v is a valid Value scan type. Unlike IsValue,
 // IsScanValue does not permit the string type.
-
-// IsScanValue reports whether v is a valid
-// Value scan type. Unlike IsValue,
-// IsScanValue does not permit the string
-// type.
 func IsScanValue(v interface{}) bool
 
 // IsValue reports whether v is a valid Value parameter type. Unlike IsScanValue,
 // IsValue permits the string type.
-
-// IsValue reports whether v is a valid
-// Value parameter type. Unlike
-// IsScanValue, IsValue permits the string
-// type.
 func IsValue(v interface{}) bool
 
 // ColumnConverter may be optionally implemented by Stmt if the statement is aware
 // of its own columns' types and can convert from any type to a driver Value.
-
-// ColumnConverter may be optionally
-// implemented by Stmt if the statement is
-// aware of its own columns' types and can
-// convert from any type to a driver Value.
 type ColumnConverter interface {
 	// ColumnConverter returns a ValueConverter for the provided
 	// column index.  If the type of a specific column isn't known
@@ -128,12 +79,6 @@ type ColumnConverter interface {
 }
 
 // Conn is a connection to a database. It is not used concurrently by multiple
-// goroutines.
-//
-// Conn is assumed to be stateful.
-
-// Conn is a connection to a database. It
-// is not used concurrently by multiple
 // goroutines.
 //
 // Conn is assumed to be stateful.
@@ -156,9 +101,6 @@ type Conn interface {
 }
 
 // Driver is the interface that must be implemented by a database driver.
-
-// Driver is the interface that must be
-// implemented by a database driver.
 type Driver interface {
 	// Open returns a new connection to the database.
 	// The name is a string in a driver-specific format.
@@ -178,27 +120,12 @@ type Driver interface {
 // prepare a query, execute the statement, and then close the statement.
 //
 // Exec may return ErrSkip.
-
-// Execer is an optional interface that may
-// be implemented by a Conn.
-//
-// If a Conn does not implement Execer, the
-// sql package's DB.Exec will first prepare
-// a query, execute the statement, and then
-// close the statement.
-//
-// Exec may return ErrSkip.
 type Execer interface {
 	Exec(query string, args []Value) (Result, error)
 }
 
 // NotNull is a type that implements ValueConverter by disallowing nil values but
 // otherwise delegating to another ValueConverter.
-
-// NotNull is a type that implements
-// ValueConverter by disallowing nil values
-// but otherwise delegating to another
-// ValueConverter.
 type NotNull struct {
 	Converter ValueConverter
 }
@@ -207,11 +134,6 @@ func (n NotNull) ConvertValue(v interface{}) (Value, error)
 
 // Null is a type that implements ValueConverter by allowing nil values but
 // otherwise delegating to another ValueConverter.
-
-// Null is a type that implements
-// ValueConverter by allowing nil values
-// but otherwise delegating to another
-// ValueConverter.
 type Null struct {
 	Converter ValueConverter
 }
@@ -224,24 +146,11 @@ func (n Null) ConvertValue(v interface{}) (Value, error)
 // prepare a query, execute the statement, and then close the statement.
 //
 // Query may return ErrSkip.
-
-// Queryer is an optional interface that
-// may be implemented by a Conn.
-//
-// If a Conn does not implement Queryer,
-// the sql package's DB.Query will first
-// prepare a query, execute the statement,
-// and then close the statement.
-//
-// Query may return ErrSkip.
 type Queryer interface {
 	Query(query string, args []Value) (Rows, error)
 }
 
 // Result is the result of a query execution.
-
-// Result is the result of a query
-// execution.
 type Result interface {
 	// LastInsertId returns the database's auto-generated ID
 	// after, for example, an INSERT into a table with primary
@@ -254,9 +163,6 @@ type Result interface {
 }
 
 // Rows is an iterator over an executed query's results.
-
-// Rows is an iterator over an executed
-// query's results.
 type Rows interface {
 	// Columns returns the names of the columns. The number of
 	// columns of the result is inferred from the length of the
@@ -281,10 +187,6 @@ type Rows interface {
 
 // RowsAffected implements Result for an INSERT or UPDATE operation which mutates a
 // number of rows.
-
-// RowsAffected implements Result for an
-// INSERT or UPDATE operation which mutates
-// a number of rows.
 type RowsAffected int64
 
 func (RowsAffected) LastInsertId() (int64, error)
@@ -292,10 +194,6 @@ func (RowsAffected) LastInsertId() (int64, error)
 func (v RowsAffected) RowsAffected() (int64, error)
 
 // Stmt is a prepared statement. It is bound to a Conn and not used by multiple
-// goroutines concurrently.
-
-// Stmt is a prepared statement. It is
-// bound to a Conn and not used by multiple
 // goroutines concurrently.
 type Stmt interface {
 	// Close closes the statement.
@@ -325,25 +223,12 @@ type Stmt interface {
 }
 
 // Tx is a transaction.
-
-// Tx is a transaction.
 type Tx interface {
 	Commit() error
 	Rollback() error
 }
 
 // Value is a value that drivers must be able to handle. It is either nil or an
-// instance of one of these types:
-//
-//	int64
-//	float64
-//	bool
-//	[]byte
-//	string   [*] everywhere except from Rows.Next.
-//	time.Time
-
-// Value is a value that drivers must be
-// able to handle. It is either nil or an
 // instance of one of these types:
 //
 //	int64
@@ -370,27 +255,6 @@ type Value interface{}
 //
 //	* by the sql package, for converting from a driver's Value type
 //	  to a user's type in a scan.
-
-// ValueConverter is the interface
-// providing the ConvertValue method.
-//
-// Various implementations of
-// ValueConverter are provided by the
-// driver package to provide consistent
-// implementations of conversions between
-// drivers. The ValueConverters have
-// several uses:
-//
-//	* converting from the Value types as provided by the sql package
-//	  into a database table's specific column type and making sure it
-//	  fits, such as making sure a particular int64 fits in a
-//	  table's uint16 column.
-//
-//	* converting a value as given from the database into one of the
-//	  driver Value types.
-//
-//	* by the sql package, for converting from a driver's Value type
-//	  to a user's type in a scan.
 type ValueConverter interface {
 	// ConvertValue converts a value to a driver Value.
 	ConvertValue(v interface{}) (Value, error)
@@ -399,13 +263,6 @@ type ValueConverter interface {
 // Valuer is the interface providing the Value method.
 //
 // Types implementing Valuer interface are able to convert themselves to a driver
-// Value.
-
-// Valuer is the interface providing the
-// Value method.
-//
-// Types implementing Valuer interface are
-// able to convert themselves to a driver
 // Value.
 type Valuer interface {
 	// Value returns a driver Value.

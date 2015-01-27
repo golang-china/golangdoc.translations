@@ -24,35 +24,6 @@
 //		// do something with tok
 //		tok = s.Scan()
 //	}
-
-// Package scanner provides a scanner and
-// tokenizer for UTF-8-encoded text. It
-// takes an io.Reader providing the source,
-// which then can be tokenized through
-// repeated calls to the Scan function. For
-// compatibility with existing tools, the
-// NUL character is not allowed. If the
-// first character in the source is a UTF-8
-// encoded byte order mark (BOM), it is
-// discarded.
-//
-// By default, a Scanner skips white space
-// and Go comments and recognizes all
-// literals as defined by the Go language
-// specification. It may be customized to
-// recognize only a subset of those
-// literals and to recognize different
-// identifier and white space characters.
-//
-// Basic usage pattern:
-//
-//	var s scanner.Scanner
-//	s.Init(src)
-//	tok := s.Scan()
-//	for tok != scanner.EOF {
-//		// do something with tok
-//		tok = s.Scan()
-//	}
 package scanner
 
 // Predefined mode bits to control recognition of tokens. For instance, to
@@ -66,26 +37,6 @@ package scanner
 // respective individual characters (or possibly sub-tokens). For instance, if the
 // mode is ScanIdents (not ScanStrings), the string "foo" is scanned as the token
 // sequence '"' Ident '"'.
-
-// Predefined mode bits to control
-// recognition of tokens. For instance, to
-// configure a Scanner such that it only
-// recognizes (Go) identifiers, integers,
-// and skips comments, set the Scanner's
-// Mode field to:
-//
-//	ScanIdents | ScanInts | SkipComments
-//
-// With the exceptions of comments, which
-// are skipped if SkipComments is set,
-// unrecognized tokens are not ignored.
-// Instead, the scanner simply returns the
-// respective individual characters (or
-// possibly sub-tokens). For instance, if
-// the mode is ScanIdents (not
-// ScanStrings), the string "foo" is
-// scanned as the token sequence '"' Ident
-// '"'.
 const (
 	ScanIdents     = 1 << -Ident
 	ScanInts       = 1 << -Int
@@ -99,9 +50,6 @@ const (
 )
 
 // The result of Scan is one of the following tokens or a Unicode character.
-
-// The result of Scan is one of the
-// following tokens or a Unicode character.
 const (
 	EOF = -(iota + 1)
 	Ident
@@ -115,24 +63,12 @@ const (
 
 // GoWhitespace is the default value for the Scanner's Whitespace field. Its value
 // selects Go's white space characters.
-
-// GoWhitespace is the default value for
-// the Scanner's Whitespace field. Its
-// value selects Go's white space
-// characters.
 const GoWhitespace = 1<<'\t' | 1<<'\n' | 1<<'\r' | 1<<' '
 
 // TokenString returns a printable string for a token or Unicode character.
-
-// TokenString returns a printable string
-// for a token or Unicode character.
 func TokenString(tok rune) string
 
 // A source position is represented by a Position value. A position is valid if
-// Line > 0.
-
-// A source position is represented by a
-// Position value. A position is valid if
 // Line > 0.
 type Position struct {
 	Filename string // filename, if any
@@ -142,17 +78,11 @@ type Position struct {
 }
 
 // IsValid returns true if the position is valid.
-
-// IsValid returns true if the position is
-// valid.
 func (pos *Position) IsValid() bool
 
 func (pos Position) String() string
 
 // A Scanner implements reading of Unicode characters and tokens from an io.Reader.
-
-// A Scanner implements reading of Unicode
-// characters and tokens from an io.Reader.
 type Scanner struct {
 
 	// Error is called for each error encountered. If no Error
@@ -193,47 +123,21 @@ type Scanner struct {
 // Init initializes a Scanner with a new source and returns s. Error is set to nil,
 // ErrorCount is set to 0, Mode is set to GoTokens, and Whitespace is set to
 // GoWhitespace.
-
-// Init initializes a Scanner with a new
-// source and returns s. Error is set to
-// nil, ErrorCount is set to 0, Mode is set
-// to GoTokens, and Whitespace is set to
-// GoWhitespace.
 func (s *Scanner) Init(src io.Reader) *Scanner
 
 // Next reads and returns the next Unicode character. It returns EOF at the end of
 // the source. It reports a read error by calling s.Error, if not nil; otherwise it
 // prints an error message to os.Stderr. Next does not update the Scanner's
 // Position field; use Pos() to get the current position.
-
-// Next reads and returns the next Unicode
-// character. It returns EOF at the end of
-// the source. It reports a read error by
-// calling s.Error, if not nil; otherwise
-// it prints an error message to os.Stderr.
-// Next does not update the Scanner's
-// Position field; use Pos() to get the
-// current position.
 func (s *Scanner) Next() rune
 
 // Peek returns the next Unicode character in the source without advancing the
 // scanner. It returns EOF if the scanner's position is at the last character of
 // the source.
-
-// Peek returns the next Unicode character
-// in the source without advancing the
-// scanner. It returns EOF if the scanner's
-// position is at the last character of the
-// source.
 func (s *Scanner) Peek() rune
 
 // Pos returns the position of the character immediately after the character or
 // token returned by the last call to Next or Scan.
-
-// Pos returns the position of the
-// character immediately after the
-// character or token returned by the last
-// call to Next or Scan.
 func (s *Scanner) Pos() (pos Position)
 
 // Scan reads the next token or Unicode character from source and returns it. It
@@ -241,23 +145,8 @@ func (s *Scanner) Pos() (pos Position)
 // returns EOF at the end of the source. It reports scanner errors (read and token
 // errors) by calling s.Error, if not nil; otherwise it prints an error message to
 // os.Stderr.
-
-// Scan reads the next token or Unicode
-// character from source and returns it. It
-// only recognizes tokens t for which the
-// respective Mode bit (1<<-t) is set. It
-// returns EOF at the end of the source. It
-// reports scanner errors (read and token
-// errors) by calling s.Error, if not nil;
-// otherwise it prints an error message to
-// os.Stderr.
 func (s *Scanner) Scan() rune
 
 // TokenText returns the string corresponding to the most recently scanned token.
 // Valid after calling Scan().
-
-// TokenText returns the string
-// corresponding to the most recently
-// scanned token. Valid after calling
-// Scan().
 func (s *Scanner) TokenText() string

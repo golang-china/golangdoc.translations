@@ -16,8 +16,6 @@
 package draw
 
 // Draw calls DrawMask with a nil mask.
-
-// Draw calls DrawMask with a nil mask.
 func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)
 
 // DrawMask aligns r.Min in dst with sp in src and mp in mask and then replaces the
@@ -40,14 +38,10 @@ type Drawer interface {
 // FloydSteinberg is a Drawer that is the Src Op with Floyd-Steinberg error
 // diffusion.
 
-// FloydSteinberg 是一个 Drawer，它对 Src 进行
-// Floyd-Steinberg 误差扩散操作。
+// FloydSteinberg 是一个 Drawer，它对 Src 进行 Floyd-Steinberg 误差扩散操作。
 var FloydSteinberg Drawer = floydSteinberg{}
 
 // Image is an image.Image with a Set method to change a single pixel.
-
-// Image is an image.Image with a Set
-// method to change a single pixel.
 type Image interface {
 	image.Image
 	Set(x, y int, c color.Color)
@@ -71,9 +65,6 @@ const (
 func (op Op) Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
 
 // Quantizer produces a palette for an image.
-
-// Quantizer produces a palette for an
-// image.
 type Quantizer interface {
 	// Quantize appends up to cap(p) - len(p) colors to p and returns the
 	// updated palette suitable for converting m to a paletted image.

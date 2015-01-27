@@ -18,18 +18,16 @@ package unsafe
 // v is of the form structValue.field, it returns the alignment of field f within
 // struct object obj.
 
-// Alignof 返回 v 值的对齐方式。 其返回值 m 满足变量 v
-// 的类型地址与 m 取模为 0 的最大值。若 v 是
-// structValue.field 的形式，它会返回字段 f 在其相应结构对象
-// obj 中的对齐方式。
+// Alignof 返回 v 值的对齐方式。 其返回值 m 满足变量 v 的类型地址与 m 取模为 0 的最大值。若 v 是 structValue.field
+// 的形式，它会返回字段 f 在其相应结构对象 obj 中的对齐方式。
 func Alignof(v ArbitraryType) uintptr
 
 // Offsetof returns the offset within the struct of the field represented by v,
 // which must be of the form structValue.field. In other words, it returns the
 // number of bytes between the start of the struct and the start of the field.
 
-// Offsetof 返回由 v 所代表的结构中字段的偏移，它必须为
-// structValue.field 的形式。
+// Offsetof 返回由 v
+// 所代表的结构中字段的偏移，它必须为 structValue.field 的形式。
 // 换句话说，它返回该结构起始处与该字段起始处之间的字节数。
 func Offsetof(v ArbitraryType) uintptr
 
@@ -39,16 +37,17 @@ func Offsetof(v ArbitraryType) uintptr
 // slice.
 
 // Sizeof 返回被值 v 所占用的字节大小。
-// 该大小只是最“顶级”的值。例如，若 v 是一个切片，它会返回该切片描述符的大小，
-// 而非该切片引用的内存大小。
+// 该大小只是最“顶级”的值。例如，若 v
+// 是一个切片，它会返回该切片描述符的大小， 而非该切片引用的内存大小。
 func Sizeof(v ArbitraryType) uintptr
 
 // ArbitraryType is here for the purposes of documentation only and is not actually
 // part of the unsafe package. It represents the type of an arbitrary Go
 // expression.
 
-// ArbitraryType 在此处只用作文档目的，它实际上并不是 unsafe
-// 包的一部分。 它代表任意一个Go表达式的类型。
+// ArbitraryType
+// 在此处只用作文档目的，它实际上并不是 unsafe 包的一部分。
+// 它代表任意一个Go表达式的类型。
 type ArbitraryType int
 
 // Pointer represents a pointer to an arbitrary type. There are four special
@@ -70,5 +69,6 @@ type ArbitraryType int
 //	3) uintptr 均可转换为 Pointer。
 //	4) Pointer 均可转换为 uintptr。
 //
-// 因此 Pointer 允许程序击溃类型系统并读写任意内存。它应当被用得非常小心。
+// 因此 Pointer
+// 允许程序击溃类型系统并读写任意内存。它应当被用得非常小心。
 type Pointer *ArbitraryType
