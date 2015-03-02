@@ -174,3 +174,9 @@ Let's look at what's happening here, starting with the import statement.
 
 目前 golangdoc 还不支持 Talk 和 Tour 部分, 暂时先不翻译它们.
 
+## 版权
+
+除特别注明外, 本站内容均采用[知识共享-署名(CC-BY) 3.0协议](http://creativecommons.org/licenses/by/3.0/)授权, 代码遵循[Go项目的BSD协议](http://golang.org/LICENSE)授权.
+
+贡献者列表: [CONTRIBUTORS.md](CONTRIBUTORS.md)
+
