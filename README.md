@@ -12,6 +12,11 @@
 
 	golangdoc -http=:6060 -lang=zh_CN
 
+网页效果图:
+
+![](screenshot.png)
+
+
 ## 翻译 pkg
 
 打开 [`$(GOROOT)/translations/src/builtin/doc_zh_CN.go`](https://github.com/golang-china/golangdoc.translations/blob/master/src/builtin/doc_zh_CN.go) 包文档
