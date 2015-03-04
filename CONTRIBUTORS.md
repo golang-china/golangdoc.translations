@@ -6,6 +6,7 @@
 ```
 BeiJing     <borderj@gmail.com>
 chai2010    <chaishushan@gmail.com>
+Kaoet       <onetwogoo@live.com>
 Oling Cat   <olingcat@gmail.com>
 Shenghou Ma <minux@golang.org>
 ```
