@@ -43,11 +43,11 @@ Andrew Gerrand
 
 #The `error` type, as with all built in types, is [[http://golang.org/doc/go_spec.html#Predeclared_identifiers][predeclared]] in the [[http://golang.org/doc/go_spec.html#Blocks][universe block]].
 
-`error` 类型与其它内建类型一样，[[http://golang.org/doc/go_spec.html#Predeclared_identifiers][预定义]]于[[http://golang.org/doc/go_spec.html#Blocks][通用块]]中。
+`error` 类型与其它内建类型一样，[[/ref/spec#Predeclared_identifiers][预定义]]于[[/ref/spec#Blocks][通用块]]中。
 
 #The most commonly-used `error` implementation is the [[http://golang.org/pkg/errors/][errors]] package's unexported `errorString` type.
 
-最常用的 `error` 实现是 [[http://golang.org/pkg/errors/][errors]] 包中未导出的 `errorString` 类型。
+最常用的 `error` 实现是 [[/pkg/errors/][errors]] 包中未导出的 `errorString` 类型。
 
 #	// errorString is a trivial implementation of error.
 	// errorString 是 error 的一个简单实现。
@@ -92,7 +92,7 @@ Andrew Gerrand
 
 #The [[http://golang.org/pkg/fmt/][fmt]] package formats an `error` value by calling its `Error()`string` method.
 
-[[http://golang.org/pkg/fmt/][fmt]] 包通过调用其 `Error()`string` 方法格式化一个 `error` 值。
+[[/pkg/fmt/][fmt]] 包通过调用其 `Error()`string` 方法格式化一个 `error` 值。
 
 #It is the error implementation's responsibility to summarize the context. The error returned by `os.Open` formats as "open /etc/passwd: permission denied," not just "permission denied."  The error returned by our `Sqrt` is missing information about the invalid argument.
 
@@ -122,11 +122,11 @@ Andrew Gerrand
 
 #A sophisticated caller can then use a [[http://golang.org/doc/go_spec.html#Type_assertions][type assertion]] to check for a `NegativeSqrtError` and handle it specially, while callers that just pass the error to `fmt.Println` or `log.Fatal` will see no change in behavior.
 
-一个有经验的调用者可以使用[[http://golang.org/doc/go_spec.html#Type_assertions][类型断言]]来检查 `NegativeSqrtError` 并且特别处理它，仅仅将错误传递给 `fmt.Println` 或者 `log.Fatal` 是不会有任何行为上的改变。
+一个有经验的调用者可以使用[[/ref/spec#Type_assertions][类型断言]]来检查 `NegativeSqrtError` 并且特别处理它，仅仅将错误传递给 `fmt.Println` 或者 `log.Fatal` 是不会有任何行为上的改变。
 
 #As another example, the [[http://golang.org/pkg/encoding/json/][json]] package specifies a `SyntaxError` type that the `json.Decode` function returns when it encounters a syntax error parsing a JSON blob.
 
-另一个例子，[[http://golang.org/pkg/encoding/json/][json]] 包指定 `json.Decode` 函数返回 `SyntaxError` 类型，当解析一个 JSON blob 发生语法错误的时候。
+另一个例子，[[/pkg/encoding/json/][json]] 包指定 `json.Decode` 函数返回 `SyntaxError` 类型，当解析一个 JSON blob 发生语法错误的时候。
 
 	type SyntaxError struct {
 #	    msg    string // description of error
@@ -155,7 +155,7 @@ Andrew Gerrand
 
 #The `error` interface requires only a `Error` method; specific error implementations might have additional methods. For instance, the [[http://golang.org/pkg/net/][net]] package returns errors of type `error`, following the usual convention, but some of the error implementations have additional methods defined by the `net.Error` interface:
 
-`error` 接口仅仅需要一个 `Error` 方法；特别的错误实现可能有一些附加的方法。例如，[[http://golang.org/pkg/net/][net]] 包按照惯例返回 `error` 类型，但是一些错误实现包含由 `net.Error` 定义的附加方法：
+`error` 接口仅仅需要一个 `Error` 方法；特别的错误实现可能有一些附加的方法。例如，[[/pkg/net/][net]] 包按照惯例返回 `error` 类型，但是一些错误实现包含由 `net.Error` 定义的附加方法：
 
 	package net
 
@@ -234,7 +234,7 @@ Andrew Gerrand
 
 #This is simpler than the original version, but the [[http://golang.org/pkg/net/http/][http]] package doesn't understand functions that return `error`. To fix this we can implement the `http.Handler` interface's `ServeHTTP` method on `appHandler`:
 
-这比原来的版本简单，但是 [[http://golang.org/pkg/net/http/][http]] 包不明白返回 `error` 的函数。为了修复这个问题，可以在 `appHandler` 上实现一个 `http.Handler` 接口的 `ServeHTTP` 方法：
+这比原来的版本简单，但是 [[/pkg/net/http/][http]] 包不明白返回 `error` 的函数。为了修复这个问题，可以在 `appHandler` 上实现一个 `http.Handler` 接口的 `ServeHTTP` 方法：
 
 	func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	    if err := fn(w, r); err != nil {
@@ -276,7 +276,7 @@ Andrew Gerrand
 
 #(It's usually a mistake to pass back the concrete type of an error rather than `error`, for reasons discussed in [[http://golang.org/doc/go_faq.html#nil_error][the Go FAQ]], but it's the right thing to do here because `ServeHTTP` is the only place that sees the value and uses its contents.)
 
-（通常，错误信息不使用 `error` 而是使用实际类型进行传递的做法是错误的，原因请见[[http://golang.org/doc/go_faq.html#nil_error][Go的常见问题]]，不过在这里是正确的，因为 `ServeHTTP` 是唯一看到这个值并且使用其内容的地方。）
+（通常，错误信息不使用 `error` 而是使用实际类型进行传递的做法是错误的，原因请见[[/doc/faq#nil错误][Go的常见问题]]，不过在这里是正确的，因为 `ServeHTTP` 是唯一看到这个值并且使用其内容的地方。）
 
 #And make `appHandler`'s `ServeHTTP` method display the `appError`'s `Message` to the user with the correct HTTP status `Code` and log the full `Error` to the developer console:
 
@@ -330,7 +330,7 @@ Andrew Gerrand
 
 #- recover from panics inside the `appHandler`, logging the error to the console as "Critical," while telling the user "a serious error has occurred." This is a nice touch to avoid exposing the user to inscrutable error messages caused by programming errors. See the [[http://golang.org/doc/articles/defer_panic_recover.html][Defer, Panic, and Recover]] article for more details.
 
-- 在 `appHandler` 里从 panic 中 恢复，将错误作为“严重异常”记录进开发者控制台，而只简单的告诉用户“发生了一个严重的错误”。 这是避免向用户暴露由于编码错误引起的不可预料的错误的信息的一个不错的想法。参看 [[http://golang.org/doc/articles/defer_panic_recover.html][Defer、Panic和Recover]] 文章了解更多细节。
+- 在 `appHandler` 里从 panic 中 恢复，将错误作为“严重异常”记录进开发者控制台，而只简单的告诉用户“发生了一个严重的错误”。 这是避免向用户暴露由于编码错误引起的不可预料的错误的信息的一个不错的想法。参看 [[/blog/defer-panic-and-recover][Defer、Panic和Recover]] 文章了解更多细节。
 
 #* Conclusion
 
