@@ -1,0 +1,257 @@
+More types: structs, slices, and maps.
+Learn how to define types based on existing ones: this lesson covers structs, arrays, slices, and maps.
+
+The Go Authors
+http://golang.org
+
+* Pointers
+
+Go has pointers.
+A pointer holds the memory address of a variable.
+
+The type `*T` is a pointer to a `T` value. Its zero value is `nil`.
+
+	var p *int
+
+The `&` operator generates a pointer to its operand.
+
+	i := 42
+	p = &i
+
+The `*` operator denotes the pointer's underlying value.
+
+	fmt.Println(*p) // read i through the pointer p
+	*p = 21         // set i through the pointer p
+
+This is known as "dereferencing" or "indirecting".
+
+Unlike C, Go has no pointer arithmetic.
+
+.play moretypes/pointers.go
+
+* Structs
+
+A `struct` is a collection of fields.
+
+(And a `type` declaration does what you'd expect.)
+
+.play moretypes/structs.go
+
+* Struct Fields
+
+Struct fields are accessed using a dot.
+
+.play moretypes/struct-fields.go
+
+* Pointers to structs
+
+Struct fields can be accessed through a struct pointer.
+
+The indirection through the pointer is transparent.
+
+.play moretypes/struct-pointers.go
+
+* Struct Literals
+
+A struct literal denotes a newly allocated struct value by listing the values of its fields.
+
+You can list just a subset of fields by using the `Name:` syntax. (And the order of named fields is irrelevant.)
+
+The special prefix `&` returns a pointer to the struct value.
+
+.play moretypes/struct-literals.go
+
+* Arrays
+
+The type `[n]T` is an array of `n` values of type `T`.
+
+The expression
+
+	var a [10]int
+
+declares a variable `a` as an array of ten integers.
+
+An array's length is part of its type, so arrays cannot be resized.
+This seems limiting, but don't worry;
+Go provides a convenient way of working with arrays.
+
+.play moretypes/array.go
+
+* Slices
+
+A slice points to an array of values and also includes a length.
+
+`[]T` is a slice with elements of type `T`.
+
+.play moretypes/slices.go
+
+* Slicing slices
+
+Slices can be re-sliced, creating a new slice value that points to the same array.
+
+The expression
+
+	s[lo:hi]
+
+evaluates to a slice of the elements from `lo` through `hi-1`, inclusive. Thus
+
+	s[lo:lo]
+
+is empty and
+
+	s[lo:lo+1]
+
+has one element.
+
+.play moretypes/slicing-slices.go
+
+* Making slices
+
+Slices are created with the `make` function. It works by allocating a zeroed array and returning a slice that refers to that array:
+
+	a := make([]int, 5)  // len(a)=5
+
+To specify a capacity, pass a third argument to `make`:
+
+	b := make([]int, 0, 5) // len(b)=0, cap(b)=5
+
+	b = b[:cap(b)] // len(b)=5, cap(b)=5
+	b = b[1:]      // len(b)=4, cap(b)=4
+
+.play moretypes/making-slices.go
+
+* Nil slices
+
+The zero value of a slice is `nil`.
+
+A nil slice has a length and capacity of 0.
+
+.play moretypes/nil-slices.go
+
+* Adding elements to a slice
+
+It is common to append new elements to a slice, and so Go provides a built-in
+`append` function. The [[http://golang.org/pkg/builtin/#append][documentation]]
+of the built-in package describes `append`.
+
+	func append(s []T, vs ...T) []T
+
+The first parameter `s` of `append` is a slice of type `T`, and the rest are
+`T` values to append to the slice.
+
+The resulting value of `append` is a slice containing all the elements of the
+original slice plus the provided values.
+
+If the backing array of `s` is too small to fit all the given values a bigger
+array will be allocated. The returned slice will point to the newly allocated
+array.
+
+(To learn more about slices, read the [[http://golang.org/doc/articles/slices_usage_and_internals.html][Slices: usage and internals]] article.)
+
+.play moretypes/append.go
+
+* Range
+
+The `range` form of the `for` loop iterates over a slice or map.
+
+.play moretypes/range.go
+
+* Range continued
+
+You can skip the index or value by assigning to `_`.
+
+If you only want the index, drop the ", value" entirely.
+
+.play moretypes/range-continued.go
+
+* Exercise: Slices
+
+Implement `Pic`. It should return a slice of length `dy`, each element of which is a slice of `dx` 8-bit unsigned integers. When you run the program, it will display your picture, interpreting the integers as grayscale (well, bluescale) values.
+
+The choice of image is up to you. Interesting functions include `(x+y)/2`, `x*y`, and `x^y` (to compute the latter function, use [[http://golang.org/pkg/math/#Pow][`math.Pow`]]).
+
+(You need to use a loop to allocate each `[]uint8` inside the `[][]uint8`.)
+
+(Use `uint8(intValue)` to convert between types.)
+
+.play moretypes/exercise-slices.go
+
+* Maps
+
+A map maps keys to values.
+
+Maps must be created with `make` (not `new`) before use; the `nil` map is empty and cannot be assigned to.
+
+.play moretypes/maps.go
+
+* Map literals
+
+Map literals are like struct literals, but the keys are required.
+
+.play moretypes/map-literals.go
+
+* Map literals continued
+
+If the top-level type is just a type name, you can omit it from the elements of the literal.
+
+.play moretypes/map-literals-continued.go
+
+* Mutating Maps
+
+Insert or update an element in map `m`:
+
+	m[key] = elem
+
+Retrieve an element:
+
+	elem = m[key]
+
+Delete an element:
+
+	delete(m, key)
+
+Test that a key is present with a two-value assignment:
+
+	elem, ok = m[key]
+
+If `key` is in `m`, `ok` is `true`. If not, `ok` is `false` and `elem` is the zero value for the map's element type.
+
+Similarly, when reading from a map if the key is not present the result is the zero value for the map's element type.
+
+.play moretypes/mutating-maps.go
+
+* Exercise: Maps
+
+Implement `WordCount`.  It should return a map of the counts of each “word” in the string `s`. The `wc.Test` function runs a test suite against the provided function and prints success or failure.
+
+You might find [[http://golang.org/pkg/strings/#Fields][strings.Fields]] helpful.
+
+.play moretypes/exercise-maps.go
+
+* Function values
+
+Functions are values too.
+
+.play moretypes/function-values.go
+
+* Function closures
+
+Go functions may be closures. A closure is a function value that references variables from outside its body. The function may access and assign to the referenced variables; in this sense the function is "bound" to the variables.
+
+For example, the `adder` function returns a closure. Each closure is bound to its own `sum` variable.
+
+.play moretypes/function-closures.go
+
+* Exercise: Fibonacci closure
+
+Let's have some fun with functions.
+
+Implement a `fibonacci` function that returns a function (a closure) that returns successive fibonacci numbers.
+
+.play moretypes/exercise-fibonacci-closure.go
+
+* Congratulations!
+
+You finished this lesson!
+
+You can go back to the list of [[/list][modules]] to find what to learn next, or continue with the [[javascript:click('.next-page')][next lesson]].
