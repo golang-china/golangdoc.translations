@@ -4,11 +4,13 @@
 *大家帮助完善, 请保证列表有序!*
 
 ```
-BeiJing     <borderj@gmail.com>
-chai2010    <chaishushan@gmail.com>
-Kaoet       <onetwogoo@live.com>
-Oling Cat   <olingcat@gmail.com>
-Shenghou Ma <minux@golang.org>
+BeiJing        <borderj@gmail.com>
+chai2010       <chaishushan@gmail.com>
+CHENG Yufeng   <onetwogoo@live.com>
+Kaoet          <onetwogoo@live.com>
+Oling Cat      <olingcat@gmail.com>
+Shenghou Ma    <minux@golang.org>
+Xing Xing      <mikespook@gmail.com>
 ```
 
 # 版权
