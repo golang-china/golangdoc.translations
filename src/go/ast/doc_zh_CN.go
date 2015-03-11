@@ -6,7 +6,7 @@
 
 // Package ast declares the types used to represent syntax trees for Go packages.
 
-// Package ast 声明的类型用于描述 Go packages 语法树.
+// ast 包声明了用于描述 Go packages 语法树的类型.
 package ast
 
 // FileExports trims the AST for a Go source file in place such that only exported
@@ -32,8 +32,8 @@ func FileExports(src *File) bool
 // FilterDecl returns true if there are any declared names left after filtering; it
 // returns false otherwise.
 
-// FilterDecl 删除过滤器 f 返回 false 时的名称 (包括结构体字段名和接口方法名)
-// 来缩减 Go 声明 AST.
+// FilterDecl 缩减 Go 声明 AST, 通过删除所有名称未通过过滤器 f 的
+// (包括结构体字段名和接口方法名, 但非来自参数列表).
 //
 // 如果有任何声明在过滤后被保留下来, 返回 true, 否则返回 false.
 func FilterDecl(decl Decl, f Filter) bool
@@ -47,8 +47,9 @@ func FilterDecl(decl Decl, f Filter) bool
 // FilterFile returns true if there are any top-level declarations left after
 // filtering; it returns false otherwise.
 
-// FilterFile 删除过滤器 f 返回 false 时的 top-level 声明 (包括结构体字段名和接口方法名)
-// 来缩减 Go 声明 AST. 如果之后某个声明是空的, 声明也被删除. File.Comments 不变.
+// FilterFile 缩减 Go File AST, 通过删除所有名称未通过过滤器 f 的 top-level 声明
+// (包括结构体字段名和接口方法名). 如果之后某个声明是空的, 也被删除.
+// File.Comments 不变.
 //
 // 如果有任何声明在过滤后被保留下来, 返回 true, 否则返回 false.
 func FilterFile(src *File, f Filter) bool
@@ -63,9 +64,9 @@ func FilterFile(src *File, f Filter) bool
 // FilterPackage returns true if there are any top-level declarations left after
 // filtering; it returns false otherwise.
 
-// FilterPackage 删除过滤器 f 返回 false 时的 top-level 声明 (包括结构体字段名和接口方法名)
-// 来缩减 Go 包 AST. 如果之后某个声明是空的, 声明也被删除.
-// pkg.Files 不变, 所以文件名和 top-level 包注释不会丢失.
+// FilterPackage 缩减 Go Package AST, 通过删除所有名称未通过过滤器 f 的 top-level 声明
+// (包括结构体字段名和接口方法名). 如果之后该声明是空的, 该声明从 AST 删除.
+// pkg.Files 列表不变, 所以文件名和 top-level 包注释不会丢失.
 //
 // 如果有任何 top-level 声明在过滤后被保留下来, 返回 true, 否则返回 false.
 func FilterPackage(pkg *Package, f Filter) bool
@@ -81,6 +82,10 @@ func FilterPackage(pkg *Package, f Filter) bool
 // Fprint 打印 AST 节点(子)树 x 到 w.
 // 如果 fset != nil, position 信息被解释为相对于该 file set.
 // 否则 positions 被当作 interger 值打印 (file set 中的偏移量).
+//
+// 一个 non-nil FieldFilter f 可用来提供控制输出:
+// 那些 f(fieldname, fieldvalue) 为 true 的结构体字段被打印, 其它被过滤掉.
+// 非导出结构体字段决不被打印.
 func Fprint(w io.Writer, fset *token.FileSet, x interface{}, f FieldFilter) (err error)
 
 // Inspect traverses an AST in depth-first order: It starts by calling f(node);
@@ -88,7 +93,7 @@ func Fprint(w io.Writer, fset *token.FileSet, x interface{}, f FieldFilter) (err
 // children of node, recursively.
 
 // Inspect 遍历 AST,  深度优先顺序: 首先调用 f(node); node 不为 nil.
-// 如果 f 返回 true, Inspect 用 f 递归调派所有非 nil 子节点.
+// 如果 f 返回 true, Inspect 用 f 递归调派所有 non-nil 子节点.
 func Inspect(node Node, f func(Node) bool)
 
 // IsExported reports whether name is an exported Go symbol (that is, whether it
@@ -110,7 +115,7 @@ func NotNilFilter(_ string, v reflect.Value) bool
 // PackageExports returns true if there are exported declarations; it returns false
 // otherwise.
 
-// PackageExports 缩减 Go package AST, 只留下导出部分.
+// PackageExports 缩减 Go Package AST, 只留下导出部分.
 // pkg.Files 不变, 所以文件名和 top-level 包注释不会丢失.
 //
 // 如果有导出声明, 返回 true, 否则返回 false.
@@ -135,7 +140,7 @@ func SortImports(fset *token.FileSet, f *File)
 // node, followed by a call of w.Visit(nil).
 
 // Walk 遍历 AST,  深度优先顺序: 首先调用 v.Visit(node); node 不为 nil.
-// 如果 v.Visit(node) 返回值 w 非 nil, Walk 调派 w 游历每个非 nil 子节点,
+// 如果 v.Visit(node) 返回值 w 非 nil, Walk 调派 w 游历每个 non-nil 子节点,
 // 然后调用 w.Visit(nil).
 func Walk(v Visitor, node Node)
 
@@ -185,7 +190,6 @@ func (d *BadDecl) Pos() token.Pos
 // which no correct expression nodes can be created.
 
 // BadExpr 占位节点表示错误的表达式或无法创建正确的表达式节点.
-// which no correct expression nodes can be created.
 type BadExpr struct {
 	From, To token.Pos // position range of bad expression
 }
@@ -347,7 +351,7 @@ func (c *Comment) Pos() token.Pos
 // A CommentGroup represents a sequence of comments with no other tokens and no
 // empty lines between.
 
-// CommentGroup 表示一个注释序列, 没有其他的标记, 也没有之间的空行.
+// CommentGroup 表示一个注释序列, 之间没有其他的标记也没有空行.
 type CommentGroup struct {
 	List []*Comment // len(List) > 0
 }
