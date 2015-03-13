@@ -957,7 +957,7 @@ type Package struct {
 // 它解析跨文件未明确标识符和更新每个文件的未明确的名单.
 // 因此, 如果提供了 importer (非 nil) 和 universe 范围,
 // 它们被用于解决任何包文件中未明确的标识符. 报告任何仍未明确的标识符.
-// 如果文件属于不同的包, 选中一个包, 报告别的包被报告, 然后忽略.
+// 如果文件属于不同的包, 选中一个包, 报告别的包文件, 然后忽略.
 // 如果有错误, 返回结果是一个包节点和一个 scanner.ErrorList.
 func NewPackage(fset *token.FileSet, files map[string]*File, importer Importer, universe *Scope) (*Package, error)
 
