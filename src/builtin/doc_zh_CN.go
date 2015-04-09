@@ -107,12 +107,19 @@ func panic(v interface{})
 // The print built-in function formats its arguments in an implementation- specific
 // way and writes the result to standard error. Print is useful for bootstrapping
 // and debugging; it is not guaranteed to stay in the language.
+
+// print 内建函数格式化参数并输出到标准错误输出.
+// 该函数可以用户程序引导和调式阶段, 但是并不保证该函数始终有效.
 func print(args ...Type)
 
 // The println built-in function formats its arguments in an implementation-
 // specific way and writes the result to standard error. Spaces are always added
 // between arguments and a newline is appended. Println is useful for bootstrapping
 // and debugging; it is not guaranteed to stay in the language.
+
+// println 内建函数格式化参数并输出到标准错误输出.
+// 参数之间会添加一个空格, 并在结尾添加一个换行符.
+// 该函数可以用户程序引导和调式阶段, 但是并不保证该函数始终有效.
 func println(args ...Type)
 
 // The recover built-in function allows a program to manage behavior of a panicking
