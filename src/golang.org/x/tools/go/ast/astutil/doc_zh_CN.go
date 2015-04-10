@@ -11,7 +11,7 @@ package astutil
 
 // AddImport adds the import path to the file f, if absent.
 
-// AddImport 增加导入路径到文件 f, 如果缺席.
+// AddImport 增加导入路径到文件 f, 如果缺席(译注: 未导入).
 func AddImport(fset *token.FileSet, f *ast.File, ipath string) (added bool)
 
 // AddNamedImport adds the import path to the file f, if absent. If name is not
@@ -34,7 +34,7 @@ func AddImport(fset *token.FileSet, f *ast.File, ipath string) (added bool)
 //
 // 增加
 //
-// import pathpkg "path"
+//	import pathpkg "path"
 func AddNamedImport(fset *token.FileSet, f *ast.File, name, ipath string) (added bool)
 
 // DeleteImport deletes the import path from the file f, if present.
