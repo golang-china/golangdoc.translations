@@ -11,6 +11,7 @@ liudiwu        <snake_dragon@126.com>
 Oling Cat      <olingcat@gmail.com>
 Shenghou Ma    <minux@golang.org>
 Xing Xing      <mikespook@gmail.com>
+YU HengChun    <achun.shx@qq.com>
 ```
 
 # 版权
