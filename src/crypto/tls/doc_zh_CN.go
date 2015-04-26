@@ -5,10 +5,21 @@
 // +build ingore
 
 // Package tls partially implements TLS 1.2, as specified in RFC 5246.
+
+// tls包实现了TLS 1.2，细节参见RFC 5246。
 package tls
 
 // A list of the possible cipher suite ids. Taken from
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
+
+// 可选的加密组的ID的列表。参见：http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
+//
+//	const (
+//	    VersionSSL30 = 0x0300
+//	    VersionTLS10 = 0x0301
+//	    VersionTLS11 = 0x0302
+//	    VersionTLS12 = 0x0303
+//	)
 const (
 	TLS_RSA_WITH_RC4_128_SHA                uint16 = 0x0005
 	TLS_RSA_WITH_3DES_EDE_CBC_SHA           uint16 = 0x000a
@@ -40,14 +51,20 @@ const (
 // Listen creates a TLS listener accepting connections on the given network address
 // using net.Listen. The configuration config must be non-nil and must have at
 // least one certificate.
+
+// 函数创建一个TLS监听器，使用net.Listen函数接收给定地址上的连接。配置参数config必须是非nil的且必须含有至少一个证书。
 func Listen(network, laddr string, config *Config) (net.Listener, error)
 
 // NewListener creates a Listener which accepts connections from an inner Listener
 // and wraps each connection with Server. The configuration config must be non-nil
 // and must have at least one certificate.
+
+// 函数创建一个TLS监听器，该监听器接受inner接收到的每一个连接，并调用Server函数包装这些连接。配置参数config必须是非nil的且必须含有至少一个证书。
 func NewListener(inner net.Listener, config *Config) net.Listener
 
 // A Certificate is a chain of one or more certificates, leaf first.
+
+// Certificate是一个或多个证书的链条，叶证书在最前面。
 type Certificate struct {
 	Certificate [][]byte
 	// PrivateKey contains the private key corresponding to the public key
@@ -68,13 +85,27 @@ type Certificate struct {
 
 // LoadX509KeyPair reads and parses a public/private key pair from a pair of files.
 // The files must contain PEM encoded data.
+
+// LoadX509KeyPair读取并解析一对文件获取公钥和私钥。这些文件必须是PEM编码的。
 func LoadX509KeyPair(certFile, keyFile string) (cert Certificate, err error)
 
 // X509KeyPair parses a public/private key pair from a pair of PEM encoded data.
+
+// X509KeyPair解析一对PEM编码的数据获取公钥和私钥。
 func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err error)
 
 // ClientAuthType declares the policy the server will follow for TLS Client
 // Authentication.
+
+// ClientAuthType类型声明服务端将遵循的TLS客户端验证策略。
+//
+//	const (
+//	    NoClientCert ClientAuthType = iota
+//	    RequestClientCert
+//	    RequireAnyClientCert
+//	    VerifyClientCertIfGiven
+//	    RequireAndVerifyClientCert
+//	)
 type ClientAuthType int
 
 const (
@@ -115,6 +146,8 @@ type ClientHelloInfo struct {
 // a client to resume a TLS session with a given server. ClientSessionCache
 // implementations should expect to be called concurrently from different
 // goroutines.
+
+// ClientSessionCache是ClientSessionState对象的缓存，可以被客户端用于恢复与某个服务端的TLS会话。本类型的实现期望被不同线程并行的调用。
 type ClientSessionCache interface {
 	// Get searches for a ClientSessionState associated with the given key.
 	// On return, ok is true if one was found.
@@ -127,9 +160,13 @@ type ClientSessionCache interface {
 // NewLRUClientSessionCache returns a ClientSessionCache with the given capacity
 // that uses an LRU strategy. If capacity is < 1, a default capacity is used
 // instead.
+
+// 函数使用给出的容量创建一个采用LRU策略的ClientSessionState，如果capacity<1会采用默认容量。
 func NewLRUClientSessionCache(capacity int) ClientSessionCache
 
 // ClientSessionState contains the state needed by clients to resume TLS sessions.
+
+// ClientSessionState包含客户端所需的用于恢复TLS会话的状态。
 type ClientSessionState struct {
 	// contains filtered or unexported fields
 }
@@ -137,6 +174,8 @@ type ClientSessionState struct {
 // A Config structure is used to configure a TLS client or server. After one has
 // been passed to a TLS function it must not be modified. A Config may be reused;
 // the tls package will also not modify it.
+
+// Config结构类型用于配置TLS客户端或服务端。在本类型的值提供给TLS函数后，就不应再修改该值。Config类型值可能被重用；tls包也不会修改它。
 type Config struct {
 	// Rand provides the source of entropy for nonces and RSA blinding.
 	// If Rand is nil, TLS uses the cryptographic random reader in package
@@ -244,9 +283,13 @@ type Config struct {
 
 // BuildNameToCertificate parses c.Certificates and builds c.NameToCertificate from
 // the CommonName and SubjectAlternateName fields of each of the leaf certificates.
+
+// BuildNameToCertificate解析c.Certificates并将每一个叶证书的CommonName和SubjectAlternateName字段用于创建c.NameToCertificate。
 func (c *Config) BuildNameToCertificate()
 
 // A Conn represents a secured connection. It implements the net.Conn interface.
+
+// Conn代表一个安全连接。本类型实现了net.Conn接口。
 type Conn struct {
 	// contains filtered or unexported fields
 }
@@ -254,12 +297,16 @@ type Conn struct {
 // Client returns a new TLS client side connection using conn as the underlying
 // transport. The config cannot be nil: users must set either ServerName or
 // InsecureSkipVerify in the config.
+
+// Client使用conn作为下层传输接口返回一个TLS连接的客户端侧。配置参数config必须是非nil的且必须设置了ServerName或者InsecureSkipVerify字段。
 func Client(conn net.Conn, config *Config) *Conn
 
 // Dial connects to the given network address using net.Dial and then initiates a
 // TLS handshake, returning the resulting TLS connection. Dial interprets a nil
 // configuration as equivalent to the zero configuration; see the documentation of
 // Config for the defaults.
+
+// Dial使用net.Dial连接指定的网络和地址，然后发起TLS握手，返回生成的TLS连接。Dial会将nil的配置视为零值的配置；参见Config类型的文档获取细节。
 func Dial(network, addr string, config *Config) (*Conn, error)
 
 // DialWithDialer connects to the given network address using dialer.Dial and then
@@ -269,60 +316,93 @@ func Dial(network, addr string, config *Config) (*Conn, error)
 //
 // DialWithDialer interprets a nil configuration as equivalent to the zero
 // configuration; see the documentation of Config for the defaults.
+
+// DialWithDialer使用dialer.Dial连接指定的网络和地址，然后发起TLS握手，返回生成的TLS连接。dialer中的超时和期限设置会将连接和TLS握手作为一个整体来应用。
+//
+// DialWithDialer会将nil的配置视为零值的配置；参见Config类型的文档获取细节。
 func DialWithDialer(dialer *net.Dialer, network, addr string, config *Config) (*Conn, error)
 
 // Server returns a new TLS server side connection using conn as the underlying
 // transport. The configuration config must be non-nil and must have at least one
 // certificate.
+
+// Server使用conn作为下层传输接口返回一个TLS连接的服务端侧。配置参数config必须是非nil的且必须含有至少一个证书。
 func Server(conn net.Conn, config *Config) *Conn
 
 // Close closes the connection.
+
+// Close关闭连接。
 func (c *Conn) Close() error
 
 // ConnectionState returns basic TLS details about the connection.
+
+// ConnectionState返回该连接的基本TLS细节。
 func (c *Conn) ConnectionState() ConnectionState
 
 // Handshake runs the client or server handshake protocol if it has not yet been
 // run. Most uses of this package need not call Handshake explicitly: the first
 // Read or Write will call it automatically.
+
+// Handshake执行客户端或服务端的握手协议（如果还没有执行的话）。本包的大多数应用不需要显式的调用Handsake方法：第一次Read或Write方法会自动调用本方法。
 func (c *Conn) Handshake() error
 
 // LocalAddr returns the local network address.
+
+// LocalAddr返回本地网络地址。
 func (c *Conn) LocalAddr() net.Addr
 
 // OCSPResponse returns the stapled OCSP response from the TLS server, if any.
 // (Only valid for client connections.)
+
+// OCSPResponse返回来自服务端的OCSP
+// staple回复（如果有）。只有客户端可以使用本方法。
 func (c *Conn) OCSPResponse() []byte
 
 // Read can be made to time out and return a net.Error with Timeout() == true after
 // a fixed time limit; see SetDeadline and SetReadDeadline.
+
+// Read从连接读取数据，可设置超时，参见SetDeadline和SetReadDeadline。
 func (c *Conn) Read(b []byte) (n int, err error)
 
 // RemoteAddr returns the remote network address.
+
+// LocalAddr返回远端网络地址。
 func (c *Conn) RemoteAddr() net.Addr
 
 // SetDeadline sets the read and write deadlines associated with the connection. A
 // zero value for t means Read and Write will not time out. After a Write has timed
 // out, the TLS state is corrupt and all future writes will return the same error.
+
+// SetDeadline设置该连接的读写操作绝对期限。t为Time零值表示不设置超时。在一次Write/Read方法超时后，TLS连接状态会被破坏，之后所有的读写操作都会返回同一错误。
 func (c *Conn) SetDeadline(t time.Time) error
 
 // SetReadDeadline sets the read deadline on the underlying connection. A zero
 // value for t means Read will not time out.
+
+// SetReadDeadline设置该连接的读操作绝对期限。t为Time零值表示不设置超时。
 func (c *Conn) SetReadDeadline(t time.Time) error
 
 // SetWriteDeadline sets the write deadline on the underlying connection. A zero
 // value for t means Write will not time out. After a Write has timed out, the TLS
 // state is corrupt and all future writes will return the same error.
+
+// SetReadDeadline设置该连接的写操作绝对期限。t为Time零值表示不设置超时。在一次Write方法超时后，TLS连接状态会被破坏，之后所有的写操作都会返回同一错误。
 func (c *Conn) SetWriteDeadline(t time.Time) error
 
 // VerifyHostname checks that the peer certificate chain is valid for connecting to
 // host. If so, it returns nil; if not, it returns an error describing the problem.
+
+// VerifyHostname检查用于连接到host的对等实体证书链是否合法。如果合法，它会返回nil；否则，会返回一个描述该问题的错误。
 func (c *Conn) VerifyHostname(host string) error
 
 // Write writes data to the connection.
+
+// Write将数据写入连接，可设置超时，参见SetDeadline和SetWriteDeadline。
 func (c *Conn) Write(b []byte) (int, error)
 
 // ConnectionState records basic TLS details about the connection.
+
+// ConnectionState类型记录连接的基本TLS细节。
 type ConnectionState struct {
 	Version                    uint16                // TLS version used by the connection (e.g. VersionTLS12)
 	HandshakeComplete          bool                  // TLS handshake is complete
@@ -345,6 +425,17 @@ type ConnectionState struct {
 
 // CurveID is the type of a TLS identifier for an elliptic curve. See
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
+
+// CurveID是TLS椭圆曲线的标识符的类型。
+//
+// 参见：
+// http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
+//
+//	const (
+//	    CurveP256 CurveID = 23
+//	    CurveP384 CurveID = 24
+//	    CurveP521 CurveID = 25
+//	)
 type CurveID uint16
 
 const (

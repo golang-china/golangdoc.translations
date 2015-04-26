@@ -5,15 +5,33 @@
 // +build ingore
 
 // Package crypto collects common cryptographic constants.
+
+// crypto包搜集了常用的密码（算法）常量。
 package crypto
 
 // RegisterHash registers a function that returns a new instance of the given hash
 // function. This is intended to be called from the init function in packages that
 // implement hash functions.
+
+// 注册一个返回给定hash接口实例的函数，并指定其标识值，该函数应在实现hash接口的包的init函数中调用。
 func RegisterHash(h Hash, f func() hash.Hash)
 
 // Hash identifies a cryptographic hash function that is implemented in another
 // package.
+
+// Hash用来识别/标识另一个包里实现的加密函数。
+//
+//	const (
+//	    MD4       Hash = 1 + iota // 导入code.google.com/p/go.crypto/md4
+//	    MD5                       // 导入crypto/md5
+//	    SHA1                      // 导入crypto/sha1
+//	    SHA224                    // 导入crypto/sha256
+//	    SHA256                    // 导入crypto/sha256
+//	    SHA384                    // 导入crypto/sha512
+//	    SHA512                    // 导入crypto/sha512
+//	    MD5SHA1                   // 未实现；MD5+SHA1用于TLS RSA
+//	    RIPEMD160                 // 导入code.google.com/p/go.crypto/ripemd160
+//	)
 type Hash uint
 
 const (
@@ -34,6 +52,8 @@ const (
 )
 
 // Available reports whether the given hash function is linked into the binary.
+
+// 报告是否有hash函数注册到该标识值。
 func (h Hash) Available() bool
 
 // HashFunc simply returns the value of h so that Hash implements SignerOpts.
@@ -41,17 +61,25 @@ func (h Hash) HashFunc() Hash
 
 // New returns a new hash.Hash calculating the given hash function. New panics if
 // the hash function is not linked into the binary.
+
+// 创建一个使用给定hash函数的hash.Hash接口，如果该标识值未注册hash函数，将会panic。
 func (h Hash) New() hash.Hash
 
 // Size returns the length, in bytes, of a digest resulting from the given hash
 // function. It doesn't require that the hash function in question be linked into
 // the program.
+
+// 返回给定hash函数返回值的字节长度。
 func (h Hash) Size() int
 
 // PrivateKey represents a private key using an unspecified algorithm.
+
+// 代表一个使用未指定算法的私钥。
 type PrivateKey interface{}
 
 // PublicKey represents a public key using an unspecified algorithm.
+
+// 代表一个使用未指定算法的公钥。
 type PublicKey interface{}
 
 // Signer is an interface for an opaque private key that can be used for signing

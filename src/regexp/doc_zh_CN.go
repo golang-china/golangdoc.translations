@@ -62,28 +62,44 @@
 // RuneReader may read arbitrarily far into the input before returning.
 //
 // (There are a few other methods that do not match this pattern.)
+
+// regexp包实现了正则表达式搜索。
+//
+// 正则表达式采用RE2语法（除了\c、\C），和Perl、Python等语言的正则基本一致。
+//
+// 参见http://code.google.com/p/re2/wiki/Syntax。
 package regexp
 
 // Match checks whether a textual regular expression matches a byte slice. More
 // complicated queries need to use Compile and the full Regexp interface.
+
+// Match检查b中是否存在匹配pattern的子序列。更复杂的用法请使用Compile函数和Regexp对象。
 func Match(pattern string, b []byte) (matched bool, err error)
 
 // MatchReader checks whether a textual regular expression matches the text read by
 // the RuneReader. More complicated queries need to use Compile and the full Regexp
 // interface.
+
+// MatchReader类似Match，但匹配对象是io.RuneReader。
 func MatchReader(pattern string, r io.RuneReader) (matched bool, err error)
 
 // MatchString checks whether a textual regular expression matches a string. More
 // complicated queries need to use Compile and the full Regexp interface.
+
+// MatchString类似Match，但匹配对象是字符串。
 func MatchString(pattern string, s string) (matched bool, err error)
 
 // QuoteMeta returns a string that quotes all regular expression metacharacters
 // inside the argument text; the returned string is a regular expression matching
 // the literal text. For example, QuoteMeta(`[foo]`) returns `\[foo\]`.
+
+// QuoteMeta返回将s中所有正则表达式元字符都进行转义后字符串。该字符串可以用在正则表达式中匹配字面值s。例如，QuoteMeta(`[foo]`)会返回`\[foo\]`。
 func QuoteMeta(s string) string
 
 // Regexp is the representation of a compiled regular expression. A Regexp is safe
 // for concurrent use by multiple goroutines.
+
+// Regexp代表一个编译好的正则表达式。Regexp可以被多线程安全地同时使用。
 type Regexp struct {
 	// contains filtered or unexported fields
 }
@@ -97,6 +113,10 @@ type Regexp struct {
 // matching is the same semantics that Perl, Python, and other implementations use,
 // although this package implements it without the expense of backtracking. For
 // POSIX leftmost-longest matching, see CompilePOSIX.
+
+// Compile解析并返回一个正则表达式。如果成功返回，该Regexp就可用于匹配文本。
+//
+// 在匹配文本时，该正则表达式会尽可能早的开始匹配，并且在匹配过程中选择回溯搜索到的第一个匹配结果。这种模式被称为“leftmost-first”，Perl、Python和其他实现都采用了这种模式，但本包的实现没有回溯的损耗。对POSIX的“leftmost-longest”模式，参见CompilePOSIX。
 func Compile(expr string) (*Regexp, error)
 
 // CompilePOSIX is like Compile but restricts the regular expression to POSIX ERE
@@ -115,16 +135,29 @@ func Compile(expr string) (*Regexp, error)
 // maximize the length of the first subexpression, then the second, and so on from
 // left to right. The POSIX rule is computationally prohibitive and not even
 // well-defined. See http://swtch.com/~rsc/regexp/regexp2.html#posix for details.
+
+// 类似Compile但会将语法约束到POSIX
+// ERE（egrep）语法，并将匹配模式设置为leftmost-longest。
+//
+// 在匹配文本时，该正则表达式会尽可能早的开始匹配，并且在匹配过程中选择搜索到的最长的匹配结果。这种模式被称为“leftmost-longest”，POSIX采用了这种模式（早期正则的DFA自动机模式）。
+//
+// 然而，可能会有多个“leftmost-longest”匹配，每个都有不同的组匹配状态，本包在这里和POSIX不同。在所有可能的“leftmost-longest”匹配里，本包选择回溯搜索时第一个找到的，而POSIX会选择候选结果中第一个组匹配最长的（可能有多个），然后再从中选出第二个组匹配最长的，依次类推。POSIX规则计算困难，甚至没有良好定义。
+//
+// 参见http://swtch.com/~rsc/regexp/regexp2.html#posix获取细节。
 func CompilePOSIX(expr string) (*Regexp, error)
 
 // MustCompile is like Compile but panics if the expression cannot be parsed. It
 // simplifies safe initialization of global variables holding compiled regular
 // expressions.
+
+// MustCompile类似Compile但会在解析失败时panic，主要用于全局正则表达式变量的安全初始化。
 func MustCompile(str string) *Regexp
 
 // MustCompilePOSIX is like CompilePOSIX but panics if the expression cannot be
 // parsed. It simplifies safe initialization of global variables holding compiled
 // regular expressions.
+
+// MustCompilePOSIX类似CompilePOSIX但会在解析失败时panic，主要用于全局正则表达式变量的安全初始化。
 func MustCompilePOSIX(str string) *Regexp
 
 // Expand appends template to dst and returns the result; during the append, Expand
@@ -250,6 +283,9 @@ func (re *Regexp) FindSubmatchIndex(b []byte) []int
 // LiteralPrefix returns a literal string that must begin any match of the regular
 // expression re. It returns the boolean true if the literal string comprises the
 // entire regular expression.
+
+// LiteralPrefix返回一个字符串字面值prefix，任何匹配本正则表达式的字符串都会以prefix起始。
+// 如果该字符串字面值包含整个正则表达式，返回值complete会设为真。
 func (re *Regexp) LiteralPrefix() (prefix string, complete bool)
 
 // Longest makes future searches prefer the leftmost-longest match. That is, when
@@ -268,6 +304,8 @@ func (re *Regexp) MatchReader(r io.RuneReader) bool
 func (re *Regexp) MatchString(s string) bool
 
 // NumSubexp returns the number of parenthesized subexpressions in this Regexp.
+
+// NumSubexp返回该正则表达式中捕获分组的数量。
 func (re *Regexp) NumSubexp() int
 
 // ReplaceAll returns a copy of src, replacing matches of the Regexp with the
@@ -322,6 +360,8 @@ func (re *Regexp) ReplaceAllStringFunc(src string, repl func(string) string) str
 func (re *Regexp) Split(s string, n int) []string
 
 // String returns the source text used to compile the regular expression.
+
+// String返回用于编译成正则表达式的字符串。
 func (re *Regexp) String() string
 
 // SubexpNames returns the names of the parenthesized subexpressions in this
@@ -329,4 +369,6 @@ func (re *Regexp) String() string
 // match slice, the name for m[i] is SubexpNames()[i]. Since the Regexp as a whole
 // cannot be named, names[0] is always the empty string. The slice should not be
 // modified.
+
+// SubexpNames返回该正则表达式中捕获分组的名字。第一个分组的名字是names[1]，因此，如果m是一个组匹配切片，m[i]的名字是SubexpNames()[i]。因为整个正则表达式是无法被命名的，names[0]必然是空字符串。该切片不应被修改。
 func (re *Regexp) SubexpNames() []string

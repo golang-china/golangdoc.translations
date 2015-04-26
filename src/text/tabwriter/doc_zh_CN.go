@@ -9,9 +9,23 @@
 //
 // The package is using the Elastic Tabstops algorithm described at
 // http://nickgravgaard.com/elastictabstops/index.html.
+
+// tabwriter包实现了写入过滤器（tabwriter.Writer），可以将输入的缩进修正为正确的对齐文本。
+//
+// 本包采用的Elastic
+// Tabstops算法参见http://nickgravgaard.com/elastictabstops/index.html
 package tabwriter
 
 // Formatting can be controlled with these flags.
+
+// 这些标志用于控制格式化。
+//
+//	const Escape = '\xff'
+//
+// 用于包围转义字符，避免该字符被转义；例如字符串"Ignore this tab:
+// \xff\t\xff"中的'\t'不被转义，不结束单元；格式化时Escape视为长度1的单字符。
+//
+// 选择'\xff'是因为该字符不能出现在合法的utf-8序列里。
 const (
 	// Ignore html tags and treat entities (starting with '&'
 	// and ending in ';') as single characters (width = 1).
@@ -83,12 +97,30 @@ const Escape = '\xff'
 // The Writer must buffer input internally, because proper spacing of one line may
 // depend on the cells in future lines. Clients must call Flush when done calling
 // Write.
+
+// Writer是一个过滤器，会在输入的tab划分的列进行填充，在输出中对齐它们。
+//
+// 它会将输入的序列视为utf-8编码的文本，包含一系列被垂直制表符、水平制表符、换行符、回车符分割的单元。临近的单元组成一列，根据需要填充空格使所有的单元有相同的宽度，高效对齐各列。它假设所有的字符都有相同的宽度，除了tab，tab宽度应该被指定。注意单元以tab截止，而不是被tab分隔，行最后的非tab文本不被视为列的单元。
+//
+// Writer假设所有的unicode字符有着同样的宽度，这一点其实在很多字体里是错误的。
+//
+// 如果设置了DiscardEmptyColumns，以垂直制表符结尾的空列会被丢弃，水平制表符截止的空列则不会被影响。
+//
+// 如果设置了FilterHTML，HTML标签和实体会被放过，标签宽度视为0，实体宽度视为1。文本段可能被转义字符包围，此时tabwriter不会修改该文本段，不会打断段中的任何tab或换行。
+//
+// 如果设置了StripEscape，则不会计算转义字符的宽度（输出中也会去除转义字符）。
+//
+// 进纸符'\f'被视为换行，但也会截止当前行的所有列（有效的刷新）；除非在HTML标签内或者在转义文本段内，输出中'\f'都被作为换行。
+//
+// Writer会在内部缓存输入以便有效的对齐，调用者必须在写完后执行Flush方法。
 type Writer struct {
 	// contains filtered or unexported fields
 }
 
 // NewWriter allocates and initializes a new tabwriter.Writer. The parameters are
 // the same as for the Init function.
+
+// 创建并初始化一个tabwriter.Writer，参数用法和Init函数类似。
 func NewWriter(output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *Writer
 
 // Flush should be called after the last call to Write to ensure that any data
@@ -109,6 +141,15 @@ func (b *Writer) Flush() (err error)
 //			(for correct-looking results, tabwidth must correspond
 //			to the tab width in the viewer displaying the result)
 //	flags		formatting control
+
+// 初始化一个Writer，第一个参数指定格式化后的输出目标，其余的参数控制格式化：
+//
+//	minwidth 最小单元长度
+//	tabwidth tab字符的宽度
+//	padding  计算单元宽度时会额外加上它
+//	padchar  用于填充的ASCII字符，
+//	         如果是'\t'，则Writer会假设tabwidth作为输出中tab的宽度，且单元必然左对齐。
+//	flags    格式化控制
 func (b *Writer) Init(output io.Writer, minwidth, tabwidth, padding int, padchar byte, flags uint) *Writer
 
 // Write writes buf to the writer b. The only errors returned are ones encountered

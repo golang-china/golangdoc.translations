@@ -249,6 +249,10 @@
 //
 // See "Gobs of data" for a design discussion of the gob wire format:
 // http://golang.org/doc/articles/gobs_of_data.html
+
+// gob包管理gob流——在编码器（发送器）和解码器（接受器）之间交换的binary值。一般用于传递远端程序调用（RPC）的参数和结果，如net/rpc包就有提供。
+//
+// 本实现给每一个数据类型都编译生成一个编解码程序，当单个编码器用于传递数据流时，会分期偿还编译的消耗，是效率最高的。
 package gob
 
 // Debug prints a human-readable representation of the gob data read from r. It is
@@ -261,15 +265,20 @@ func Debug(r io.Reader)
 // of interface values need to be registered. Expecting to be used only during
 // initialization, it panics if the mapping between types and names is not a
 // bijection.
+
+// Register记录value下层具体值的类型和其名称。该名称将用来识别发送或接受接口类型值时下层的具体类型。本函数只应在初始化时调用，如果类型和名字的映射不是一一对应的，会panic。
 func Register(value interface{})
 
-// RegisterName is like Register but uses the provided name rather than the type's
-// default.
+// RegisterName is like Register but uses the provided
+
+// RegisterName类似Register，淡灰使用提供的name代替类型的默认名称。
 func RegisterName(name string, value interface{})
 
 // CommonType holds elements of all types. It is a historical artifact, kept for
 // binary compatibility and exported only for the benefit of the package's encoding
 // of type descriptors. It is not intended for direct use by clients.
+
+// CommonType保存所有类型的成员。这是个历史遗留“问题”，出于保持binary兼容性才保留，只用于类型描述的编码。该类型应视为不导出类型。
 type CommonType struct {
 	Name string
 	Id   typeId
@@ -277,12 +286,16 @@ type CommonType struct {
 
 // A Decoder manages the receipt of type and data information read from the remote
 // side of a connection.
+
+// Decoder管理从连接远端读取的类型和数据信息的解释（的操作）。
 type Decoder struct {
 	// contains filtered or unexported fields
 }
 
 // NewDecoder returns a new decoder that reads from the io.Reader. If r does not
 // also implement io.ByteReader, it will be wrapped in a bufio.Reader.
+
+// 函数返回一个从r读取数据的*Decoder，如果r不满足io.ByteReader接口，则会包装r为bufio.Reader。
 func NewDecoder(r io.Reader) *Decoder
 
 // Decode reads the next value from the input stream and stores it in the data
@@ -290,6 +303,8 @@ func NewDecoder(r io.Reader) *Decoder
 // discarded. Otherwise, the value underlying e must be a pointer to the correct
 // type for the next data item received. If the input is at EOF, Decode returns
 // io.EOF and does not modify e.
+
+// Decode从输入流读取下一个之并将该值存入e。如果e是nil，将丢弃该值；否则e必须是可接收该值的类型的指针。如果输入结束，方法会返回io.EOF并且不修改e（指向的值）。
 func (dec *Decoder) Decode(e interface{}) error
 
 // DecodeValue reads the next value from the input stream. If v is the zero
@@ -297,43 +312,63 @@ func (dec *Decoder) Decode(e interface{}) error
 // it stores the value into v. In that case, v must represent a non-nil pointer to
 // data or be an assignable reflect.Value (v.CanSet()) If the input is at EOF,
 // DecodeValue returns io.EOF and does not modify v.
+
+// DecodeValue从输入流读取下一个值，如果v是reflect.Value类型的零值（v.Kind() ==
+// Invalid），方法丢弃该值；否则它会把该值存入v。此时，v必须代表一个非nil的指向实际存在值的指针或者可写入的reflect.Value（v.CanSet()为真）。如果输入结束，方法会返回io.EOF并且不修改e（指向的值）。
 func (dec *Decoder) DecodeValue(v reflect.Value) error
 
 // An Encoder manages the transmission of type and data information to the other
 // side of a connection.
+
+// Encoder管理将数据和类型信息编码后发送到连接远端（的操作）。
 type Encoder struct {
 	// contains filtered or unexported fields
 }
 
 // NewEncoder returns a new encoder that will transmit on the io.Writer.
+
+// NewEncoder返回一个将编码后数据写入w的*Encoder。
 func NewEncoder(w io.Writer) *Encoder
 
 // Encode transmits the data item represented by the empty interface value,
 // guaranteeing that all necessary type information has been transmitted first.
+
+// Encode方法将e编码后发送，并且会保证所有的类型信息都先发送。
 func (enc *Encoder) Encode(e interface{}) error
 
 // EncodeValue transmits the data item represented by the reflection value,
 // guaranteeing that all necessary type information has been transmitted first.
+
+// EncodeValue方法将value代表的数据编码后发送，并且会保证所有的类型信息都先发送。
 func (enc *Encoder) EncodeValue(value reflect.Value) error
 
 // GobDecoder is the interface describing data that provides its own routine for
 // decoding transmitted values sent by a GobEncoder.
+
+// GobDecoder是一个描述数据的接口，提供自己的方案来解码GobEncoder发送的数据。
 type GobDecoder interface {
 	// GobDecode overwrites the receiver, which must be a pointer,
 	// with the value represented by the byte slice, which was written
 	// by GobEncode, usually for the same concrete type.
-	GobDecode([]byte) error
+	GobDecode([]byte) error // dd
 }
 
-// GobEncoder is the interface describing data that provides its own representation
-// for encoding values for transmission to a GobDecoder. A type that implements
-// GobEncoder and GobDecoder has complete control over the representation of its
-// data and may therefore contain things such as private fields, channels, and
-// functions, which are not usually transmissible in gob streams.
+// GobEncoder is the interface describing data that provides its own
+//
+// representation for encoding values for transmission to a GobDecoder. A type that
+// implements GobEncoder and GobDecoder has complete control over the
+// representation of its data and may therefore contain things such as private
+// fields, channels, and functions, which are not usually transmissible in gob
+// streams.
 //
 // Note: Since gobs can be stored permanently, It is good design to guarantee the
 // encoding used by a GobEncoder is stable as the software evolves. For instance,
 // it might make sense for GobEncode to include a version number in the encoding.
+
+// GobEncoder是一个描述数据的接口，提供自己的方案来将数据编码供GobDecoder接收并解码。一个实现了GobEncoder接口和GobDecoder接口的类型可以完全控制自身数据的表示，因此可以包含非导出字段、通道、函数等数据，这些数据gob流正常是不能传输的。
+//
+// 注意：因为gob数据可以被永久保存，在软件更新的过程中保证用于GobEncoder编码的数据的稳定性（保证兼容）是较好的设计原则。例如，让GobEncode
+// 接口在编码后数据里包含版本信息可能很有意义。
 type GobEncoder interface {
 	// GobEncode returns a byte slice representing the encoding of the
 	// receiver for transmission to a GobDecoder, usually of the same

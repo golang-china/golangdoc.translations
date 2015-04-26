@@ -48,9 +48,51 @@
 //
 //	{`Multi-line
 //	field`, `comma is ,`}
+
+// csv读写逗号分隔值（csv）的文件。
+//
+// 一个csv分拣包含零到多条记录，每条记录一到多个字段。每个记录用换行符分隔。最后一条记录后面可以有换行符，也可以没有。
+//
+//	field1,field2,field3
+//
+// 空白视为字段的一部分。
+//
+// 换行符前面的回车符会悄悄的被删掉。
+//
+// 忽略空行。只有空白的行（除了末尾换行符之外）不视为空行。
+//
+// 以双引号"开始和结束的字段成为受引字段，其开始和结束的引号不属于字段。
+//
+// 资源：
+//
+//	normal string,"quoted-field"
+//
+// 产生如下字段：
+//
+//	{`normal string`, `quoted-field`}
+//
+// 受引字段内部，如果有两个连续的双引号，则视为一个单纯的双引号字符：
+//
+//	"the ""word"" is true","a ""quoted-field"""
+//
+// 生成：
+//
+//	{`the "word" is true`, `a "quoted-field"`}
+//
+// 受引字段里可以包含换行和逗号：
+//
+//	"Multi-line
+//	field","comma is ,"
+//
+// 生成：
+//
+//	{`Multi-line
+//	field`, `comma is ,`}
 package csv
 
 // These are the errors that can be returned in ParseError.Error
+
+// 这些都是PaserError.Err字段可能的值。
 var (
 	ErrTrailingComma = errors.New("extra delimiter at end of line") // no longer used
 	ErrBareQuote     = errors.New("bare \" in non-quoted-field")
@@ -60,6 +102,8 @@ var (
 
 // A ParseError is returned for parsing errors. The first line is 1. The first
 // column is 0.
+
+// 当解析错误时返回ParseError，第一个行为1，第一列为0。
 type ParseError struct {
 	Line   int   // Line where the error occurred
 	Column int   // Column (rune index) where the error occurred
@@ -89,6 +133,13 @@ func (e *ParseError) Error() string
 // quote may appear in a quoted field.
 //
 // If TrimLeadingSpace is true, leading white space in a field is ignored.
+
+// Reader从csv编码的文件中读取记录。
+//
+// NewReader返回的*Reader期望输入符合RFC
+// 4180。在首次调用Read或者ReadAll之前可以设定导出字段的细节。
+//
+// Comma是字段分隔符，默认为','。Comment如果不是0，则表示注释标识符，以Comment开始的行会被忽略。如果FieldsPerRecord大于0，Read方法要求每条记录都有给定数目的字段。如果FieldsPerRecord等于0，Read方法会将其设为第一条记录的字段数，因此其余的记录必须有同样数目的字段。如果FieldsPerRecord小于0，不会检查字段数，允许记录有不同数量的字段。如果LazyQuotes为真，引号可以出现在非受引字段里，不连续两个的引号可以出现在受引字段里。如果TrimLeadingSpace为真，字段前导的空白会忽略掉。
 type Reader struct {
 	Comma            rune // field delimiter (set to ',' by NewReader)
 	Comment          rune // comment character for start of line
@@ -100,16 +151,22 @@ type Reader struct {
 }
 
 // NewReader returns a new Reader that reads from r.
+
+// NewReader函数返回一个从r读取的*Reader。
 func NewReader(r io.Reader) *Reader
 
 // Read reads one record from r. The record is a slice of strings with each string
 // representing one field.
+
+// Read从r读取一条记录，返回值record是字符串的切片，每个字符串代表一个字段。
 func (r *Reader) Read() (record []string, err error)
 
 // ReadAll reads all the remaining records from r. Each record is a slice of
 // fields. A successful call returns err == nil, not err == EOF. Because ReadAll is
 // defined to read until EOF, it does not treat end of file as an error to be
 // reported.
+
+// ReadAll从r中读取所有剩余的记录，每个记录都是字段的切片，成功的调用返回值err为nil而不是EOF。因为ReadAll方法定义为读取直到文件结尾，因此它不会将文件结尾视为应该报告的错误。
 func (r *Reader) ReadAll() (records [][]string, err error)
 
 // A Writer writes records to a CSV encoded file.
@@ -121,6 +178,12 @@ func (r *Reader) ReadAll() (records [][]string, err error)
 // Comma is the field delimiter.
 //
 // If UseCRLF is true, the Writer ends each record with \r\n instead of \n.
+
+// Writer类型的值将记录写入一个csv编码的文件。
+//
+// NewWriter返回的*Writer写入记录时，以换行结束记录，用','分隔字段。在第一次调用Write或WriteAll之前，可以设置导出字段的细节。
+//
+// Comma是字段分隔符。如果UseCRLF为真，Writer在每条记录结束时用\r\n代替\n。
 type Writer struct {
 	Comma   rune // Field delimiter (set to ',' by NewWriter)
 	UseCRLF bool // True to use \r\n as the line terminator
@@ -128,18 +191,28 @@ type Writer struct {
 }
 
 // NewWriter returns a new Writer that writes to w.
+
+// NewWriter返回一个写入w的*Writer。
 func NewWriter(w io.Writer) *Writer
 
 // Error reports any error that has occurred during a previous Write or Flush.
+
+// Error返回在之前的Write方法和Flush方法执行时出现的任何错误。
 func (w *Writer) Error() error
 
 // Flush writes any buffered data to the underlying io.Writer. To check if an error
 // occurred during the Flush, call Error.
+
+// 将缓存中的数据写入底层的io.Writer。要检查Flush时是否发生错误的话，应调用Error方法。
 func (w *Writer) Flush()
 
 // Writer writes a single CSV record to w along with any necessary quoting. A
 // record is a slice of strings with each string being one field.
+
+// 向w中写入一条记录，会自行添加必需的引号。记录是字符串切片，每个字符串代表一个字段。
 func (w *Writer) Write(record []string) (err error)
 
 // WriteAll writes multiple CSV records to w using Write and then calls Flush.
+
+// WriteAll方法使用Write方法向w写入多条记录，并在最后调用Flush方法清空缓存。
 func (w *Writer) WriteAll(records [][]string) (err error)

@@ -7,6 +7,8 @@
 // Package time provides functionality for measuring and displaying time.
 //
 // The calendrical calculations always assume a Gregorian calendar.
+
+// time包提供了时间的显示和测量用的函数。日历的计算采用的是公历。
 package time
 
 // These are predefined layouts for use in Time.Format and Time.Parse. The
@@ -47,6 +49,31 @@ package time
 //
 //	Z0700  Z or ±hhmm
 //	Z07:00 Z or ±hh:mm
+
+// 这些预定义的版式用于Time.Format和Time.Parse函数。用在版式中的参考时间是：
+//
+//	Mon Jan 2 15:04:05 MST 2006
+//
+// 对应的Unix时间是1136239445。因为MST的时区是GMT-0700，参考时间也可以表示为如下：
+//
+//	01/02 03:04:05PM '06 -0700
+//
+// 要定义你自己的格式，写下该参考时间应用于你的格式的情况；例子请参见ANSIC、StampMicro或Kitchen等常数的值。该模型是为了演示参考时间的格式化效果，如此一来Format和Parse方法可以将相同的转换规则用于一个普通的时间值。
+//
+// 在格式字符串中，用前置的'0'表示一个可以被可以被数字替换的'0'（如果它后面的数字有两位）；使用下划线表示一个可以被数字替换的空格（如果它后面的数字有两位）；以便兼容Unix定长时间格式。
+//
+// 小数点后跟0到多个'0'，表示秒数的小数部分，输出时会生成和'0'一样多的小数位；小数点后跟0到多个'9'，表示秒数的小数部分，输出时会生成和'9'一样多的小数位但会将拖尾的'0'去掉。（只有）解析时，输入可以在秒字段后面紧跟一个小数部分，即使格式字符串里没有指明该部分。此时，小数点及其后全部的数字都会成为秒的小数部分。
+//
+// 数字表示的时区格式如下：
+//
+//	-0700  ±hhmm
+//	-07:00 ±hh:mm
+//
+// 将格式字符串中的负号替换为Z会触发ISO
+// 8601行为（当时区是UTC时，输出Z而不是时区偏移量），这样：
+//
+//	Z0700  Z or ±hhmm
+//	Z07:00 Z or ±hh:mm
 const (
 	ANSIC       = "Mon Jan _2 15:04:05 2006"
 	UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
@@ -72,19 +99,48 @@ const (
 
 // After waits for the duration to elapse and then sends the current time on the
 // returned channel. It is equivalent to NewTimer(d).C.
+
+// After会在另一线程经过时间段d后向返回值发送当时的时间。等价于NewTimer(d).C。
 func After(d Duration) <-chan Time
 
 // Sleep pauses the current goroutine for at least the duration d. A negative or
 // zero duration causes Sleep to return immediately.
+
+// Sleep阻塞当前go程至少d代表的时间段。d<=0时，Sleep会立刻返回。
 func Sleep(d Duration)
 
 // Tick is a convenience wrapper for NewTicker providing access to the ticking
 // channel only. Useful for clients that have no need to shut down the ticker.
+
+// Tick是NewTicker的封装，只提供对Ticker的通道的访问。如果不需要关闭Ticker，本函数就很方便。
 func Tick(d Duration) <-chan Time
 
 // A Duration represents the elapsed time between two instants as an int64
 // nanosecond count. The representation limits the largest representable duration
 // to approximately 290 years.
+
+// Duration类型代表两个时间点之间经过的时间，以纳秒为单位。可表示的最长时间段大约290年。
+//
+//	const (
+//	    Nanosecond  Duration = 1
+//	    Microsecond          = 1000 * Nanosecond
+//	    Millisecond          = 1000 * Microsecond
+//	    Second               = 1000 * Millisecond
+//	    Minute               = 60 * Second
+//	    Hour                 = 60 * Minute
+//	)
+//
+// 常用的时间段。没有定义一天或超过一天的单元，以避免夏时制的时区切换的混乱。
+//
+// 要将Duration类型值表示为某时间单元的个数，用除法：
+//
+//	second := time.Second
+//	fmt.Print(int64(second/time.Millisecond)) // prints 1000
+//
+// 要将整数个某时间单元表示为Duration类型值，用乘法：
+//
+//	seconds := 10
+//	fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
 type Duration int64
 
 // Common durations. There is no definition for units of Day or larger to avoid
@@ -138,6 +194,16 @@ func (d Duration) String() string
 // A Location maps time instants to the zone in use at that time. Typically, the
 // Location represents the collection of time offsets in use in a geographical
 // area, such as CEST and CET for central Europe.
+
+// Location代表一个（关联到某个时间点的）地点，以及该地点所在的时区。
+//
+//	var Local *Location = &localLoc
+//
+// Local代表系统本地，对应本地时区。
+//
+//	var UTC *Location = &utcLoc
+//
+// UTC代表通用协调时间，对应零时区。
 type Location struct {
 	// contains filtered or unexported fields
 }
@@ -150,6 +216,8 @@ var UTC *Location = &utcLoc
 
 // FixedZone returns a Location that always uses the given zone name and offset
 // (seconds east of UTC).
+
+// FixedZone使用给定的地点名name和时间偏移量offset（单位秒）创建并返回一个Location
 func FixedZone(name string, offset int) *Location
 
 // LoadLocation returns the Location with the given name.
@@ -165,13 +233,38 @@ func FixedZone(name string, offset int) *Location
 // zip file named by the ZONEINFO environment variable, if any, then looks in known
 // installation locations on Unix systems, and finally looks in
 // $GOROOT/lib/time/zoneinfo.zip.
+
+// LoadLocation返回使用给定的名字创建的Location。
+//
+// 如果name是""或"UTC"，返回UTC；如果name是"Local"，返回Local；否则name应该是IANA时区数据库里有记录的地点名（该数据库记录了地点和对应的时区），如"America/New_York"。
+//
+// LoadLocation函数需要的时区数据库可能不是所有系统都提供，特别是非Unix系统。此时LoadLocation会查找环境变量ZONEINFO指定目录或解压该变量指定的zip文件（如果有该环境变量）；然后查找Unix系统的惯例时区数据安装位置，最后查找$GOROOT/lib/time/zoneinfo.zip。
 func LoadLocation(name string) (*Location, error)
 
 // String returns a descriptive name for the time zone information, corresponding
 // to the argument to LoadLocation.
+
+// String返回对时区信息的描述，返回值绑定为LoadLocation或FixedZone函数创建l时的name参数。
 func (l *Location) String() string
 
 // A Month specifies a month of the year (January = 1, ...).
+
+// Month代表一年的某个月。
+//
+//	const (
+//	    January Month = 1 + iota
+//	    February
+//	    March
+//	    April
+//	    May
+//	    June
+//	    July
+//	    August
+//	    September
+//	    October
+//	    November
+//	    December
+//	)
 type Month int
 
 const (
@@ -193,6 +286,8 @@ const (
 func (m Month) String() string
 
 // ParseError describes a problem parsing a time string.
+
+// ParseError描述解析时间字符串时出现的错误。
 type ParseError struct {
 	Layout     string
 	Value      string
@@ -202,9 +297,13 @@ type ParseError struct {
 }
 
 // Error returns the string representation of a ParseError.
+
+// Error返回ParseError的字符串表示。
 func (e *ParseError) Error() string
 
 // A Ticker holds a channel that delivers `ticks' of a clock at intervals.
+
+// Ticker保管一个通道，并每隔一段时间向其传递"tick"。
 type Ticker struct {
 	C <-chan Time // The channel on which the ticks are delivered.
 	// contains filtered or unexported fields
@@ -214,10 +313,14 @@ type Ticker struct {
 // a period specified by the duration argument. It adjusts the intervals or drops
 // ticks to make up for slow receivers. The duration d must be greater than zero;
 // if not, NewTicker will panic. Stop the ticker to release associated resources.
+
+// NewTicker返回一个新的Ticker，该Ticker包含一个通道字段，并会每隔时间段d就向该通道发送当时的时间。它会调整时间间隔或者丢弃tick信息以适应反应慢的接收者。如果d<=0会panic。关闭该Ticker可以释放相关资源。
 func NewTicker(d Duration) *Ticker
 
 // Stop turns off a ticker. After Stop, no more ticks will be sent. Stop does not
 // close the channel, to prevent a read from the channel succeeding incorrectly.
+
+// Stop关闭一个Ticker。在关闭后，将不会发送更多的tick信息。Stop不会关闭通道t.C，以避免从该通道的读取不正确的成功。
 func (t *Ticker) Stop()
 
 // A Time represents an instant in time with nanosecond precision.
@@ -245,6 +348,15 @@ func (t *Ticker) Stop()
 // Location. Therefore, Time values should not be used as map or database keys
 // without first guaranteeing that the identical Location has been set for all
 // values, which can be achieved through use of the UTC or Local method.
+
+// Time代表一个纳秒精度的时间点。
+//
+// 程序中应使用Time类型值来保存和传递时间，而不能用指针。就是说，表示时间的变量和字段，应为time.Time类型，而不是*time.Time.类型。一个Time类型值可以被多个go程同时使用。时间点可以使用Before、After和Equal方法进行比较。Sub方法让两个时间点相减，生成一个Duration类型值（代表时间段）。Add方法给一个时间点加上一个时间段，生成一个新的Time类型时间点。
+//
+// Time零值代表时间点January 1, year 1, 00:00:00.000000000
+// UTC。因为本时间点一般不会出现在使用中，IsZero方法提供了检验时间是否显式初始化的一个简单途径。
+//
+// 每一个时间都具有一个地点信息（及对应地点的时区信息），当计算时间的表示格式时，如Format、Hour和Year等方法，都会考虑该信息。Local、UTC和In方法返回一个指定时区（但指向同一时间点）的Time。修改地点/时区信息只是会改变其表示；不会修改被表示的时间点，因此也不会影响其计算。
 type Time struct {
 	// contains filtered or unexported fields
 }
@@ -266,6 +378,23 @@ type Time struct {
 // zones involved in the transition, but it does not guarantee which.
 //
 // Date panics if loc is nil.
+
+// Date返回一个时区为loc、当地时间为：
+//
+//	year-month-day hour:min:sec + nsec nanoseconds
+//
+// 的时间点。
+//
+// month、day、hour、min、sec和nsec的值可能会超出它们的正常范围，在转换前函数会自动将之规范化。如October
+// 32被修正为November 1。
+//
+// 夏时制的时区切换会跳过或重复时间。如，在美国，March 13, 2011
+// 2:15am从来不会出现，而November 6, 2011 1:15am
+// 会出现两次。此时，时区的选择和时间是没有良好定义的。Date会返回在时区切换的两个时区其中一个时区
+//
+// 正确的时间，但本函数不会保证在哪一个时区正确。
+//
+// 如果loc为nil会panic。
 func Date(year int, month Month, day, hour, min, sec, nsec int, loc *Location) Time
 
 // Now returns the current local time.
@@ -481,6 +610,8 @@ func (t Time) Zone() (name string, offset int)
 // The Timer type represents a single event. When the Timer expires, the current
 // time will be sent on C, unless the Timer was created by AfterFunc. A Timer must
 // be created with NewTimer or AfterFunc.
+
+// Timer类型代表单次时间事件。当Timer到期时，当时的时间会被发送给C，除非Timer是被AfterFunc函数创建的。
 type Timer struct {
 	C <-chan Time
 	// contains filtered or unexported fields
@@ -489,22 +620,42 @@ type Timer struct {
 // AfterFunc waits for the duration to elapse and then calls f in its own
 // goroutine. It returns a Timer that can be used to cancel the call using its Stop
 // method.
+
+// AfterFunc另起一个go程等待时间段d过去，然后调用f。它返回一个Timer，可以通过调用其Stop方法来取消等待和对f的调用。
 func AfterFunc(d Duration, f func()) *Timer
 
 // NewTimer creates a new Timer that will send the current time on its channel
 // after at least duration d.
+
+// NewTimer创建一个Timer，它会在最少过去时间段d后到期，向其自身的C字段发送当时的时间。
 func NewTimer(d Duration) *Timer
 
 // Reset changes the timer to expire after duration d. It returns true if the timer
 // had been active, false if the timer had expired or been stopped.
+
+// Reset使t重新开始计时，（本方法返回后再）等待时间段d过去后到期。如果调用时t还在等待中会返回真；如果t已经到期或者被停止了会返回假。
 func (t *Timer) Reset(d Duration) bool
 
 // Stop prevents the Timer from firing. It returns true if the call stops the
 // timer, false if the timer has already expired or been stopped. Stop does not
 // close the channel, to prevent a read from the channel succeeding incorrectly.
+
+// Stop停止Timer的执行。如果停止了t会返回真；如果t已经被停止或者过期了会返回假。Stop不会关闭通道t.C，以避免从该通道的读取不正确的成功。
 func (t *Timer) Stop() bool
 
 // A Weekday specifies a day of the week (Sunday = 0, ...).
+
+// Weekday代表一周的某一天。
+//
+//	const (
+//	    Sunday Weekday = iota
+//	    Monday
+//	    Tuesday
+//	    Wednesday
+//	    Thursday
+//	    Friday
+//	    Saturday
+//	)
 type Weekday int
 
 const (
@@ -518,4 +669,6 @@ const (
 )
 
 // String returns the English name of the day ("Sunday", "Monday", ...).
+
+// String返回该日（周几）的英文名（"Sunday"、"Monday"，……）
 func (d Weekday) String() string

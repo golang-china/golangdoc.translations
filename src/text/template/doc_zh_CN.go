@@ -403,31 +403,69 @@
 //	if err != nil {
 //		log.Fatalf("execution failed: %s", err)
 //	}
+
+// template包实现了数据驱动的用于生成文本输出的模板。
+//
+// 如果要生成HTML格式的输出，参见html/template包，该包提供了和本包相同的接口，但会自动将输出转化为安全的HTML格式输出，可以抵抗一些网络攻击。
+//
+// 通过将模板应用于一个数据结构（即该数据结构作为模板的参数）来执行，来获得输出。模板中的注释引用数据接口的元素（一般如结构体的字段或者字典的键）来控制执行过程和获取需要呈现的值。模板执行时会遍历结构并将指针表示为'.'（称之为"dot"）指向运行过程中数据结构的当前位置的值。
+//
+// 用作模板的输入文本必须是utf-8编码的文本。"Action"—数据运算和控制单位—由"{{"和"}}"界定；在Action之外的所有文本都不做修改的拷贝到输出中。Action内部不能有换行，但注释可以有换行。
+//
+// 经解析生成模板后，一个模板可以安全的并发执行。
+//
+// 下面是一个简单的例子，可以打印"17 of wool"。
+//
+//	type Inventory struct {
+//		Material string
+//		Count    uint
+//	}
+//	sweaters := Inventory{"wool", 17}
+//	tmpl, err := template.New("test").Parse("{{.Count}} of {{.Material}}")
+//	if err != nil { panic(err) }
+//	err = tmpl.Execute(os.Stdout, sweaters)
+//	if err != nil { panic(err) }
+//
+// 更复杂的例子在下面。
 package template
 
 // HTMLEscape writes to w the escaped HTML equivalent of the plain text data b.
+
+// 函数向w中写入b的HTML转义等价表示。
 func HTMLEscape(w io.Writer, b []byte)
 
 // HTMLEscapeString returns the escaped HTML equivalent of the plain text data s.
+
+// 返回s的HTML转义等价表示字符串。
 func HTMLEscapeString(s string) string
 
 // HTMLEscaper returns the escaped HTML equivalent of the textual representation of
 // its arguments.
+
+// 函数返回其所有参数文本表示的HTML转义等价表示字符串。
 func HTMLEscaper(args ...interface{}) string
 
 // JSEscape writes to w the escaped JavaScript equivalent of the plain text data b.
+
+// 函数向w中写入b的JavaScript转义等价表示。
 func JSEscape(w io.Writer, b []byte)
 
 // JSEscapeString returns the escaped JavaScript equivalent of the plain text data
 // s.
+
+// 返回s的JavaScript转义等价表示字符串。
 func JSEscapeString(s string) string
 
 // JSEscaper returns the escaped JavaScript equivalent of the textual
 // representation of its arguments.
+
+// 函数返回其所有参数文本表示的JavaScript转义等价表示字符串。
 func JSEscaper(args ...interface{}) string
 
 // URLQueryEscaper returns the escaped value of the textual representation of its
 // arguments in a form suitable for embedding in a URL query.
+
+// 函数返回其所有参数文本表示的可以嵌入URL查询的转义等价表示字符串。
 func URLQueryEscaper(args ...interface{}) string
 
 // FuncMap is the type of the map defining the mapping from names to functions.
@@ -435,11 +473,15 @@ func URLQueryEscaper(args ...interface{}) string
 // which the second has type error. In that case, if the second (error) return
 // value evaluates to non-nil during execution, execution terminates and Execute
 // returns that error.
+
+// FuncMap类型定义了函数名字符串到函数的映射，每个函数都必须有1到2个返回值，如果有2个则后一个必须是error接口类型；如果有2个返回值的方法返回的error非nil，模板执行会中断并返回给调用者该错误。
 type FuncMap map[string]interface{}
 
 // Template is the representation of a parsed template. The *parse.Tree field is
 // exported only for use by html/template and should be treated as unexported by
 // all other clients.
+
+// 代表一个解析好的模板，*parse.Tree字段仅仅是暴露给html/template包使用的，因此其他人应该视字段未导出。
 type Template struct {
 	*parse.Tree
 	// contains filtered or unexported fields

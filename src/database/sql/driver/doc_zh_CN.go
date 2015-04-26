@@ -8,6 +8,10 @@
 // by package sql.
 //
 // Most code should use package sql.
+
+// driver包定义了应被数据库驱动实现的接口，这些接口会被sql包使用。
+//
+// 绝大多数代码应使用sql包。
 package driver
 
 // Bool is a ValueConverter that converts input values to bools.
@@ -62,14 +66,20 @@ var String stringType
 
 // IsScanValue reports whether v is a valid Value scan type. Unlike IsValue,
 // IsScanValue does not permit the string type.
+
+// IsScanValue报告v是否是合法的Value扫描类型参数。和IsValue不同，IsScanValue不接受字符串类型。
 func IsScanValue(v interface{}) bool
 
 // IsValue reports whether v is a valid Value parameter type. Unlike IsScanValue,
 // IsValue permits the string type.
+
+// IsValue报告v是否是合法的Value类型参数。和IsScanValue不同，IsValue接受字符串类型。
 func IsValue(v interface{}) bool
 
 // ColumnConverter may be optionally implemented by Stmt if the statement is aware
 // of its own columns' types and can convert from any type to a driver Value.
+
+// 如果Stmt有自己的列类型，可以实现ColumnConverter接口，返回值可以将任意类型转换为驱动的Value类型。
 type ColumnConverter interface {
 	// ColumnConverter returns a ValueConverter for the provided
 	// column index.  If the type of a specific column isn't known
@@ -82,6 +92,8 @@ type ColumnConverter interface {
 // goroutines.
 //
 // Conn is assumed to be stateful.
+
+// Conn是与数据库的连接。该连接不会被多线程并行使用。连接被假定为具有状态的。
 type Conn interface {
 	// Prepare returns a prepared statement, bound to this connection.
 	Prepare(query string) (Stmt, error)
@@ -101,6 +113,8 @@ type Conn interface {
 }
 
 // Driver is the interface that must be implemented by a database driver.
+
+// Driver接口必须被数据库驱动实现。
 type Driver interface {
 	// Open returns a new connection to the database.
 	// The name is a string in a driver-specific format.
@@ -120,12 +134,18 @@ type Driver interface {
 // prepare a query, execute the statement, and then close the statement.
 //
 // Exec may return ErrSkip.
+
+// Execer是一个可选的、可能被Conn接口实现的接口。
+//
+// 如果一个Conn未实现Execer接口，sql包的DB.Exec会首先准备一个查询，执行状态，然后关闭状态。Exec可能会返回ErrSkip。
 type Execer interface {
 	Exec(query string, args []Value) (Result, error)
 }
 
 // NotNull is a type that implements ValueConverter by disallowing nil values but
 // otherwise delegating to another ValueConverter.
+
+// NotNull实现了ValueConverter接口，不允许nil值，否则会将值交给Converter字段处理。
 type NotNull struct {
 	Converter ValueConverter
 }
@@ -134,6 +154,8 @@ func (n NotNull) ConvertValue(v interface{}) (Value, error)
 
 // Null is a type that implements ValueConverter by allowing nil values but
 // otherwise delegating to another ValueConverter.
+
+// Null实现了ValueConverter接口，允许nil值，否则会将值交给Converter字段处理。
 type Null struct {
 	Converter ValueConverter
 }
@@ -146,11 +168,17 @@ func (n Null) ConvertValue(v interface{}) (Value, error)
 // prepare a query, execute the statement, and then close the statement.
 //
 // Query may return ErrSkip.
+
+//
+//	Queryer是一个可选的、可能被Conn接口实现的接口。
+// 如果一个Conn未实现Queryer接口，sql包的DB.Query会首先准备一个查询，执行状态，然后关闭状态。Query可能会返回ErrSkip。
 type Queryer interface {
 	Query(query string, args []Value) (Rows, error)
 }
 
 // Result is the result of a query execution.
+
+// Result是查询执行的结果。
 type Result interface {
 	// LastInsertId returns the database's auto-generated ID
 	// after, for example, an INSERT into a table with primary
@@ -163,6 +191,8 @@ type Result interface {
 }
 
 // Rows is an iterator over an executed query's results.
+
+// Rows是执行查询得到的结果的迭代器。
 type Rows interface {
 	// Columns returns the names of the columns. The number of
 	// columns of the result is inferred from the length of the
@@ -187,6 +217,8 @@ type Rows interface {
 
 // RowsAffected implements Result for an INSERT or UPDATE operation which mutates a
 // number of rows.
+
+// RowsAffected实现了Result接口，用于insert或update操作，这些操作会修改零到多行数据。
 type RowsAffected int64
 
 func (RowsAffected) LastInsertId() (int64, error)
@@ -195,6 +227,8 @@ func (v RowsAffected) RowsAffected() (int64, error)
 
 // Stmt is a prepared statement. It is bound to a Conn and not used by multiple
 // goroutines concurrently.
+
+// Stmt是准备好的状态。它会绑定到一个连接，不应被多go程同时使用。
 type Stmt interface {
 	// Close closes the statement.
 	//
@@ -223,6 +257,8 @@ type Stmt interface {
 }
 
 // Tx is a transaction.
+
+// Tx是一次事务。
 type Tx interface {
 	Commit() error
 	Rollback() error
@@ -237,6 +273,16 @@ type Tx interface {
 //	[]byte
 //	string   [*] everywhere except from Rows.Next.
 //	time.Time
+
+//
+//	 Value是驱动必须能处理的值。它要么是nil，要么是如下类型的实例：
+//
+//		int64
+//		float64
+//		bool
+//		[]byte
+//		string   [*] Rows.Next不会返回该类型值
+//		time.Time
 type Value interface{}
 
 // ValueConverter is the interface providing the ConvertValue method.
@@ -255,6 +301,18 @@ type Value interface{}
 //
 //	* by the sql package, for converting from a driver's Value type
 //	  to a user's type in a scan.
+
+//
+//	 ValueConverter接口提供了ConvertValue方法。
+//
+//	 driver包提供了各种ValueConverter接口的实现，以保证不同驱动之间的实现和转换的一致性。ValueConverter接口有如下用途：
+//
+//		* 转换sql包提供的Value类型值到数据库指定列的类型，并保证它的匹配，
+//		  例如保证某个int64值满足一个表的uint16列。
+//
+//		* 转换数据库提供的值到驱动的Value类型。
+//
+//		* 在扫描时被sql包用于将驱动的Value类型转换为用户的类型。
 type ValueConverter interface {
 	// ConvertValue converts a value to a driver Value.
 	ConvertValue(v interface{}) (Value, error)
@@ -264,6 +322,8 @@ type ValueConverter interface {
 //
 // Types implementing Valuer interface are able to convert themselves to a driver
 // Value.
+
+// Valuer是提供Value方法的接口。实现了Valuer接口的类型可以将自身转换为驱动支持的Value类型值。
 type Valuer interface {
 	// Value returns a driver Value.
 	Value() (Value, error)

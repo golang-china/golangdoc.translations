@@ -6,27 +6,39 @@
 
 // Package exec runs external commands. It wraps os.StartProcess to make it easier
 // to remap stdin and stdout, connect I/O with pipes, and do other adjustments.
+
+// exec包执行外部命令。它包装了os.StartProcess函数以便更容易的修正输入和输出，使用管道连接I/O，以及作其它的一些调整。
 package exec
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
 // file.
+
+// 如果路径搜索没有找到可执行文件时，就会返回本错误。
 var ErrNotFound = errors.New("executable file not found in $path")
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
 // file.
+
+// 如果路径搜索没有找到可执行文件时，就会返回本错误。
 var ErrNotFound = errors.New("executable file not found in $PATH")
 
 // ErrNotFound is the error resulting if a path search failed to find an executable
 // file.
+
+// 如果路径搜索没有找到可执行文件时，就会返回本错误。
 var ErrNotFound = errors.New("executable file not found in %PATH%")
 
 // LookPath searches for an executable binary named file in the directories named
 // by the path environment variable. If file begins with "/", "#", "./", or "../",
 // it is tried directly and the path is not consulted. The result may be an
 // absolute path or a path relative to the current directory.
+
+// 在环境变量PATH指定的目录中搜索可执行文件，如file中有斜杠，则只在当前目录搜索。返回完整路径或者相对于当前目录的一个相对路径。
 func LookPath(file string) (string, error)
 
 // Cmd represents an external command being prepared or run.
+
+// Cmd代表一个正在准备或者在执行中的外部命令。
 type Cmd struct {
 	// Path is the path of the command to run.
 	//
@@ -103,6 +115,10 @@ type Cmd struct {
 // The returned Cmd's Args field is constructed from the command name followed by
 // the elements of arg, so arg should not include the command name itself. For
 // example, Command("echo", "hello")
+
+// 函数返回一个*Cmd，用于使用给出的参数执行name指定的程序。返回值只设定了Path和Args两个参数。
+//
+// 如果name不含路径分隔符，将使用LookPath获取完整路径；否则直接使用name。参数arg不应包含命令名。
 func Command(name string, arg ...string) *Cmd
 
 // CombinedOutput runs the command and returns its combined standard output and
@@ -167,6 +183,8 @@ func (c *Cmd) Wait() error
 
 // Error records the name of a binary that failed to be executed and the reason it
 // failed.
+
+// Error类型记录执行失败的程序名和失败的原因。
 type Error struct {
 	Name string
 	Err  error
@@ -175,6 +193,8 @@ type Error struct {
 func (e *Error) Error() string
 
 // An ExitError reports an unsuccessful exit by a command.
+
+// ExitError报告某个命令的一次未成功的返回。
 type ExitError struct {
 	*os.ProcessState
 }

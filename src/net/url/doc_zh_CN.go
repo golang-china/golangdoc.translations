@@ -5,17 +5,26 @@
 // +build ingore
 
 // Package url parses URLs and implements query escaping. See RFC 3986.
+
+// url包解析URL并实现了查询的逸码，参见RFC 3986。
 package url
 
 // QueryEscape escapes the string so it can be safely placed inside a URL query.
+
+// QueryEscape函数对s进行转码使之可以安全的用在URL查询里。
 func QueryEscape(s string) string
 
 // QueryUnescape does the inverse transformation of QueryEscape, converting %AB
 // into the byte 0xAB and '+' into ' ' (space). It returns an error if any % is not
 // followed by two hexadecimal digits.
+
+// QueryUnescape函数用于将QueryEscape转码的字符串还原。它会把%AB改为字节0xAB，将'+'改为'
+// '。如果有某个%后面未跟两个十六进制数字，本函数会返回错误。
 func QueryUnescape(s string) (string, error)
 
 // Error reports an error and the operation and URL that caused it.
+
+// Error会报告一个错误，以及导致该错误发生的URL和操作。
 type Error struct {
 	Op  string
 	URL string
@@ -44,6 +53,18 @@ func (e EscapeError) Error() string
 // construct the parsed URL. For example, an HTTP server can consult
 // req.RequestURI, and an HTTP client can use URL{Host: "example.com", Opaque:
 // "//example.com/Go%2f"} instead of URL{Host: "example.com", Path: "/Go/"}.
+
+// URL类型代表一个解析后的URL（或者说，一个URL参照）。URL基本格式如下：
+//
+//	scheme://[userinfo@]host/path[?query][#fragment]
+//
+// scheme后不是冒号加双斜线的URL被解释为如下格式：
+//
+//	scheme:opaque[?query][#fragment]
+//
+// 注意路径字段是以解码后的格式保存的，如/%47%6f%2f会变成/Go/。这导致我们无法确定Path字段中的斜线是来自原始URL还是解码前的%2f。除非一个客户端必须使用其他程序/函数来解析原始URL或者重构原始URL，这个区别并不重要。此时，HTTP服务端可以查询req.RequestURI，而HTTP客户端可以使用URL{Host:
+// "example.com", Opaque: "//example.com/Go%2f"}代替{Host: "example.com", Path:
+// "/Go/"}。
 type URL struct {
 	Scheme   string
 	Opaque   string    // encoded opaque data
@@ -111,11 +132,16 @@ func (u *URL) String() string
 // The Userinfo type is an immutable encapsulation of username and password details
 // for a URL. An existing Userinfo value is guaranteed to have a username set
 // (potentially empty, as allowed by RFC 2396), and optionally a password.
+
+// Userinfo类型是一个URL的用户名和密码细节的一个不可修改的封装。一个真实存在的Userinfo值必须保证有用户名（但根据 RFC
+// 2396可以是空字符串）以及一个可选的密码。
 type Userinfo struct {
 	// contains filtered or unexported fields
 }
 
 // User returns a Userinfo containing the provided username and no password set.
+
+// User函数返回一个用户名设置为username的不设置密码的*Userinfo。
 func User(username string) *Userinfo
 
 // UserPassword returns a Userinfo containing the provided username and password.
@@ -123,21 +149,33 @@ func User(username string) *Userinfo
 // that interpreting Userinfo this way ``is NOT RECOMMENDED, because the passing of
 // authentication information in clear text (such as URI) has proven to be a
 // security risk in almost every case where it has been used.''
+
+// UserPassword函数返回一个用户名设置为username、密码设置为password的*Userinfo。
+//
+// 这个函数应该只用于老式的站点，因为风险很大，不建议使用，参见RFC 2396。
 func UserPassword(username, password string) *Userinfo
 
 // Password returns the password in case it is set, and whether it is set.
+
+// 如果设置了密码返回密码和真，否则会返回假。
 func (u *Userinfo) Password() (string, bool)
 
 // String returns the encoded userinfo information in the standard form of
 // "username[:password]".
+
+// String方法返回编码后的用户信息，格式为"username[:password]"。
 func (u *Userinfo) String() string
 
 // Username returns the username.
+
+// Username方法返回用户名。
 func (u *Userinfo) Username() string
 
 // Values maps a string key to a list of values. It is typically used for query
 // parameters and form values. Unlike in the http.Header map, the keys in a Values
 // map are case-sensitive.
+
+// Values将建映射到值的列表。它一般用于查询的参数和表单的属性。不同于http.Header这个字典类型，Values的键是大小写敏感的。
 type Values map[string][]string
 
 // ParseQuery parses the URL-encoded query string and returns a map listing the

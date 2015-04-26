@@ -7,9 +7,19 @@
 // Package crc32 implements the 32-bit cyclic redundancy check, or CRC-32,
 // checksum. See http://en.wikipedia.org/wiki/Cyclic_redundancy_check for
 // information.
+
+// crc32包实现了32位循环冗余校验（CRC-32）的校验和算法，参见：
+//
+// http://en.wikipedia.org/wiki/Cyclic_redundancy_check
 package crc32
 
 // Predefined polynomials.
+
+// 预定义的多项式。
+//
+//	const Size = 4
+//
+// CRC-32校验和的字节长度。
 const (
 	// IEEE is by far and away the most common CRC-32 polynomial.
 	// Used by ethernet (IEEE 802.3), v.42, fddi, gzip, zip, png, ...
@@ -30,28 +40,44 @@ const (
 const Size = 4
 
 // IEEETable is the table for the IEEE polynomial.
+
+// IEEETable是IEEE多项式对应的Table。
 var IEEETable = makeTable(IEEE)
 
 // Checksum returns the CRC-32 checksum of data using the polynomial represented by
 // the Table.
+
+// 返回数据data使用tab代表的多项式计算出的CRC-32校验和。
 func Checksum(data []byte, tab *Table) uint32
 
 // ChecksumIEEE returns the CRC-32 checksum of data using the IEEE polynomial.
+
+// 返回数据data使用IEEE多项式计算出的CRC-32校验和。
 func ChecksumIEEE(data []byte) uint32
 
 // New creates a new hash.Hash32 computing the CRC-32 checksum using the polynomial
 // represented by the Table.
+
+// 创建一个使用tab代表的多项式计算CRC-32校验和的hash.Hash32接口。
 func New(tab *Table) hash.Hash32
 
 // NewIEEE creates a new hash.Hash32 computing the CRC-32 checksum using the IEEE
 // polynomial.
+
+// 创建一个使用IEEE多项式计算CRC-32校验和的hash.Hash32接口。
 func NewIEEE() hash.Hash32
 
 // Update returns the result of adding the bytes in p to the crc.
+
+// 返回将切片p的数据采用tab表示的多项式添加到crc之后计算出的新校验和。
 func Update(crc uint32, tab *Table, p []byte) uint32
 
 // Table is a 256-word table representing the polynomial for efficient processing.
+
+// 长度256的uint32切片，代表一个用于高效运作的多项式。
 type Table [256]uint32
 
 // MakeTable returns the Table constructed from the specified polynomial.
+
+// 返回一个代表poly指定的多项式的Table。
 func MakeTable(poly uint32) *Table
