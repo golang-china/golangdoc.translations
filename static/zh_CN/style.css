@@ -595,8 +595,25 @@ a.error {
 }
 
 /* Hide English translations. */
-div.english {
+div.english h2 {
 	display: none;
+}
+div.english h3 {
+	display: none;
+}
+div.english h4 {
+	display: none;
+}
+div.english pre {
+	display: none;
+}
+div.english p {
+	//display: none;
+	background: #f9f9f9;
+	border-left: 10px solid #ccc;
+	margin: 1.5em 10px;
+	padding: 0.5em 10px;
+	quotes: "\201C""\201D""\2018""\2019";
 }
 .en_visible {
 	display: block;
