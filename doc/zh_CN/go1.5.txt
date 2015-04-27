@@ -10,7 +10,8 @@ Go 1.4 required to build (https://golang.org/cl/2470, https://golang.org/cl/2993
 
 New Ports:
 darwin/arm, a.k.a iOS. (https://golang.org/cl/2118, 2119, 3273, 2121, 2122, ..., 2127)
-linux/arm64
+darwin/arm64
+linux/arm64 (cgo is supported, but only with external linking)
 
 Removed Ports:
 dragonfly/386 (https://golang.org/cl/7543)
@@ -27,16 +28,23 @@ crypto/tls: change default minimum version to TLS 1.0. (https://golang.org/cl/17
 crypto/x509: wildcards are now only accepted as the first label (https://golang.org/cl/5691)
 database/sql: add Stats (https://golang.org/cl/7950)
 encoding/base64: add unpadded encodings (https://golang.org/cl/1511)
-flag: new nicer format for PrintDefaults (https://go-review.googlesource.com/7330)
+flag: new nicer format for PrintDefaults (https://golang.org/cl/7330)
+fmt: empty slices now print nothing with %x (bug fix) (https://golang.org/cl/8864)
+fmt: reflect.Value now prints what it holds (https://golang.org/cl/8731)
 go/ast: add Implicit field to ast.EmptyStmt; changed meaning of ast.EmptyStmt.Semicolon position (https://golang.org/cl/5720)
+io: add CopyBuffer, Copy with user-provided buffer (https://golang.org/cl/8730)
 log: add SetOutput functions (https://golang.org/cl/2686, https://golang.org/cl/3023)
+log: add LUTC flag (https://golang.org/cl/8761)
 math/big: add arbitrary precision Floats (many cl's)
 mime: add ExtensionByType (https://golang.org/cl/7444)
+mime/quotedprintable: new package (https://golang.org/cl/5940 + others)
 net/http: support for setting trailers from a server Handler (https://golang.org/cl/2157)
 net/http: ignore the Unix epoch time in ServeContent (https://golang.org/cl/7915)
 net/http/cgi: fix REMOTE_ADDR, REMOTE_HOST, add REMOTE_PORT (https://golang.org/cl/4933)
 net/smtp: add TLSConnectionState accessor (https://golang.org/cl/2151)
 os/signal: add Ignore and Reset (https://golang.org/cl/3580)
+reflect: add ArrayOf (https://golang.org/cl/4111)
+reflect: add FuncOf (https://golang.org/cl/1996)
 runtime, syscall: use SYSCALL instruction on FreeBSD (Go 1.5 now requires FreeBSD 8-STABLE+) (https://golang.org/cl/3020)
 runtime, syscall: use get_random_bytes syscall for NaCl (Go 1.5 now requires NaCl SDK pepper-39 or above) (https://golang.org/cl/1755)
 strings: add Compare(x, y string) int, for symmetry with bytes.Compare (https://golang.org/cl/2828)
@@ -44,16 +52,26 @@ syscall: Add Foreground and Pgid to SysProcAttr (https://golang.org/cl/5130)
 syscall: add missing Syscall9 for darwin/amd64 (https://golang.org/cl/6555)
 testing/quick: support generation of arrays (https://golang.org/cl/3865)
 text/template: add Options method (https://golang.org/cl/8462)
+time: add time.AppendFormat(https://golang.org/cl/1760)
 
 Tools:
 
 build: external linking support for windows (https://golang.org/cl/7163, 7282, 7283, 7284, 7534, 7535)
+cmd/gc: constant arithmetic is based on math/big (https://golang.org/cl/7830, 7851, 7857, 8426, 7858, 7912, 8171)
 cmd/go, go/build: add ${SRCDIR} variable expansion to cgo lines (https://golang.org/cl/1756)
 cmd/go: add $DOLLAR to generate's variables (https://golang.org/cl/8091)
 cmd/go: std wildcard now excludes commands in main repo (https://golang.org/cl/5550)
 cmd/go: .swig/.swigcxx files now require SWIG 3.0.6 or later
+cmd/go: add -run flag to go generate (https://golang.org/cl/9005)
+cmd/go: add $GOLINE to generate's variables (https://golang.org/cl/9007)
 cmd/vet: better validation of struct tags (https://golang.org/cl/2685)
 cmd/ld: no longer record build timestamp in Windows PE file header (https://golang.org/cl/3740)
+cmd/go: add -toolexec build option
+cmd/go: drop -ccflags build option
+cmd/go: add -asmflags build option
+cmd/go: add -buildmode build option
+cmd/gc: add -dynlink option (for amd64 only)
+cmd/ld: add -buildmode option
 cmd/trace: new command to view traces (https://golang.org/cl/3601)
 
 Performance:
@@ -78,6 +96,10 @@ math/big: faster "pure Go" kernels for platforms w/o assembly kernels (https://g
 regexp: port RE2's bitstate backtracker to the regexp package (https://golang.org/cl/2153)
 
 Assembler:
+
+New cmd/asm tool (now use go tool asm, not go tool 6a)
+
+Assembler now supports -dynlink option.
 
 ARM assembly syntax has had some features removed.
 
