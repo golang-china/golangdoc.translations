@@ -87,19 +87,19 @@ func main() {
 <div id="page"{{if .Title}} class="wide"{{end}}>
 <div class="container">
 
-{{with .Title}}
-  <h1>{{html .}}</h1>
-{{end}}
-{{with .Subtitle}}
-  <h2>{{html .}}</h2>
-{{end}}
-
 {{with .Tabtitle}}
 <div class="btn-group" role="group" align="right">
   <button type="button" class="btn btn-default" onclick='$("div.english").css("display", "block");$("div.chinese").css("display", "none");console.log("lang-en");'>英文</button>
   <button type="button" class="btn btn-default" onclick='$("div.english").css("display","block");$("div.chinese").css("display","block");console.log("lang-en-zh");'>对照</button>
   <button type="button" class="btn btn-default" onclick='$("div.english").css("display","none");$("div.chinese").css("display","block");console.log("lang-zh");'>中文</button>
 </div>
+{{end}}
+
+{{with .Title}}
+  <h1>{{html .}}</h1>
+{{end}}
+{{with .Subtitle}}
+  <h2>{{html .}}</h2>
 {{end}}
 
 {{/* The Table of Contents is automatically inserted in this <div>.
