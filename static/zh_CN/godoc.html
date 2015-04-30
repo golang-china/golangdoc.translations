@@ -94,6 +94,14 @@ func main() {
   <h2>{{html .}}</h2>
 {{end}}
 
+{{with .Tabtitle}}
+<div class="btn-group" role="group" align="right">
+  <button type="button" class="btn btn-default" onclick='$("div.english").css("display", "block");$("div.chinese").css("display", "none");console.log("lang-en");'>英文</button>
+  <button type="button" class="btn btn-default" onclick='$("div.english").css("display","block");$("div.chinese").css("display","block");console.log("lang-en-zh");'>对照</button>
+  <button type="button" class="btn btn-default" onclick='$("div.english").css("display","none");$("div.chinese").css("display","block");console.log("lang-zh");'>中文</button>
+</div>
+{{end}}
+
 {{/* The Table of Contents is automatically inserted in this <div>.
      Do not delete this <div>. */}}
 <div id="nav"></div>
@@ -135,4 +143,3 @@ and code is licensed under a <a href="/LICENSE">BSD license</a>.<br>
 
 </body>
 </html>
-
