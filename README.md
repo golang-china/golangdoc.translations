@@ -75,7 +75,9 @@ const (
 <h2 id="introduction">Introduction</h2>
 </div>
 
+<div class="chinese">
 <h2 id="引言">引言</h2>
+</div>
 
 <div class="english">
 <p>
@@ -99,6 +101,7 @@ will be easy for other Go programmers to understand.
 </p>
 </div>
 
+<div class="chinese">
 <p>
 Go 是一门全新的语言。尽管它从既有的语言中借鉴了许多理念，但其与众不同的特性，
 使得使用Go编程在本质上就不同于其它语言。将现有的C++或Java程序直译为Go
@@ -107,6 +110,7 @@ Go 是一门全新的语言。尽管它从既有的语言中借鉴了许多理�
 换句话说，要想将Go程序写得好，就必须理解其特性和风格。了解命名、格式化、
 程序结构等既定规则也同样重要，这样你编写的程序才能更容易被其他程序员所理解。
 </p>
+</div>
 
 <div class="english">
 <p>
@@ -119,16 +123,18 @@ should read first.
 </p>
 </div>
 
+<div class="chinese">
 <p>
 本文档就如何编写清晰、地道的Go代码提供了一些技巧。它是对<a href="/ref/spec">语言规范</a>、
 <a href="https://go-tour-zh.appspot.com/">Go语言之旅</a>以及
 <a href="/doc/code.html">如何使用Go编程</a>的补充说明，因此我们建议您先阅读这些文档。
 </p>
+</div>
 
 ...
 ```
 
-将原始的英文文档改为类似的结构: 开头的注释部分增加中文的标题和子标题; `<div class="english">` 用于屏蔽原始的英文文档; 原始的英文文档区域替换为翻译后的中文文档.
+将原始的英文文档改为类似的结构: 开头的注释部分增加中文的标题和子标题; `<div class="english">` 用于对应原始的英文文档; `<div class="chinese">` 对应翻译后的中文文档.
 
 尽量不要修改原始英文文档的格式(会影响`git`的合并功能).
 
