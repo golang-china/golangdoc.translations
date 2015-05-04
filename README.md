@@ -142,20 +142,96 @@ should read first.
 
 ## 翻译 blog
 
-打开 [blog/zh_CN/content/c-go-cgo.article](https://github.com/golang-china/golangdoc.translations/blob/master/blog/zh_CN/content/c-go-cgo.article) 博文的源文件:
+打开 [blog/zh_CN/content/c-go-cgo.article](https://github.com/golang-china/golangdoc.translations/blob/master/blog/zh_CN/content/c-go-cgo.article) 博文的源文件.
+
+将原始的英文标题用 `#` 注释掉, 然后在翻译中文标题.
 
 ```
-C? Go? Cgo!
+#C? Go? Cgo!
+C? Go? 以及 Cgo
+17 Mar 2011
+Tags: cgo, technical
+```
+
+在开头添加一个空的章节(`*`后面至少要有一个空白, **重要!!**):
+
+```
+* 
+```
+
+然后将英文原文用 `.html _tr/div_begin_en.html` 和 `.html _tr/div_end.html` 包括:
+
+```
+.html _tr/div_begin_en.html
+
+* Introduction
+
+.html _tr/div_end.html
+```
+
+注意 `.html` 语句前面至少要有一个空行.
+
+直接翻译为中文(建议英文部分保留, 可以用 `#` 注释掉).
+
+中文部分用 `.html _tr/div_begin_zh_CN.html` 和 `.html _tr/div_end.html` 包括:
+
+```
+.html _tr/div_begin_zh_CN.html
+
+* 简介
+
+.html _tr/div_end.html
+```
+
+整体效果如下:
+
+```
+#C? Go? Cgo!
+C? Go? 以及 Cgo
 17 Mar 2011
 Tags: cgo, technical
 
 Andrew Gerrand
 
+* 
+
+.html _tr/div_begin_en.html
+
 * Introduction
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 简介
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 
 Cgo lets Go packages call C code. Given a Go source file written with some special features, cgo outputs Go and C files that can be combined into a single Go package.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+中文: 叭啦叭啦叭啦叭啦...
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 To lead with an example, here's a Go package that provides two functions - `Random` and `Seed` - that wrap C's `random` and `srandom` functions.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+中文: 叭啦叭啦叭啦叭啦...
+
+.html _tr/div_end.html
+
 
 	package rand
 
@@ -172,12 +248,22 @@ To lead with an example, here's a Go package that provides two functions - `Rand
 	    C.srandom(C.uint(i))
 	}
 
+.html _tr/div_begin_en.html
+
 Let's look at what's happening here, starting with the import statement.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+中文: 叭啦叭啦叭啦叭啦...
+
+.html _tr/div_end.html
 
 ...
 ```
 
-直接翻译为中文(建议英文部分保留, 可以用 `#` 注释掉).
+代码部分根据具体需要再决定是否翻译.
 
 *注: 博客部分优先翻译新的文章!*
 
