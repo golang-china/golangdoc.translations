@@ -29,7 +29,7 @@ and clicking the associated "Run" button.
 
 .html _tr/div_begin_zh_CN.html
 
-Godoc的例子在包文档中显示为一个代码片段, 它们在运行包测试的时候被验证.
+Godoc的示例在包文档中显示为一个代码片段, 它们在运行包测试的时候被验证.
 用户也可以在 `godoc` 的网页上, 通过点击 "Run" 按钮来运行.
 
 .html _tr/div_end.html
@@ -81,7 +81,7 @@ This article explains how to write your own example functions.
 
 .html _tr/div_begin_zh_CN.html
 
-* 示例也是测试
+* 示例也是一种测试
 
 .html _tr/div_end.html
 
@@ -94,7 +94,7 @@ suite.
 
 .html _tr/div_begin_zh_CN.html
 
-实例程序会作为包测试的一部分被编译(并被有选择地运行).
+示例会作为包测试的一部分被编译(并被有选择地运行).
 
 .html _tr/div_end.html
 
@@ -109,7 +109,7 @@ Unlike normal test functions, though, example functions begin with the word
 
 .html _tr/div_begin_zh_CN.html
 
-在典型的测试中, 示例函数在包的 `_test.go` 文件中.
+在典型的测试中, 示例在包的 `_test.go` 文件中.
 和一般测试函数的区别是示例函数名以 `Example` 开头, 而不是以 `Test` 开头.
 
 .html _tr/div_end.html
@@ -126,11 +126,9 @@ Here's an example that demonstrates its `Reverse` function:
 
 [[https://godoc.org/github.com/golang/example/stringutil/][`stringutil` 包]] 是
 [[https://github.com/golang/example][Go 例子库]] 的一部分.
-这里演示了 `Reverse` 函数的用法:
+这里演示了 `Reverse` 示例函数的用法:
 
 .html _tr/div_end.html
-
-.html _tr/div_begin_en.html
 
 	package stringutil_test
 
@@ -144,8 +142,6 @@ Here's an example that demonstrates its `Reverse` function:
 		fmt.Println(stringutil.Reverse("hello"))
 		// Output: olleh
 	}
-
-.html _tr/div_end.html
 
 .html _tr/div_begin_en.html
 
@@ -167,7 +163,7 @@ Godoc will present this example alongside the `Reverse` function's documentation
 
 .html _tr/div_begin_zh_CN.html
 
-Godoc 会在 `Reverse` 函数的文档部分显示这个例子.
+Godoc 会在 `Reverse` 函数的文档部分显示这个示例.
 
 .html _tr/div_end.html
 
@@ -186,8 +182,6 @@ with no further arrangement from us:
 
 .html _tr/div_end.html
 
-.html _tr/div_begin_en.html
-
 	$ go test -v
 	=== RUN TestReverse
 	--- PASS: TestReverse (0.00s)
@@ -196,8 +190,6 @@ with no further arrangement from us:
 	PASS
 	ok  	github.com/golang/example/stringutil	0.009s
 
-
-.html _tr/div_end.html
 
 .html _tr/div_begin_en.html
 
@@ -219,7 +211,7 @@ What does it mean that the `ExampleReverse` function "passes"?
 
 .html _tr/div_begin_zh_CN.html
 
-`ExampleReverse` 函数 "passes" 是什么意思呢?
+`ExampleReverse` 示例函数 "passes" 是什么意思呢?
 
 .html _tr/div_end.html
 
@@ -234,7 +226,7 @@ The test passes if the test's output matches its output comment.
 
 .html _tr/div_begin_zh_CN.html
 
-在执行实例函数时, 测试框架会捕获写到标准输出的数据, 然后和 "Output:" 输出注释比较 (译注: "Output:" 开头的注释为输出注释).
+在执行示例函数时, 测试框架会捕获写到标准输出的数据, 然后和 "Output:" 输出注释比较 (译注: "Output:" 开头的注释为输出注释).
 测试通过表示示例函数的输出和 "Output:" 输出注释一致.
 
 .html _tr/div_end.html
@@ -252,12 +244,12 @@ obviously incorrect
 
 .html _tr/div_end.html
 
-.html _tr/div_begin_en.html
-
 	func ExampleReverse() {
 		fmt.Println(stringutil.Reverse("hello"))
 		// Output: golly
 	}
+
+.html _tr/div_begin_en.html
 
 and run the tests again:
 
@@ -289,13 +281,9 @@ If we remove the output comment entirely
 
 .html _tr/div_end.html
 
-.html _tr/div_begin_en.html
-
 	func ExampleReverse() {
 		fmt.Println(stringutil.Reverse("hello"))
 	}
-
-.html _tr/div_end.html
 
 .html _tr/div_begin_en.html
 
@@ -318,14 +306,14 @@ then the example function is compiled but not executed:
 .html _tr/div_begin_en.html
 
 Examples without output comments are useful for demonstrating code that cannot
-run as unit tests, such as that which accesses the network, 
+run as unit tests, such as that which accesses the network,
 while guaranteeing the example at least compiles.
 
 .html _tr/div_end.html
 
 .html _tr/div_begin_zh_CN.html
 
-不带输出注释的示例函数适合用来写不需要运行的演示代码, 比如需要访问网络情况,
+不带输出注释的示例函数适合用来写不方便运行的演示代码, 比如需要访问网络情况,
 但是它至少可以保证示例代码是可以被编译的.
 
 .html _tr/div_end.html
@@ -366,7 +354,7 @@ Godoc的示例函数的命名有一个约定.
 .html _tr/div_begin_zh_CN.html
 
 	func ExampleFoo()     // Foo 函数 或 类型
-	func ExampleBar_Qux() // Qux 类型的 Bar 方法x
+	func ExampleBar_Qux() // 返回 Qux 类型的 Bar 方法
 	func Example()        // 整个包
 
 .html _tr/div_end.html
@@ -399,13 +387,9 @@ Each of these examples documents the `Reverse` function:
 
 .html _tr/div_end.html
 
-.html _tr/div_begin_en.html
-
 	func ExampleReverse()
 	func ExampleReverse_second()
 	func ExampleReverse_third()
-
-.html _tr/div_end.html
 
 .html _tr/div_begin_en.html
 
@@ -434,7 +418,7 @@ Sometimes we need more than just a function to write a good example.
 .html _tr/div_begin_en.html
 
 For instance, to demonstrate the [[https://golang.org/pkg/sort/][`sort` package]]
-we should show an implementation of `sort.Interface`. 
+we should show an implementation of `sort.Interface`.
 Since methods cannot be declared inside a function body, the example must
 include some context in addition to the example function.
 
@@ -444,7 +428,7 @@ include some context in addition to the example function.
 
 例如, 要演示 [[https://golang.org/pkg/sort/][`sort` 包]], 我们需要同时展示
 `sort.Interface` 接口的实现.
-但是在函数中我们无法定义方法, 这个例子必须依赖一些函数外部的相关代码.
+但是在函数中我们无法定义方法, 因此这个例子必须依赖一些函数外部的相关代码.
 
 .html _tr/div_end.html
 
@@ -477,8 +461,6 @@ Here is a whole file example from the `sort` package:
 下面就是 `sort` 包中示例文件的内容:
 
 .html _tr/div_end.html
-
-.html _tr/div_begin_en.html
 
 	package sort_test
 
@@ -522,8 +504,6 @@ Here is a whole file example from the `sort` package:
 	}
 
 
-.html _tr/div_end.html
-
 .html _tr/div_begin_en.html
 
 A package can contain multiple whole file examples; one example per file.
@@ -562,9 +542,7 @@ Use them!
 .html _tr/div_begin_zh_CN.html
 
 Godoc 示例功能的一个伟大之处是以文档的方式来编写和维护代码.
-他们给用户展示了可编辑/可工作/可运行的示例.
-使用他们吧!
+它们给用户展示了可编辑/可工作/可运行的示例.
+使用它们吧!
 
 .html _tr/div_end.html
-
-
