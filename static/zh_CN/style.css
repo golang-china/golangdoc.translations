@@ -611,3 +611,9 @@ p.tnote {
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 }
+
+.lang-switch-button-group {
+	position: fixed;
+	bottom: 10px;
+	right: 10px; 
+}
