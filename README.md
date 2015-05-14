@@ -19,7 +19,7 @@
 
 ## 翻译 pkg
 
-打开 [`$(GOROOT)/translations/src/builtin/doc_zh_CN.go`](https://github.com/golang-china/golangdoc.translations/blob/master/src/builtin/doc_zh_CN.go) 包文档
+打开 [`$(GOROOT)/translations/src/builtin/doc_zh_CN.go`](src/builtin/doc_zh_CN.go) 包文档
 
 ```Go
 // Copyright The Go Authors. All rights reserved.
@@ -57,7 +57,7 @@ const (
 
 ## 翻译 doc
 
-打开 [doc/effective_go.html](https://github.com/golang-china/golangdoc.translations/blob/master/doc/zh_CN/effective_go.html) 文档:
+打开 [doc/effective_go.html](doc/zh_CN/effective_go.html) 文档:
 
 ```html
 <!--{
@@ -142,7 +142,7 @@ should read first.
 
 ## 翻译 blog
 
-打开 [blog/zh_CN/content/c-go-cgo.article](https://github.com/golang-china/golangdoc.translations/blob/master/blog/zh_CN/content/c-go-cgo.article) 博文的源文件.
+打开 [blog/zh_CN/content/c-go-cgo.article](blog/zh_CN/content/c-go-cgo.article) 博文的源文件.
 
 将原始的英文标题用 `#` 注释掉, 然后在翻译中文标题.
 
@@ -170,8 +170,6 @@ Tags: cgo, technical
 ```
 
 注意 `.html` 语句前面至少要有一个空行.
-
-直接翻译为中文(建议英文部分保留, 可以用 `#` 注释掉).
 
 中文部分用 `.html _tr/div_begin_zh_CN.html` 和 `.html _tr/div_end.html` 包括:
 
@@ -263,7 +261,7 @@ Let's look at what's happening here, starting with the import statement.
 ...
 ```
 
-代码部分根据具体需要再决定是否翻译.
+如果没有翻译, 则不需要用 `.html` 语句包含. 代码部分根据具体需要再决定是否翻译.
 
 *注: 博客部分优先翻译新的文章!*
 
