@@ -4,7 +4,7 @@
 *大家帮助完善, 请保证列表有序!*
 
 ```
-BeiJing        <borderj@gmail.com>
+BianJiang      <borderj@gmail.com>
 chai2010       <chaishushan@gmail.com>
 Kaoet          <onetwogoo@live.com>
 liudiwu        <snake_dragon@126.com>
