@@ -580,7 +580,7 @@ func (t *Template) Funcs(funcMap FuncMap) *Template
 // Lookup returns the template with the given name that is associated with t, or
 // nil if there is no such template.
 
-//函数给返回的模板命名关联到传入模板t，nil 说明没有这样的模板。
+//Lookup方法返回与t关联的名为name的模板，nil 说明没有这样的模板。
 func (t *Template) Lookup(name string) *Template
 
 // Name returns the name of the template.
@@ -603,17 +603,18 @@ func (t *Template) New(name string) *Template
 // multiple calls to Parse with the same receiver template, only one call can
 // contain text other than space, comments, and template definitions.)
 
-//函数解析一个字符串进模板，嵌套模板定义将关联最高级别的模板 t。函数可能被调用多次来解析模板的定义。
-//如果结果是非空模板包含的内容不同于模板的定义，以相同的名字代替一个非空模板是错误的。(相同的模板接者着多次调用
-//进行解析，只有一次调用包含的文本不同于空白字符，注释和模板定义 )
+//Parse方法将字符串text解析为模板。嵌套定义的模板会关联到最顶层的t。
+//Parse可以多次调用，但只有第一次调用可以包含空格、注释和模板定义之外的文本。
+//如果后面的调用在解析后仍剩余文本会引发错误、返回nil且丢弃剩余文本；如果解析得到的模板已有相关联的同名模板，会覆盖掉原模板。
+
 func (t *Template) Parse(text string) (*Template, error)
 
 // ParseFiles parses the named files and associates the resulting templates with t.
 // If an error occurs, parsing stops and the returned template is nil; otherwise it
 // is t. There must be at least one file.
 
-//ParseFiles函数解析filenames指定的文件里的模板定义。如果产生错误，解析将会停止，返回nil。否则
-//返回模板t 。必须有至少一个文件。
+//函数解析filenames指定的文件里的模板定义并将解析结果与t关联。如果产生错误，解析将会停止，返回的模板是nil。否则
+//返回模板t 。至少要提供一个文件。
 func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 
 // ParseGlob parses the template definitions in the files identified by the pattern
@@ -621,12 +622,11 @@ func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 // filepath.Glob and must match at least one file. ParseGlob is equivalent to
 // calling t.ParseFiles with the list of files matched by the pattern.
 
-//ParseFiles方法解析匹配pattern的文件里的模板定义并将解析结果与t关联。函数要求至少存在一个匹配的文件
-//函数相当于调用t.ParseFiles处理模式匹配到的文件列表
+//函数解析匹配pattern的文件里的模板定义并将解析结果与t关联。至少要提供一个文件
 func (t *Template) ParseGlob(pattern string) (*Template, error)
 
 // Templates returns a slice of the templates associated with t, including t
 // itself.
 
-//Templates函数返回与t相关联的模板的切片，包括模板t的本身
+//函数返回与t相关联的模板的切片，包括模板t的本身
 func (t *Template) Templates() []*Template
