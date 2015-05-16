@@ -612,7 +612,7 @@ func (t *Template) Parse(text string) (*Template, error)
 // If an error occurs, parsing stops and the returned template is nil; otherwise it
 // is t. There must be at least one file.
 
-//函数解析命名的文件关联结果到模板t。如果产生错误，解析将会停止，返回的模板是空的。否则
+//ParseFiles函数解析filenames指定的文件里的模板定义。如果产生错误，解析将会停止，返回nil。否则
 //返回模板t 。必须有至少一个文件。
 func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 
@@ -621,12 +621,12 @@ func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 // filepath.Glob and must match at least one file. ParseGlob is equivalent to
 // calling t.ParseFiles with the list of files matched by the pattern.
 
-//函数从由模式匹配的文件中解析模板定义，并且把结果与模板t相关联。函数处理模式必须匹配至少一个文件
+//ParseFiles方法解析匹配pattern的文件里的模板定义并将解析结果与t关联。函数要求至少存在一个匹配的文件
 //函数相当于调用t.ParseFiles处理模式匹配到的文件列表
 func (t *Template) ParseGlob(pattern string) (*Template, error)
 
 // Templates returns a slice of the templates associated with t, including t
 // itself.
 
-//函数返回传入模板的切片，包括模板t的本身
+//Templates函数返回与t相关联的模板的切片，包括模板t的本身
 func (t *Template) Templates() []*Template
