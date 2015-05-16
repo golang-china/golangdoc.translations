@@ -492,15 +492,24 @@ type Template struct {
 // initializations such as
 //
 //	var t = template.Must(template.New("name").Parse("text"))
+
+//函数帮助包装一个调用给方法的返回值(模板 ，错误)，如果错误不为空将打印输出。该函数用于变量，像这样初始化
+//
+//var t = template.Must(template.New("name").Parse("text"))
 func Must(t *Template, err error) *Template
 
 // New allocates a new template with the given name.
+
+// 函数给新模板一个名字
 func New(name string) *Template
 
 // ParseFiles creates a new Template and parses the template definitions from the
 // named files. The returned template's name will have the (base) name and (parsed)
 // contents of the first file. There must be at least one file. If an error occurs,
 // parsing stops and the returned *Template is nil.
+
+//函数创建一个新模板，从命名的文件中解析模板的定义。返回模板的名字和模板的内容基于第一个文件，必须至少一个文件
+//如果发生错误，将会停止解析返回的模板也将使空的
 func ParseFiles(filenames ...string) (*Template, error)
 
 // ParseGlob creates a new Template and parses the template definitions from the
@@ -508,10 +517,15 @@ func ParseFiles(filenames ...string) (*Template, error)
 // returned template will have the (base) name and (parsed) contents of the first
 // file matched by the pattern. ParseGlob is equivalent to calling ParseFiles with
 // the list of files matched by the pattern.
+
+//函数创建一个新的模板，从按模式识别的文件解析模板定义，必须至少包含一个文件。返回模板的名字和模板的内容基于按第一个
+//模式识别的文件。函数相当于使用 ParseFiles 调用按模式匹配的的文件列表。
 func ParseGlob(pattern string) (*Template, error)
 
 // AddParseTree creates a new template with the name and parse tree and associates
 // it with t.
+
+//函数创建一个新的模板，通过名字和解析树和模板联系在一起
 func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error)
 
 // Clone returns a duplicate of the template, including all associated templates.
@@ -520,18 +534,28 @@ func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error
 // copy but not to the original. Clone can be used to prepare common templates and
 // use them with variant definitions for other templates by adding the variants
 // after the clone is made.
+
+//函数返回一个重复的模板，包含所有相关的模板。实际上不是复制,但命名空间和与模板相关联，所以
+//将来在副本调用解析时，添加的模板是到副本上而不是原始的模板。函数常用于准备共同的模板，克隆之后用于给
+//其他模板定义变量添加变量
 func (t *Template) Clone() (*Template, error)
 
 // Delims sets the action delimiters to the specified strings, to be used in
 // subsequent calls to Parse, ParseFiles, or ParseGlob. Nested template definitions
 // will inherit the settings. An empty delimiter stands for the corresponding
 // default: {{ or }}. The return value is the template, so calls can be chained.
+
+//函数将模板使用的分隔符设置为指定的字符串，在后来调用 Parse, ParseFiles, or ParseGlob 时使用
+//嵌套模板定义将会继承这些设置。默认 {{ or }}。返回值类型是模板，所以调用会被连接。
 func (t *Template) Delims(left, right string) *Template
 
 // Execute applies a parsed template to the specified data object, and writes the
 // output to wr. If an error occurs executing the template or writing its output,
 // execution stops, but partial results may already have been written to the output
 // writer. A template may be executed safely in parallel.
+
+//函数给模板解析指定的数据对象，如果只需模板或者输出包含错误，执行操作停止。但是部分输出结果
+//可能已经写到输出者那里了。一个模板可以安全的并发执行。
 func (t *Template) Execute(wr io.Writer, data interface{}) (err error)
 
 // ExecuteTemplate applies the template associated with t that has the given name
@@ -539,24 +563,36 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error)
 // executing the template or writing its output, execution stops, but partial
 // results may already have been written to the output writer. A template may be
 // executed safely in parallel.
+
+//函数用 t 应用该模板，给指定的数据类命名，写错到 wr 。如果执行模板或者写出时发生错误，执行
+//操作将会停止。但是部分输出结果可能已经写出输出者那里了。一个模板可以安全的并发执行。
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error
 
 // Funcs adds the elements of the argument map to the template's function map. It
 // panics if a value in the map is not a function with appropriate return type.
 // However, it is legal to overwrite elements of the map. The return value is the
 // template, so calls can be chained.
+
+//函数添加参数的map的元素到模板方法的map。如果map中的值不是一个带有适当返回值的方法将发生错误。
+//然而，覆盖map中的元素是合法的。返回值是模板，调用将被连接。
 func (t *Template) Funcs(funcMap FuncMap) *Template
 
 // Lookup returns the template with the given name that is associated with t, or
 // nil if there is no such template.
+
+//函数给返回的模板命名关联到传入模板t，nil 说明没有这样的模板。
 func (t *Template) Lookup(name string) *Template
 
 // Name returns the name of the template.
+
+//函数返回模板的名字
 func (t *Template) Name() string
 
 // New allocates a new template associated with the given one and with the same
 // delimiters. The association, which is transitive, allows one template to invoke
 // another with a {{template}} action.
+
+//函数使用给定一个相同的分隔符的方式分配一个新的模板。关联是传递的，允许一个模板通过 {{模板}} 调用另一个模板
 func (t *Template) New(name string) *Template
 
 // Parse parses a string into a template. Nested template definitions will be
@@ -566,19 +602,31 @@ func (t *Template) New(name string) *Template
 // definitions) and would replace a non-empty template with the same name. (In
 // multiple calls to Parse with the same receiver template, only one call can
 // contain text other than space, comments, and template definitions.)
+
+//函数解析一个字符串进模板，嵌套模板定义将关联最高级别的模板 t。函数可能被调用多次来解析模板的定义。
+//如果结果是非空模板包含的内容不同于模板的定义，以相同的名字代替一个非空模板是错误的。(相同的模板接者着多次调用
+//进行解析，只有一次调用包含的文本不同于空白字符，注释和模板定义 )
 func (t *Template) Parse(text string) (*Template, error)
 
 // ParseFiles parses the named files and associates the resulting templates with t.
 // If an error occurs, parsing stops and the returned template is nil; otherwise it
 // is t. There must be at least one file.
+
+//函数解析命名的文件关联结果到模板t。如果产生错误，解析将会停止，返回的模板是空的。否则
+//返回模板t 。必须有至少一个文件。
 func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 
 // ParseGlob parses the template definitions in the files identified by the pattern
 // and associates the resulting templates with t. The pattern is processed by
 // filepath.Glob and must match at least one file. ParseGlob is equivalent to
 // calling t.ParseFiles with the list of files matched by the pattern.
+
+//函数从由模式匹配的文件中解析模板定义，并且把结果与模板t相关联。函数处理模式必须匹配至少一个文件
+//函数相当于调用t.ParseFiles处理模式匹配到的文件列表
 func (t *Template) ParseGlob(pattern string) (*Template, error)
 
 // Templates returns a slice of the templates associated with t, including t
 // itself.
+
+//函数返回传入模板的切片，包括模板t的本身
 func (t *Template) Templates() []*Template
