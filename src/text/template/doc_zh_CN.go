@@ -564,7 +564,7 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error)
 // results may already have been written to the output writer. A template may be
 // executed safely in parallel.
 
-//函数用 t 应用该模板，给指定的数据类命名，写错到 wr 。如果执行模板或者写出时发生错误，执行
+//函数用 t 应用该模板，给指定的数据类命名，写出到 wr 。如果执行模板或者写出时发生错误，执行
 //操作将会停止。但是部分输出结果可能已经写出输出者那里了。一个模板可以安全的并发执行。
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error
 
