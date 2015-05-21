@@ -1,56 +1,137 @@
 #Error handling and Go
-错误处理和Go
+错误处理
 12 Jul 2011
 Tags: error, interface, type, technical
 
 Andrew Gerrand
 
-#* Introduction
+* 
+
+.html _tr/div_begin_en.html
+
+* Introduction
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
 * 介绍
 
-#If you have written any Go code you have probably encountered the built-in `error` type. Go code uses `error` values to indicate an abnormal state. For example, the `os.Open` function returns a non-nil `error` value when it fails to open a file.
+.html _tr/div_end.html
 
-如果你已经编写过 Go 代码，可能已经遇到过 `error` 类型了。Go 代码使用 `error` 值来标示异常状态。例如，当 `os.Open` 函数打开文件失败时，返回一个非 `nil` 的 `error` 值。
+.html _tr/div_begin_en.html
+
+If you have written any Go code you have probably encountered the built-in `error` type. Go code uses `error` values to indicate an abnormal state. For example, the `os.Open` function returns a non-nil `error` value when it fails to open a file.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+如果你已经编写过 Go 代码, 可能已经遇到过 `error` 类型了. Go 代码使用 `error` 值来标示异常状态. 例如, 当 `os.Open` 函数打开文件失败时, 返回一个非 `nil` 的 `error` 值.
+
+.html _tr/div_end.html
 
 	func Open(name string) (file *File, err error)
 
-#The following code uses `os.Open` to open a file. If an error occurs it calls `log.Fatal` to print the error message and stop.
+.html _tr/div_begin_en.html
 
-下面的函数使用 `os.Open` 打开一个文件。如果产生了错误，它会调用 `log.Fatal` 打印错误信息并且中断运行。
+The following code uses `os.Open` to open a file. If an error occurs it calls `log.Fatal` to print the error message and stop.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+下面的函数使用 `os.Open` 打开一个文件. 如果产生了错误, 它会调用 `log.Fatal` 打印错误信息并且中断运行.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 	    f, err := os.Open("filename.ext")
 	    if err != nil {
 	        log.Fatal(err)
 	    }
-#	    // do something with the open *File f
+	    // do something with the open *File f
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+	    f, err := os.Open("filename.ext")
+	    if err != nil {
+	        log.Fatal(err)
+	    }
 	    // 对打开的 *File f 做些事情
 
-#You can get a lot done in Go knowing just this about the `error` type, but in this article we'll take a closer look at `error` and discuss some good practices for error handling in Go.
+.html _tr/div_end.html
 
-在 Go 中只要知道了 `error` 就可以做很多事情了，不过在这篇文章中，我们会更进一步了解 `error` 并探讨一些 Go 中错误处理比较好的方法。
+.html _tr/div_begin_en.html
 
-#* The error type
+You can get a lot done in Go knowing just this about the `error` type, but in this article we'll take a closer look at `error` and discuss some good practices for error handling in Go.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+在 Go 中只要知道了 `error` 就可以做很多事情了, 不过在这篇文章中, 我们会更进一步了解 `error` 并探讨一些 Go 中错误处理比较好的方法.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+* The error type
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
 
 * 错误类型
 
-#The `error` type is an interface type. An `error` variable represents any value that can describe itself as a string. Here is the interface's declaration:
+.html _tr/div_end.html
 
-`error` 类型是一个接口类型。 `error` 变量可以是任何可以将其描绘成字符串的值。这里是接口的定义：
+.html _tr/div_begin_en.html
+
+The `error` type is an interface type. An `error` variable represents any value that can describe itself as a string. Here is the interface's declaration:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`error` 类型是一个接口类型.  `error` 变量可以是任何可以将其描绘成字符串的值. 这里是接口的定义:
+
+.html _tr/div_end.html
 
 	type error interface {
 	    Error() string
 	}
 
-#The `error` type, as with all built in types, is [[http://golang.org/doc/go_spec.html#Predeclared_identifiers][predeclared]] in the [[http://golang.org/doc/go_spec.html#Blocks][universe block]].
+.html _tr/div_begin_en.html
 
-`error` 类型与其它内建类型一样，[[/ref/spec#Predeclared_identifiers][预定义]]于[[/ref/spec#Blocks][通用块]]中。
+The `error` type, as with all built in types, is [[http://golang.org/doc/go_spec.html#Predeclared_identifiers][predeclared]] in the [[http://golang.org/doc/go_spec.html#Blocks][universe block]].
 
-#The most commonly-used `error` implementation is the [[http://golang.org/pkg/errors/][errors]] package's unexported `errorString` type.
+.html _tr/div_end.html
 
-最常用的 `error` 实现是 [[/pkg/errors/][errors]] 包中未导出的 `errorString` 类型。
+.html _tr/div_begin_zh_CN.html
 
-#	// errorString is a trivial implementation of error.
-	// errorString 是 error 的一个简单实现。
+`error` 类型与其它内建类型一样, [[/ref/spec#Predeclared_identifiers][预定义]]于[[/ref/spec#Blocks][通用块]]中.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+The most commonly-used `error` implementation is the [[http://golang.org/pkg/errors/][errors]] package's unexported `errorString` type.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+最常用的 `error` 实现是 [[/pkg/errors/][errors]] 包中未导出的 `errorString` 类型.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+	// errorString is a trivial implementation of error.
 	type errorString struct {
 	    s string
 	}
@@ -59,60 +140,164 @@ Andrew Gerrand
 	    return e.s
 	}
 
-#You can construct one of these values with the `errors.New` function. It takes a string that it converts to an `errors.errorString` and returns as an `error` value.
+.html _tr/div_end.html
 
-可以通过 `errors.New` 函数构建一个这样的值。它接受一个字符串，然后转换成 `errors.errorString` 并且返回一个 `error` 值。
+.html _tr/div_begin_zh_CN.html
 
-#	// New returns an error that formats as the given text.
-	// New 返回一个按照 text 格式化的 error。
+	// errorString 是 error 的一个简单实现.
+	type errorString struct {
+	    s string
+	}
+
+	func (e *errorString) Error() string {
+	    return e.s
+	}
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+You can construct one of these values with the `errors.New` function. It takes a string that it converts to an `errors.errorString` and returns as an `error` value.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+可以通过 `errors.New` 函数构建一个这样的值. 它接受一个字符串, 然后转换成 `errors.errorString` 并且返回一个 `error` 值.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+	// New returns an error that formats as the given text.
 	func New(text string) error {
 	    return &errorString{text}
 	}
 
-#Here's how you might use `errors.New`:
+.html _tr/div_end.html
 
-这里演示了使用 `errors.New` 的一种可能：
+.html _tr/div_begin_zh_CN.html
+
+	// New 返回一个按照 text 格式化的 error.
+	func New(text string) error {
+	    return &errorString{text}
+	}
+
+.html _tr/div_begin_en.html
+
+Here's how you might use `errors.New`:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+这里演示了使用 `errors.New` 的一种可能:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 	func Sqrt(f float64) (float64, error) {
 	    if f < 0 {
 	        return 0, errors.New("math: square root of negative number")
 	    }
-#	    // implementation
+	    // implementation
+	}
+
+.html _tr/div_end.html
+
+
+.html _tr/div_begin_zh_CN.html
+
+	func Sqrt(f float64) (float64, error) {
+	    if f < 0 {
+	        return 0, errors.New("math: square root of negative number")
+	    }
 	    // 实现
 	}
 
-#A caller passing a negative argument to `Sqrt` receives a non-nil `error` value (whose concrete representation is an `errors.errorString` value). The caller can access the error string ("math: square root of...") by calling the `error`'s `Error` method, or by just printing it:
+.html _tr/div_end.html
 
-调用方向 `Sqrt` 传递了错误的参数，会得到一个非 `nil` 的 `error` 值（实际上是重新表达的一个 `errors.errorString` 值）。调用者可以通过调用 `error` 的 `Error` 方法得到错误字符串（"math: square root of..."），或者仅仅是打印出来：
+.html _tr/div_begin_en.html
+
+A caller passing a negative argument to `Sqrt` receives a non-nil `error` value (whose concrete representation is an `errors.errorString` value). The caller can access the error string ("math: square root of...") by calling the `error`'s `Error` method, or by just printing it:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+调用方向 `Sqrt` 传递了错误的参数, 会得到一个非 `nil` 的 `error` 值(实际上是重新表达的一个 `errors.errorString` 值). 调用者可以通过调用 `error` 的 `Error` 方法得到错误字符串("math: square root of..."), 或者仅仅是打印出来:
+
+.html _tr/div_end.html
 
 	    f, err := Sqrt(-1)
 	    if err != nil {
 	        fmt.Println(err)
 	    }
 
-#The [[http://golang.org/pkg/fmt/][fmt]] package formats an `error` value by calling its `Error()`string` method.
+.html _tr/div_begin_en.html
 
-[[/pkg/fmt/][fmt]] 包通过调用其 `Error()`string` 方法格式化一个 `error` 值。
+The [[http://golang.org/pkg/fmt/][fmt]] package formats an `error` value by calling its `Error()`string` method.
 
-#It is the error implementation's responsibility to summarize the context. The error returned by `os.Open` formats as "open /etc/passwd: permission denied," not just "permission denied."  The error returned by our `Sqrt` is missing information about the invalid argument.
+.html _tr/div_end.html
 
-概述上下文环境是错误实现的一种职责。 `os.Open` 返回一个格式化的错误，如“open /etc/passwd: permission denied,”而不仅仅是“permission denied.” Sqrt 返回的错误中缺失了关于非法参数的信息。
+.html _tr/div_begin_zh_CN.html
 
-#To add that information, a useful function is the `fmt` package's `Errorf`. It formats a string according to `Printf`'s rules and returns it as an `error` created by `errors.New`.
+[[/pkg/fmt/][fmt]] 包通过调用其 `Error()`string` 方法格式化一个 `error` 值.
 
-为了添加这个信息，在 `fmt` 包中有一个很有用的函数 `Errorf` 。它将一个字符串依照 `Printf` 的规则进行格式化，然后将其返回成为 `errors.New` 创建的 `errors` 类型。
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+It is the error implementation's responsibility to summarize the context. The error returned by `os.Open` formats as "open /etc/passwd: permission denied," not just "permission denied."  The error returned by our `Sqrt` is missing information about the invalid argument.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+概述上下文环境是错误实现的一种职责.  `os.Open` 返回一个格式化的错误, 如“open /etc/passwd: permission denied,”而不仅仅是“permission denied.” Sqrt 返回的错误中缺失了关于非法参数的信息.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+To add that information, a useful function is the `fmt` package's `Errorf`. It formats a string according to `Printf`'s rules and returns it as an `error` created by `errors.New`.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+为了添加这个信息, 在 `fmt` 包中有一个很有用的函数 `Errorf` . 它将一个字符串依照 `Printf` 的规则进行格式化, 然后将其返回成为 `errors.New` 创建的 `errors` 类型.
+
+.html _tr/div_end.html
 
 	    if f < 0 {
 	        return 0, fmt.Errorf("math: square root of negative number %g", f)
 	    }
 
-#In many cases `fmt.Errorf` is good enough, but since `error` is an interface, you can use arbitrary data structures as error values, to allow callers to inspect the details of the error.
+.html _tr/div_begin_en.html
 
-在大多数情况下 `fmt.Errorf` 已经足够好了，但是由于 `error` 是一个接口，也可以使用更加详尽的数据结构作为错误值，以便让调用者检查错误的细节。
+In many cases `fmt.Errorf` is good enough, but since `error` is an interface, you can use arbitrary data structures as error values, to allow callers to inspect the details of the error.
 
-#For instance, our hypothetical callers might want to recover the invalid argument passed to `Sqrt`. We can enable that by defining a new error implementation instead of using `errors.errorString`:
+.html _tr/div_end.html
 
-例如，假设一个使用者希望找到传递到 `Sqrt` 的非法参数。可以通过定义一个新的错误实现代替 `errors.errorString` 来做到这点：
+.html _tr/div_begin_zh_CN.html
+
+在大多数情况下 `fmt.Errorf` 已经足够好了, 但是由于 `error` 是一个接口, 也可以使用更加详尽的数据结构作为错误值, 以便让调用者检查错误的细节.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+For instance, our hypothetical callers might want to recover the invalid argument passed to `Sqrt`. We can enable that by defining a new error implementation instead of using `errors.errorString`:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+例如, 假设一个使用者希望找到传递到 `Sqrt` 的非法参数. 可以通过定义一个新的错误实现代替 `errors.errorString` 来做到这点:
+
+.html _tr/div_end.html
 
 	type NegativeSqrtError float64
 
@@ -120,26 +305,62 @@ Andrew Gerrand
 	    return fmt.Sprintf("math: square root of negative number %g", float64(f))
 	}
 
-#A sophisticated caller can then use a [[http://golang.org/doc/go_spec.html#Type_assertions][type assertion]] to check for a `NegativeSqrtError` and handle it specially, while callers that just pass the error to `fmt.Println` or `log.Fatal` will see no change in behavior.
+.html _tr/div_begin_en.html
 
-一个有经验的调用者可以使用[[/ref/spec#Type_assertions][类型断言]]来检查 `NegativeSqrtError` 并且特别处理它，仅仅将错误传递给 `fmt.Println` 或者 `log.Fatal` 是不会有任何行为上的改变。
+A sophisticated caller can then use a [[http://golang.org/doc/go_spec.html#Type_assertions][type assertion]] to check for a `NegativeSqrtError` and handle it specially, while callers that just pass the error to `fmt.Println` or `log.Fatal` will see no change in behavior.
 
-#As another example, the [[http://golang.org/pkg/encoding/json/][json]] package specifies a `SyntaxError` type that the `json.Decode` function returns when it encounters a syntax error parsing a JSON blob.
+.html _tr/div_end.html
 
-另一个例子，[[/pkg/encoding/json/][json]] 包指定 `json.Decode` 函数返回 `SyntaxError` 类型，当解析一个 JSON blob 发生语法错误的时候。
+.html _tr/div_begin_zh_CN.html
+
+一个有经验的调用者可以使用[[/ref/spec#Type_assertions][类型断言]]来检查 `NegativeSqrtError` 并且特别处理它, 仅仅将错误传递给 `fmt.Println` 或者 `log.Fatal` 是不会有任何行为上的改变.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+As another example, the [[http://golang.org/pkg/encoding/json/][json]] package specifies a `SyntaxError` type that the `json.Decode` function returns when it encounters a syntax error parsing a JSON blob.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+另一个例子, [[/pkg/encoding/json/][json]] 包指定 `json.Decode` 函数返回 `SyntaxError` 类型, 当解析一个 JSON blob 发生语法错误的时候.
+
+.html _tr/div_end.html
 
 	type SyntaxError struct {
-#	    msg    string // description of error
-#	    Offset int64  // error occurred after reading Offset bytes
+	    msg    string // description of error
+	    Offset int64  // error occurred after reading Offset bytes
+	}
+
+	func (e *SyntaxError) Error() string { return e.msg }
+
+.html _tr/div_end.html
+
+
+.html _tr/div_begin_zh_CN.html
+
+	type SyntaxError struct {
 	    msg    string // 描述错误
 	    Offset int64  // 错误在读取了 Offset 字节后发生
 	}
 
 	func (e *SyntaxError) Error() string { return e.msg }
 
-#The `Offset` field isn't even shown in the default formatting of the error, but callers can use it to add file and line information to their error messages:
+.html _tr/div_end.html
 
-`Offset` 字段没有显示在错误默认的格式中，但是调用者可以使用它来添加文件和行信息到其错误消息中：
+.html _tr/div_begin_en.html
+
+The `Offset` field isn't even shown in the default formatting of the error, but callers can use it to add file and line information to their error messages:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`Offset` 字段没有显示在错误默认的格式中, 但是调用者可以使用它来添加文件和行信息到其错误消息中:
+
+.html _tr/div_end.html
 
 	    if err := dec.Decode(&val); err != nil {
 	        if serr, ok := err.(*json.SyntaxError); ok {
@@ -149,27 +370,65 @@ Andrew Gerrand
 	        return err
 	    }
 
-#(This is a slightly simplified version of some [[http://camlistore.org/code/?p=camlistore.git;a=blob;f=lib/go/camli/jsonconfig/eval.go#l68][actual code]] from the [[http://camlistore.org][Camlistore]] project.)
+.html _tr/div_begin_en.html
 
-（还有一个略微简单的版本，一些来自[[http://camlistore.org][Camlistore]]项目的[[http://camlistore.org/code/?p=camlistore.git;a=blob;f=lib/go/camli/jsonconfig/eval.go#l68][实际的代码]]。）
+(This is a slightly simplified version of some [[http://camlistore.org/code/?p=camlistore.git;a=blob;f=lib/go/camli/jsonconfig/eval.go#l68][actual code]] from the [[http://camlistore.org][Camlistore]] project.)
 
-#The `error` interface requires only a `Error` method; specific error implementations might have additional methods. For instance, the [[http://golang.org/pkg/net/][net]] package returns errors of type `error`, following the usual convention, but some of the error implementations have additional methods defined by the `net.Error` interface:
+.html _tr/div_end.html
 
-`error` 接口仅仅需要一个 `Error` 方法；特别的错误实现可能有一些附加的方法。例如，[[/pkg/net/][net]] 包按照惯例返回 `error` 类型，但是一些错误实现包含由 `net.Error` 定义的附加方法：
+.html _tr/div_begin_zh_CN.html
+
+(还有一个略微简单的版本, 一些来自[[http://camlistore.org][Camlistore]]项目的[[http://camlistore.org/code/?p=camlistore.git;a=blob;f=lib/go/camli/jsonconfig/eval.go#l68][实际的代码]]. )
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+The `error` interface requires only a `Error` method; specific error implementations might have additional methods. For instance, the [[http://golang.org/pkg/net/][net]] package returns errors of type `error`, following the usual convention, but some of the error implementations have additional methods defined by the `net.Error` interface:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`error` 接口仅仅需要一个 `Error` 方法；特别的错误实现可能有一些附加的方法. 例如, [[/pkg/net/][net]] 包按照惯例返回 `error` 类型, 但是一些错误实现包含由 `net.Error` 定义的附加方法:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 	package net
 
 	type Error interface {
 	    error
-#	    Timeout() bool   // Is the error a timeout?
-#	    Temporary() bool // Is the error temporary?
+	    Timeout() bool   // Is the error a timeout?
+	    Temporary() bool // Is the error temporary?
+	}
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+	package net
+
+	type Error interface {
+	    error
 	    Timeout() bool   // 是超时错误吗？
 	    Temporary() bool // 是临时性错误吗？
 	}
 
-#Client code can test for a `net.Error` with a type assertion and then distinguish transient network errors from permanent ones. For instance, a web crawler might sleep and retry when it encounters a temporary error and give up otherwise.
+.html _tr/div_end.html
 
-客户端代码可以用类型断言来测试 `net.Error` ，这样就可以从持久性错误中找到临时性的错误。例如，一个 Web 爬虫可能会在遇到临时性错误时休眠然后重试，持久错误的话就彻底放弃。
+.html _tr/div_begin_en.html
+
+Client code can test for a `net.Error` with a type assertion and then distinguish transient network errors from permanent ones. For instance, a web crawler might sleep and retry when it encounters a temporary error and give up otherwise.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+客户端代码可以用类型断言来测试 `net.Error` , 这样就可以从持久性错误中找到临时性的错误. 例如, 一个 Web 爬虫可能会在遇到临时性错误时休眠然后重试, 持久错误的话就彻底放弃.
+
+.html _tr/div_end.html
 
 	        if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
 	            time.Sleep(1e9)
@@ -179,17 +438,41 @@ Andrew Gerrand
 	            log.Fatal(err)
 	        }
 
-#* Simplifying repetitive error handling
+.html _tr/div_begin_en.html
+
+* Simplifying repetitive error handling
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
 
 * 简化重复的错误处理
 
-#In Go, error handling is important. The language's design and conventions encourage you to explicitly check for errors where they occur (as distinct from the convention in other languages of throwing exceptions and sometimes catching them). In some cases this makes Go code verbose, but fortunately there are some techniques you can use to minimize repetitive error handling.
+.html _tr/div_end.html
 
-在 Go 中，错误处理是重要的。这个语言的设计和规范鼓励对产生错误的地方进行明确的检查（这与其他语言抛出异常，然后在某个时候才处理它们是有区别的）。在某些情况下，这使得 Go 的代码很罗嗦，不过幸运的是有一些让错误处理尽可能少重复的技术可以使用。
+.html _tr/div_begin_en.html
 
-#Consider an [[http://code.google.com/appengine/docs/go/][App Engine]] application with an HTTP handler that retrieves a record from the datastore and formats it with a template.
+In Go, error handling is important. The language's design and conventions encourage you to explicitly check for errors where they occur (as distinct from the convention in other languages of throwing exceptions and sometimes catching them). In some cases this makes Go code verbose, but fortunately there are some techniques you can use to minimize repetitive error handling.
 
-考虑 [[http://code.google.com/appengine/docs/go/][App Engine]] 应用，在 HTTP 处理时从数据存储获取记录，然后通过模板进行格式化。
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+在 Go 中, 错误处理是重要的. 这个语言的设计和规范鼓励对产生错误的地方进行明确的检查(这与其他语言抛出异常, 然后在某个时候才处理它们是有区别的). 在某些情况下, 这使得 Go 的代码很罗嗦, 不过幸运的是有一些让错误处理尽可能少重复的技术可以使用.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+Consider an [[http://code.google.com/appengine/docs/go/][App Engine]] application with an HTTP handler that retrieves a record from the datastore and formats it with a template.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+考虑 [[http://code.google.com/appengine/docs/go/][App Engine]] 应用, 在 HTTP 处理时从数据存储获取记录, 然后通过模板进行格式化.
+
+.html _tr/div_end.html
 
 	func init() {
 	    http.HandleFunc("/view", viewRecord)
@@ -208,19 +491,43 @@ Andrew Gerrand
 	    }
 	}
 
-#This function handles errors returned by the `datastore.Get` function and `viewTemplate`'s `Execute` method. In both cases, it presents a simple error message to the user with the HTTP status code 500 ("Internal Server Error"). This looks like a manageable amount of code, but add some more HTTP handlers and you quickly end up with many copies of identical error handling code.
+.html _tr/div_begin_en.html
 
-这个函数处理了由 `datastore.Get` 函数和 `viewTemplate` 的 `Execute` 方法返回的错误。在两种情况下，它都是简单的返回一个错误消息给用户，用 HTTP 状态代码 500（“Internal Server Error”）。这代码看起来是可以改进的，只需添加一些 HTTP 处理，然后就可以结束掉这种有许多相同的错误处理代码的状况。
+This function handles errors returned by the `datastore.Get` function and `viewTemplate`'s `Execute` method. In both cases, it presents a simple error message to the user with the HTTP status code 500 ("Internal Server Error"). This looks like a manageable amount of code, but add some more HTTP handlers and you quickly end up with many copies of identical error handling code.
 
-#To reduce the repetition we can define our own HTTP `appHandler` type that includes an `error` return value:
+.html _tr/div_end.html
 
-可以自定义 HTTP 处理 `appHandler` 类型，包括返回一个 `error` 值来减少重复：
+.html _tr/div_begin_zh_CN.html
+
+这个函数处理了由 `datastore.Get` 函数和 `viewTemplate` 的 `Execute` 方法返回的错误. 在两种情况下, 它都是简单的返回一个错误消息给用户, 用 HTTP 状态代码 500(“Internal Server Error”). 这代码看起来是可以改进的, 只需添加一些 HTTP 处理, 然后就可以结束掉这种有许多相同的错误处理代码的状况.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+To reduce the repetition we can define our own HTTP `appHandler` type that includes an `error` return value:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+可以自定义 HTTP 处理 `appHandler` 类型, 包括返回一个 `error` 值来减少重复:
+
+.html _tr/div_end.html
 
 	type appHandler func(http.ResponseWriter, *http.Request) error
 
-#Then we can change our `viewRecord` function to return errors:
+.html _tr/div_begin_en.html
 
-然后修改 `viewRecord` 函数返回错误：
+Then we can change our `viewRecord` function to return errors:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+然后修改 `viewRecord` 函数返回错误:
+
+.html _tr/div_end.html
 
 	func viewRecord(w http.ResponseWriter, r *http.Request) error {
 	    c := appengine.NewContext(r)
@@ -232,9 +539,17 @@ Andrew Gerrand
 	    return viewTemplate.Execute(w, record)
 	}
 
-#This is simpler than the original version, but the [[http://golang.org/pkg/net/http/][http]] package doesn't understand functions that return `error`. To fix this we can implement the `http.Handler` interface's `ServeHTTP` method on `appHandler`:
+.html _tr/div_begin_en.html
 
-这比原来的版本简单，但是 [[/pkg/net/http/][http]] 包不明白返回 `error` 的函数。为了修复这个问题，可以在 `appHandler` 上实现一个 `http.Handler` 接口的 `ServeHTTP` 方法：
+This is simpler than the original version, but the [[http://golang.org/pkg/net/http/][http]] package doesn't understand functions that return `error`. To fix this we can implement the `http.Handler` interface's `ServeHTTP` method on `appHandler`:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+这比原来的版本简单, 但是 [[/pkg/net/http/][http]] 包不明白返回 `error` 的函数. 为了修复这个问题, 可以在 `appHandler` 上实现一个 `http.Handler` 接口的 `ServeHTTP` 方法:
+
+.html _tr/div_end.html
 
 	func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	    if err := fn(w, r); err != nil {
@@ -242,25 +557,57 @@ Andrew Gerrand
 	    }
 	}
 
-#The `ServeHTTP` method calls the `appHandler` function and displays the returned error (if any) to the user.  Notice that the method's receiver, `fn`, is a function. (Go can do that!) The method invokes the function by calling the receiver in the expression `fn(w,`r)`.
+.html _tr/div_begin_en.html
 
-`ServeHTTP` 方法调用 `appHandler` 函数，并且给用户显示返回的错误（如果有的话）。注意这个方法的接收者 `fn` ，是一个函数。（Go 可以这样做！）方法调用表达式 `fn(w,`r)` 中定义的接收者。
+The `ServeHTTP` method calls the `appHandler` function and displays the returned error (if any) to the user.  Notice that the method's receiver, `fn`, is a function. (Go can do that!) The method invokes the function by calling the receiver in the expression `fn(w,`r)`.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`ServeHTTP` 方法调用 `appHandler` 函数, 并且给用户显示返回的错误(如果有的话). 注意这个方法的接收者 `fn` , 是一个函数. (Go 可以这样做！)方法调用表达式 `fn(w,`r)` 中定义的接收者.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 #Now when registering `viewRecord` with the http package we use the `Handle` function (instead of `HandleFunc`) as `appHandler` is an `http.Handler` (not an `http.HandlerFunc`).
 
-现在当向 `http` 包注册了 `viewRecord` ，就可以使用 `Handle` 函数（代替 `HandleFunc` ） `appHandler` 作为一个 `http.Handler` （而不是一个 `http.HandlerFunc` ）。
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+现在当向 `http` 包注册了 `viewRecord` , 就可以使用 `Handle` 函数(代替 `HandleFunc` ) `appHandler` 作为一个 `http.Handler` (而不是一个 `http.HandlerFunc` ).
+
+.html _tr/div_end.html
 
 	func init() {
 	    http.Handle("/view", appHandler(viewRecord))
 	}
 
-#With this basic error handling infrastructure in place, we can make it more user friendly. Rather than just displaying the error string, it would be better to give the user a simple error message with an appropriate HTTP status code, while logging the full error to the App Engine developer console for debugging purposes.
+.html _tr/div_begin_en.html
 
-通过这样在基础架构中的错误处理，可以使其对用户更加友好。除了仅仅显示一个错误字符串，给用户一些简单的错误信息以及适当的 HTTP 状态码会更好，同时在 App Engine 开发者控制台记录完整的错误用于调试。
+With this basic error handling infrastructure in place, we can make it more user friendly. Rather than just displaying the error string, it would be better to give the user a simple error message with an appropriate HTTP status code, while logging the full error to the App Engine developer console for debugging purposes.
 
-#To do this we create an `appError` struct containing an `error` and some other fields:
+.html _tr/div_end.html
 
-为了做到这点，创建一个 `appError` 结构包含 `error` 和一些其他字段：
+.html _tr/div_begin_zh_CN.html
+
+通过这样在基础架构中的错误处理, 可以使其对用户更加友好. 除了仅仅显示一个错误字符串, 给用户一些简单的错误信息以及适当的 HTTP 状态码会更好, 同时在 App Engine 开发者控制台记录完整的错误用于调试.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+To do this we create an `appError` struct containing an `error` and some other fields:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+为了做到这点, 创建一个 `appError` 结构包含 `error` 和一些其他字段:
+
+.html _tr/div_end.html
 
 	type appError struct {
 	    Error   error
@@ -268,32 +615,64 @@ Andrew Gerrand
 	    Code    int
 	}
 
+.html _tr/div_begin_en.html
+
 #Next we modify the appHandler type to return `*appError` values:
 
-接下来我们修改 `appHandler` 类型返回 `*appError` 值：
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+接下来我们修改 `appHandler` 类型返回 `*appError` 值:
+
+.html _tr/div_end.html
 
 	type appHandler func(http.ResponseWriter, *http.Request) *appError
 
-#(It's usually a mistake to pass back the concrete type of an error rather than `error`, for reasons discussed in [[http://golang.org/doc/go_faq.html#nil_error][the Go FAQ]], but it's the right thing to do here because `ServeHTTP` is the only place that sees the value and uses its contents.)
+.html _tr/div_begin_en.html
 
-（通常，错误信息不使用 `error` 而是使用实际类型进行传递的做法是错误的，原因请见[[/doc/faq#nil错误][Go的常见问题]]，不过在这里是正确的，因为 `ServeHTTP` 是唯一看到这个值并且使用其内容的地方。）
+(It's usually a mistake to pass back the concrete type of an error rather than `error`, for reasons discussed in [[http://golang.org/doc/go_faq.html#nil_error][the Go FAQ]], but it's the right thing to do here because `ServeHTTP` is the only place that sees the value and uses its contents.)
 
-#And make `appHandler`'s `ServeHTTP` method display the `appError`'s `Message` to the user with the correct HTTP status `Code` and log the full `Error` to the developer console:
+.html _tr/div_end.html
 
-并且编写 `appHandler` 的 `ServeHTTP` 方法显示 `appError` 的 `Message` 和对应的 HTTP 状态 `Code` 给用户，同时记录完整的 `Error` 到开发者控制台：
+.html _tr/div_begin_zh_CN.html
+
+(通常, 错误信息不使用 `error` 而是使用实际类型进行传递的做法是错误的, 原因请见[[/doc/faq#nil错误][Go的常见问题]], 不过在这里是正确的, 因为 `ServeHTTP` 是唯一看到这个值并且使用其内容的地方. )
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+And make `appHandler`'s `ServeHTTP` method display the `appError`'s `Message` to the user with the correct HTTP status `Code` and log the full `Error` to the developer console:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+并且编写 `appHandler` 的 `ServeHTTP` 方法显示 `appError` 的 `Message` 和对应的 HTTP 状态 `Code` 给用户, 同时记录完整的 `Error` 到开发者控制台:
+
+.html _tr/div_end.html
 
 	func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	    if e := fn(w, r); e != nil { // e is *appError, not os.Error.
-	    if e := fn(w, r); e != nil { // e 是 *appError，不是 os.Error。
+	    if e := fn(w, r); e != nil { // e 是 *appError, 不是 os.Error.
 	        c := appengine.NewContext(r)
 	        c.Errorf("%v", e.Error)
 	        http.Error(w, e.Message, e.Code)
 	    }
 	}
 
-#Finally, we update `viewRecord` to the new function signature and have it return more context when it encounters an error:
+.html _tr/div_begin_en.html
 
-最后，我们更新 `viewRecord` 到新的函数声明，并且使其在发生错误的时候返回更多的上下文：
+Finally, we update `viewRecord` to the new function signature and have it return more context when it encounters an error:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+最后, 我们更新 `viewRecord` 到新的函数声明, 并且使其在发生错误的时候返回更多的上下文:
+
+.html _tr/div_end.html
 
 	func viewRecord(w http.ResponseWriter, r *http.Request) *appError {
 	    c := appengine.NewContext(r)
@@ -308,34 +687,69 @@ Andrew Gerrand
 	    return nil
 	}
 
-#This version of `viewRecord` is the same length as the original, but now each of those lines has specific meaning and we are providing a friendlier user experience.
+.html _tr/div_begin_en.html
 
-这个版本的 `viewRecord` 与之前的长度类似，但是现在每行都有特别的含义，并且提供了对用户更加友好的体验。
+This version of `viewRecord` is the same length as the original, but now each of those lines has specific meaning and we are providing a friendlier user experience.
 
-#It doesn't end there; we can further improve the error handling in our application. Some ideas:
+.html _tr/div_end.html
 
-这还没有结束；还可以进一步在应用中改进错误处理。有一些思路：
+.html _tr/div_begin_zh_CN.html
 
-#- give the error handler a pretty HTML template,
+这个版本的 `viewRecord` 与之前的长度类似, 但是现在每行都有特别的含义, 并且提供了对用户更加友好的体验.
 
-- 为错误处理提供一个漂亮的 HTML 模板，
+.html _tr/div_end.html
 
-#- make debugging easier by writing the stack trace to the HTTP response when the user is an administrator,
+.html _tr/div_begin_en.html
 
-- 当用户是管理员时，将栈跟踪输出到 HTTP 的响应中，以方便调试，
+It doesn't end there; we can further improve the error handling in our application. Some ideas:
 
-#- write a constructor function for `appError` that stores the stack trace for easier debugging,
+.html _tr/div_end.html
 
-- 编写一个 `appError` 的构造函数，保存栈跟踪使得调试更容易，
+.html _tr/div_begin_zh_CN.html
 
-#- recover from panics inside the `appHandler`, logging the error to the console as "Critical," while telling the user "a serious error has occurred." This is a nice touch to avoid exposing the user to inscrutable error messages caused by programming errors. See the [[http://golang.org/doc/articles/defer_panic_recover.html][Defer, Panic, and Recover]] article for more details.
+这还没有结束；还可以进一步在应用中改进错误处理. 有一些思路:
 
-- 在 `appHandler` 里从 panic 中 恢复，将错误作为“严重异常”记录进开发者控制台，而只简单的告诉用户“发生了一个严重的错误”。 这是避免向用户暴露由于编码错误引起的不可预料的错误的信息的一个不错的想法。参看 [[/blog/defer-panic-and-recover][Defer、Panic和Recover]] 文章了解更多细节。
+.html _tr/div_end.html
 
-#* Conclusion
+.html _tr/div_begin_en.html
+
+- give the error handler a pretty HTML template,
+- make debugging easier by writing the stack trace to the HTTP response when the user is an administrator,
+- write a constructor function for `appError` that stores the stack trace for easier debugging,
+- recover from panics inside the `appHandler`, logging the error to the console as "Critical," while telling the user "a serious error has occurred." This is a nice touch to avoid exposing the user to inscrutable error messages caused by programming errors. See the [[http://golang.org/doc/articles/defer_panic_recover.html][Defer, Panic, and Recover]] article for more details.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+- 为错误处理提供一个漂亮的 HTML 模板,
+- 当用户是管理员时, 将栈跟踪输出到 HTTP 的响应中, 以方便调试,
+- 编写一个 `appError` 的构造函数, 保存栈跟踪使得调试更容易,
+- 在 `appHandler` 里从 panic 中 恢复, 将错误作为“严重异常”记录进开发者控制台, 而只简单的告诉用户“发生了一个严重的错误”.  这是避免向用户暴露由于编码错误引起的不可预料的错误的信息的一个不错的想法. 参看 [[/blog/defer-panic-and-recover][Defer、Panic和Recover]] 文章了解更多细节.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
+* Conclusion
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
 
 * 总结
 
-#Proper error handling is an essential requirement of good software. By employing the techniques described in this post you should be able to write more reliable and succinct Go code.
+.html _tr/div_end.html
 
-适当的错误处理是好软件的基本需要。根据本文所讨论的技术，就可以编写出更加可靠和简介的 Go 代码。
+.html _tr/div_begin_en.html
+
+Proper error handling is an essential requirement of good software. By employing the techniques described in this post you should be able to write more reliable and succinct Go code.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+适当的错误处理是好软件的基本需要. 根据本文所讨论的技术, 就可以编写出更加可靠和简介的 Go 代码.
+
+.html _tr/div_end.html
+
