@@ -404,17 +404,21 @@
 //		log.Fatalf("execution failed: %s", err)
 //	}
 
-// template包实现了数据驱动的用于生成文本输出的模板。
+// template包实现了数据驱动的用于生成文本输出的模板.
 //
-// 如果要生成HTML格式的输出，参见html/template包，该包提供了和本包相同的接口，但会自动将输出转化为安全的HTML格式输出，可以抵抗一些网络攻击。
+// 如果要生成HTML格式的输出, 参见html/template包, 该包提供了和本包相同的接口,
+// 但会自动将输出转化为安全的HTML格式输出, 可以抵抗一些网络攻击.
 //
-// 通过将模板应用于一个数据结构（即该数据结构作为模板的参数）来执行，来获得输出。模板中的注释引用数据接口的元素（一般如结构体的字段或者字典的键）来控制执行过程和获取需要呈现的值。模板执行时会遍历结构并将指针表示为'.'（称之为"dot"）指向运行过程中数据结构的当前位置的值。
+// 通过将模板应用于一个数据结构(即该数据结构作为模板的参数)来执行, 来获得输出.
+// 模板中的注释引用数据接口的元素(一般如结构体的字段或者字典的键)来控制执行过程和获取需要呈现的值.
+// 模板执行时会遍历结构并将指针表示为 '.'(称之为"dot")指向运行过程中数据结构的当前位置的值.
 //
-// 用作模板的输入文本必须是utf-8编码的文本。"Action"—数据运算和控制单位—由"{{"和"}}"界定；在Action之外的所有文本都不做修改的拷贝到输出中。Action内部不能有换行，但注释可以有换行。
+// 用作模板的输入文本必须是 utf-8 编码的文本. "Action"—数据运算和控制单位—由 "{{" 和 "}}" 界定.
+// 在Action之外的所有文本都不做修改的拷贝到输出中. Action内部不能有换行, 但注释可以有换行.
 //
-// 经解析生成模板后，一个模板可以安全的并发执行。
+// 经解析生成模板后, 一个模板可以安全的并发执行.
 //
-// 下面是一个简单的例子，可以打印"17 of wool"。
+// 下面是一个简单的例子, 可以打印 "17 of wool".
 //
 //	type Inventory struct {
 //		Material string
@@ -426,46 +430,46 @@
 //	err = tmpl.Execute(os.Stdout, sweaters)
 //	if err != nil { panic(err) }
 //
-// 更复杂的例子在下面。
+// 更复杂的例子在下面.
 package template
 
 // HTMLEscape writes to w the escaped HTML equivalent of the plain text data b.
 
-// 函数向w中写入b的HTML转义等价表示。
+// HTMLEscape 函数向w中写入b的HTML转义等价表示.
 func HTMLEscape(w io.Writer, b []byte)
 
 // HTMLEscapeString returns the escaped HTML equivalent of the plain text data s.
 
-// 返回s的HTML转义等价表示字符串。
+// HTMLEscapeString 返回 s 的HTML转义等价表示字符串.
 func HTMLEscapeString(s string) string
 
 // HTMLEscaper returns the escaped HTML equivalent of the textual representation of
 // its arguments.
 
-// 函数返回其所有参数文本表示的HTML转义等价表示字符串。
+// HTMLEscaper 函数返回其所有参数文本表示的HTML转义等价表示字符串.
 func HTMLEscaper(args ...interface{}) string
 
 // JSEscape writes to w the escaped JavaScript equivalent of the plain text data b.
 
-// 函数向w中写入b的JavaScript转义等价表示。
+// JSEscape 函数向 w 中写入 b 的 JavaScript 转义等价表示.
 func JSEscape(w io.Writer, b []byte)
 
 // JSEscapeString returns the escaped JavaScript equivalent of the plain text data
 // s.
 
-// 返回s的JavaScript转义等价表示字符串。
+// JSEscapeString 返回s的JavaScript转义等价表示字符串.
 func JSEscapeString(s string) string
 
 // JSEscaper returns the escaped JavaScript equivalent of the textual
 // representation of its arguments.
 
-// 函数返回其所有参数文本表示的JavaScript转义等价表示字符串。
+// JSEscaper 函数返回其所有参数文本表示的JavaScript转义等价表示字符串.
 func JSEscaper(args ...interface{}) string
 
 // URLQueryEscaper returns the escaped value of the textual representation of its
 // arguments in a form suitable for embedding in a URL query.
 
-// 函数返回其所有参数文本表示的可以嵌入URL查询的转义等价表示字符串。
+// URLQueryEscaper 函数返回其所有参数文本表示的可以嵌入URL查询的转义等价表示字符串.
 func URLQueryEscaper(args ...interface{}) string
 
 // FuncMap is the type of the map defining the mapping from names to functions.
@@ -474,14 +478,16 @@ func URLQueryEscaper(args ...interface{}) string
 // value evaluates to non-nil during execution, execution terminates and Execute
 // returns that error.
 
-// FuncMap类型定义了函数名字符串到函数的映射，每个函数都必须有1到2个返回值，如果有2个则后一个必须是error接口类型；如果有2个返回值的方法返回的error非nil，模板执行会中断并返回给调用者该错误。
+// FuncMap 类型定义了函数名字符串到函数的映射, 每个函数都必须有1到2个返回值, 如果有2个则后一个必须是 error 接口类型.
+// 如果有2个返回值的方法返回的 error 非 nil, 模板执行会中断并返回给调用者该错误.
 type FuncMap map[string]interface{}
 
 // Template is the representation of a parsed template. The *parse.Tree field is
 // exported only for use by html/template and should be treated as unexported by
 // all other clients.
 
-// 代表一个解析好的模板，*parse.Tree字段仅仅是暴露给html/template包使用的，因此其他人应该视字段未导出。
+// Template 代表一个解析好的模板, *parse.Tree 字段仅仅是暴露给html/template包使用的,
+// 因此其他人应该视字段未导出.
 type Template struct {
 	*parse.Tree
 	// contains filtered or unexported fields
@@ -493,14 +499,15 @@ type Template struct {
 //
 //	var t = template.Must(template.New("name").Parse("text"))
 
-//函数帮助包装一个调用给方法的返回值(模板 ，错误)，如果错误不为空将打印输出。该函数用于变量，像这样初始化
+// Must 函数帮助包装一个调用给方法的返回值(模板, 错误), 如果错误不为空将打印输出.
+// 该函数用于变量, 像这样初始化
 //
-//var t = template.Must(template.New("name").Parse("text"))
+//	var t = template.Must(template.New("name").Parse("text"))
 func Must(t *Template, err error) *Template
 
 // New allocates a new template with the given name.
 
-// 函数给新模板一个名字
+// New 函数给新模板一个名字.
 func New(name string) *Template
 
 // ParseFiles creates a new Template and parses the template definitions from the
@@ -508,8 +515,9 @@ func New(name string) *Template
 // contents of the first file. There must be at least one file. If an error occurs,
 // parsing stops and the returned *Template is nil.
 
-//函数创建一个新模板，从命名的文件中解析模板的定义。返回模板的名字和模板的内容基于第一个文件，必须至少一个文件
-//如果发生错误，将会停止解析返回的模板也将使空的
+// ParseFiles 函数创建一个新模板, 从命名的文件中解析模板的定义.
+// 返回模板的名字和模板的内容基于第一个文件, 必须至少一个文件
+// 如果发生错误, 将会停止解析返回的模板也将使空的.
 func ParseFiles(filenames ...string) (*Template, error)
 
 // ParseGlob creates a new Template and parses the template definitions from the
@@ -518,14 +526,15 @@ func ParseFiles(filenames ...string) (*Template, error)
 // file matched by the pattern. ParseGlob is equivalent to calling ParseFiles with
 // the list of files matched by the pattern.
 
-//函数创建一个新的模板，从按模式识别的文件解析模板定义，必须至少包含一个文件。返回模板的名字和模板的内容基于按第一个
-//模式识别的文件。函数相当于使用 ParseFiles 调用按模式匹配的的文件列表。
+// ParseGlob 函数创建一个新的模板, 从按模式识别的文件解析模板定义, 必须至少包含一个文件.
+// 返回模板的名字和模板的内容基于按第一个模式识别的文件.
+// 函数相当于使用 ParseFiles 调用按模式匹配的的文件列表.
 func ParseGlob(pattern string) (*Template, error)
 
 // AddParseTree creates a new template with the name and parse tree and associates
 // it with t.
 
-//函数创建一个新的模板，通过名字和解析树和模板联系在一起
+// AddParseTree 函数创建一个新的模板, 通过名字和解析树和模板联系在一起.
 func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error)
 
 // Clone returns a duplicate of the template, including all associated templates.
@@ -535,9 +544,9 @@ func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error
 // use them with variant definitions for other templates by adding the variants
 // after the clone is made.
 
-//函数返回一个重复的模板，包含所有相关的模板。实际上不是复制,但命名空间和与模板相关联，所以
-//将来在副本调用解析时，添加的模板是到副本上而不是原始的模板。函数常用于准备共同的模板，克隆之后用于给
-//其他模板定义变量添加变量
+// Clone 函数返回一个重复的模板, 包含所有相关的模板. 实际上不是复制, 但命名空间和与模板相关联,
+// 所以将来在副本调用解析时, 添加的模板是到副本上而不是原始的模板.
+// 函数常用于准备共同的模板, 克隆之后用于给其他模板定义变量添加变量.
 func (t *Template) Clone() (*Template, error)
 
 // Delims sets the action delimiters to the specified strings, to be used in
@@ -545,8 +554,9 @@ func (t *Template) Clone() (*Template, error)
 // will inherit the settings. An empty delimiter stands for the corresponding
 // default: {{ or }}. The return value is the template, so calls can be chained.
 
-//函数将模板使用的分隔符设置为指定的字符串，在后来调用 Parse, ParseFiles, or ParseGlob 时使用
-//嵌套模板定义将会继承这些设置。默认 {{ or }}。返回值类型是模板，所以调用会被连接。
+// Delims 函数将模板使用的分隔符设置为指定的字符串, 在后来调用 Parse/ParseFiles/ParseGlob 时使用
+// 嵌套模板定义将会继承这些设置.
+// 默认 {{ or }}. 返回值类型是模板, 所以调用会被连接.
 func (t *Template) Delims(left, right string) *Template
 
 // Execute applies a parsed template to the specified data object, and writes the
@@ -554,8 +564,8 @@ func (t *Template) Delims(left, right string) *Template
 // execution stops, but partial results may already have been written to the output
 // writer. A template may be executed safely in parallel.
 
-//函数给模板解析指定的数据对象，如果只需模板或者输出包含错误，执行操作停止。但是部分输出结果
-//可能已经写到输出者那里了。一个模板可以安全的并发执行。
+// Execute 函数给模板解析指定的数据对象, 如果只需模板或者输出包含错误, 执行操作停止.
+// 但是部分输出结果可能已经写到输出者那里了. 一个模板可以安全的并发执行.
 func (t *Template) Execute(wr io.Writer, data interface{}) (err error)
 
 // ExecuteTemplate applies the template associated with t that has the given name
@@ -564,8 +574,10 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error)
 // results may already have been written to the output writer. A template may be
 // executed safely in parallel.
 
-//函数用 t 应用该模板，给指定的数据类命名，写出到 wr 。如果执行模板或者写出时发生错误，执行
-//操作将会停止。但是部分输出结果可能已经写出输出者那里了。一个模板可以安全的并发执行。
+// ExecuteTemplate 函数用 t 应用该模板, 给指定的数据类命名, 写出到 wr.
+// 如果执行模板或者写出时发生错误, 执行操作将会停止.
+// 但是部分输出结果可能已经写出输出者那里了.
+// 一个模板可以安全的并发执行.
 func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) error
 
 // Funcs adds the elements of the argument map to the template's function map. It
@@ -573,26 +585,28 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 // However, it is legal to overwrite elements of the map. The return value is the
 // template, so calls can be chained.
 
-//函数添加参数的map的元素到模板方法的map。如果map中的值不是一个带有适当返回值的方法将发生错误。
-//然而，覆盖map中的元素是合法的。返回值是模板，调用将被连接。
+// Funcs 函数添加参数的 map 的元素到模板方法的 map.
+// 如果 map 中的值不是一个带有适当返回值的方法将发生错误.
+// 然而, 覆盖map中的元素是合法的. 返回值是模板, 调用将被连接.
 func (t *Template) Funcs(funcMap FuncMap) *Template
 
 // Lookup returns the template with the given name that is associated with t, or
 // nil if there is no such template.
 
-//Lookup方法返回与t关联的名为name的模板，nil 说明没有这样的模板。
+// Lookup 方法返回与t关联的名为name的模板, nil 说明没有这样的模板.
 func (t *Template) Lookup(name string) *Template
 
 // Name returns the name of the template.
 
-//函数返回模板的名字
+// Name 函数返回模板的名字.
 func (t *Template) Name() string
 
 // New allocates a new template associated with the given one and with the same
 // delimiters. The association, which is transitive, allows one template to invoke
 // another with a {{template}} action.
 
-//函数使用给定一个相同的分隔符的方式分配一个新的模板。关联是传递的，允许一个模板通过 {{模板}} 调用另一个模板
+// New 函数使用给定一个相同的分隔符的方式分配一个新的模板.
+// 关联是传递的, 允许一个模板通过 {{模板}} 调用另一个模板.
 func (t *Template) New(name string) *Template
 
 // Parse parses a string into a template. Nested template definitions will be
@@ -603,18 +617,19 @@ func (t *Template) New(name string) *Template
 // multiple calls to Parse with the same receiver template, only one call can
 // contain text other than space, comments, and template definitions.)
 
-//Parse方法将字符串text解析为模板。嵌套定义的模板会关联到最顶层的t。
-//Parse可以多次调用，但只有第一次调用可以包含空格、注释和模板定义之外的文本。
-//如果后面的调用在解析后仍剩余文本会引发错误、返回nil且丢弃剩余文本；如果解析得到的模板已有相关联的同名模板，会覆盖掉原模板。
-
+// Parse 方法将字符串 text 解析为模板. 嵌套定义的模板会关联到最顶层的t.
+// Parse 可以多次调用, 但只有第一次调用可以包含空格/注释和模板定义之外的文本.
+// 如果后面的调用在解析后仍剩余文本会引发错误/返回nil且丢弃剩余文本.
+// 如果解析得到的模板已有相关联的同名模板，会覆盖掉原模板。
 func (t *Template) Parse(text string) (*Template, error)
 
 // ParseFiles parses the named files and associates the resulting templates with t.
 // If an error occurs, parsing stops and the returned template is nil; otherwise it
 // is t. There must be at least one file.
 
-//函数解析filenames指定的文件里的模板定义并将解析结果与t关联。如果产生错误，解析将会停止，返回的模板是nil。否则
-//返回模板t 。至少要提供一个文件。
+// ParseFiles 函数解析 filenames 指定的文件里的模板定义并将解析结果与t关联.
+// 如果产生错误, 解析将会停止, 返回的模板是nil.
+// 否则返回模板t. 至少要提供一个文件.
 func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 
 // ParseGlob parses the template definitions in the files identified by the pattern
@@ -622,11 +637,12 @@ func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 // filepath.Glob and must match at least one file. ParseGlob is equivalent to
 // calling t.ParseFiles with the list of files matched by the pattern.
 
-//函数解析匹配pattern的文件里的模板定义并将解析结果与t关联。至少要提供一个文件
+// ParseGlob 函数解析匹配 pattern 的文件里的模板定义并将解析结果与t关联.
+// 至少要提供一个文件.
 func (t *Template) ParseGlob(pattern string) (*Template, error)
 
 // Templates returns a slice of the templates associated with t, including t
 // itself.
 
-//函数返回与t相关联的模板的切片，包括模板t的本身
+// Templates 函数返回与t相关联的模板的切片, 包括模板t的本身.
 func (t *Template) Templates() []*Template
