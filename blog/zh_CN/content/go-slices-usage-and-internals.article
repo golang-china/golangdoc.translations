@@ -1,131 +1,490 @@
-Go Slices: usage and internals
+#Go Slices: usage and internals
+Go 切片: 用法和本质
 5 Jan 2011
 Tags: slice, technical
 
 Andrew Gerrand
 
+* 
+
+.html _tr/div_begin_en.html
+
 * Introduction
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 引言
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Go's slice type provides a convenient and efficient means of working with sequences of typed data. Slices are analogous to arrays in other languages, but have some unusual properties. This article will look at what slices are and how they are used.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go的切片类型为处理同类型数据序列提供一个方便而高效的方式.
+切片有些类似于其他语言中的数组, 但是有一些不同寻常的特性.
+本文将深入切片的本质, 并讲解它的用法.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 * Arrays
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 数组
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 The slice type is an abstraction built on top of Go's array type, and so to understand slices we must first understand arrays.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go的切片是在数组之上的抽象数据类型, 因此在了解切片之前必须要先理解数组.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 An array type definition specifies a length and an element type. For example, the type `[4]int` represents an array of four integers. An array's size is fixed; its length is part of its type (`[4]int` and `[5]int` are distinct, incompatible types). Arrays can be indexed in the usual way, so the expression `s[n]` accesses the nth element, starting from zero.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+数组类型定义了长度和元素类型. 例如, `[4]int` 类型表示一个四个整数的数组.
+数组的长度是固定的, 长度是数组类型的一部分(`[4]int` 和 `[5]int` 是完全不同的类型).
+数组可以以常规的索引方式访问, 表达式 `s[n]` 访问数组的第 n 个元素.
+
+.html _tr/div_end.html
 
 	var a [4]int
 	a[0] = 1
 	i := a[0]
 	// i == 1
 
+.html _tr/div_begin_en.html
+
 Arrays do not need to be initialized explicitly; the zero value of an array is a ready-to-use array whose elements are themselves zeroed:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+数组不需要显式的初始化；数组的零值是可以直接使用的, 数组元素会自动初始化为其对应类型的零值:
+
+.html _tr/div_end.html
 
 	// a[2] == 0, the zero value of the int type
 
+.html _tr/div_begin_en.html
+
 The in-memory representation of `[4]int` is just four integer values laid out sequentially:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+类型 `[4]int` 对应内存中四个连续的整数:
+
+.html _tr/div_end.html
 
 .image go-slices-usage-and-internals_slice-array.png
 
+.html _tr/div_begin_en.html
+
 Go's arrays are values. An array variable denotes the entire array; it is not a pointer to the first array element (as would be the case in C).  This means that when you assign or pass around an array value you will make a copy of its contents. (To avoid the copy you could pass a _pointer_ to the array, but then that's a pointer to an array, not an array.) One way to think about arrays is as a sort of struct but with indexed rather than named fields: a fixed-size composite value.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go的数组是值语义. 一个数组变量表示整个数组, 它不是指向第一个元素的指针(不像 C 语言的数组).
+当一个数组变量被赋值或者被传递的时候, 实际上会复制整个数组.
+(为了避免复制数组, 你可以传递一个指向数组的指针, 但是数组指针并不是数组.)
+可以将数组看作一个特殊的struct, 结构的字段名对应数组的索引, 同时成员的数目固定.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 An array literal can be specified like so:
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+数组的字面值像这样:
+
+.html _tr/div_end.html
+
 	b := [2]string{"Penn", "Teller"}
+
+.html _tr/div_begin_en.html
 
 Or, you can have the compiler count the array elements for you:
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+当然, 也可以让编译器统计数组字面值中元素的数目:
+
+.html _tr/div_end.html
+
 	b := [...]string{"Penn", "Teller"}
+
+.html _tr/div_begin_en.html
 
 In both cases, the type of `b` is `[2]string`.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+这两种写法,  `b` 都是对应 `[2]string` 类型.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 * Slices
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 切片
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Arrays have their place, but they're a bit inflexible, so you don't see them too often in Go code. Slices, though, are everywhere. They build on arrays to provide great power and convenience.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+数组虽然有适用它们的地方, 但是数组不够灵活, 因此在Go代码中数组使用的并不多.
+但是, 切片则使用得相当广泛. 切片基于数组构建, 但是提供更强的功能和便利.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The type specification for a slice is `[]T`, where `T` is the type of the elements of the slice. Unlike an array type, a slice type has no specified length.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片类型的写法是 `[]T` , `T` 是切片元素的类型. 和数组不同的是, 切片类型并没有给定固定的长度.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 A slice literal is declared just like an array literal, except you leave out the element count:
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片的字面值和数组字面值很像, 不过切片没有指定元素个数:
+
+.html _tr/div_end.html
+
 	letters := []string{"a", "b", "c", "d"}
+
+.html _tr/div_begin_en.html
 
 A slice can be created with the built-in function called `make`, which has the signature,
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片可以使用内置函数 `make` 创建, 函数签名为:
+
+.html _tr/div_end.html
+
 	func make([]T, len, cap) []T
 
+.html _tr/div_begin_en.html
+
 where T stands for the element type of the slice to be created. The `make` function takes a type, a length, and an optional capacity. When called, `make` allocates an array and returns a slice that refers to that array.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+其中T代表被创建的切片元素的类型. 函数 `make` 接受一个类型、一个长度和一个可选的容量参数.
+调用 `make` 时, 内部会分配一个数组, 然后返回数组对应的切片.
+
+.html _tr/div_end.html
 
 	var s []byte
 	s = make([]byte, 5, 5)
 	// s == []byte{0, 0, 0, 0, 0}
 
+.html _tr/div_begin_en.html
+
 When the capacity argument is omitted, it defaults to the specified length. Here's a more succinct version of the same code:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+当容量参数被忽略时, 它默认为指定的长度. 下面是简洁的写法:
+
+.html _tr/div_end.html
 
 	s := make([]byte, 5)
 
+.html _tr/div_begin_en.html
+
 The length and capacity of a slice can be inspected using the built-in `len` and `cap` functions.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+可以使用内置函数 `len` 和 `cap` 获取切片的长度和容量信息.
+
+.html _tr/div_end.html
 
 	len(s) == 5
 	cap(s) == 5
 
+.html _tr/div_begin_en.html
+
 The next two sections discuss the relationship between length and capacity.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+接下来的两个小节将讨论长度和容量之间的关系.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 The zero value of a slice is `nil`. The `len` and `cap` functions will both return 0 for a nil slice.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片的零值为 `nil` . 对于切片的零值,  `len` 和 `cap` 都将返回0.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 A slice can also be formed by "slicing" an existing slice or array. Slicing is done by specifying a half-open range with two indices separated by a colon. For example, the expression `b[1:4]` creates a slice including elements 1 through 3 of `b` (the indices of the resulting slice will be 0 through 2).
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片也可以基于现有的切片或数组生成. 切分的范围由两个由冒号分割的索引对应的半开区间指定.
+例如, 表达式 `b[1:4]` 创建的切片引用数组 `b` 的第1到3个元素空间(对应切片的索引为0到2).
+
+.html _tr/div_end.html
 
 	b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
 	// b[1:4] == []byte{'o', 'l', 'a'}, sharing the same storage as b
 
+.html _tr/div_begin_en.html
+
 The start and end indices of a slice expression are optional; they default to zero and the slice's length respectively:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片的开始和结束的索引都是可选的；它们分别默认为零和数组的长度.
+
+.html _tr/div_end.html
 
 	// b[:2] == []byte{'g', 'o'}
 	// b[2:] == []byte{'l', 'a', 'n', 'g'}
 	// b[:] == b
 
+.html _tr/div_begin_en.html
+
 This is also the syntax to create a slice given an array:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+下面语法也是基于数组创建一个切片:
+
+.html _tr/div_end.html
 
 	x := [3]string{"Лайка", "Белка", "Стрелка"}
 	s := x[:] // a slice referencing the storage of x
 
+.html _tr/div_begin_en.html
+
 * Slice internals
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 切片的内幕
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 A slice is a descriptor of an array segment. It consists of a pointer to the array, the length of the segment, and its capacity (the maximum length of the segment).
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+一个切片是一个数组片段的描述. 它包含了指向数组的指针, 片段的长度,
+和容量(片段的最大长度).
+
+.html _tr/div_end.html
+
 .image go-slices-usage-and-internals_slice-struct.png
+
+.html _tr/div_begin_en.html
 
 Our variable `s`, created earlier by `make([]byte,`5)`, is structured like this:
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+前面使用 `make([]byte,`5)` 创建的切片变量 `s` 的结构如下:
+
+.html _tr/div_end.html
+
 .image go-slices-usage-and-internals_slice-1.png
+
+.html _tr/div_begin_en.html
 
 The length is the number of elements referred to by the slice. The capacity is the number of elements in the underlying array (beginning at the element referred to by the slice pointer). The distinction between length and capacity will be made clear as we walk through the next few examples.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+长度是切片引用的元素数目. 容量是底层数组的元素数目(从切片指针开始).
+关于长度和容量和区域将在下一个例子说明.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 As we slice `s`, observe the changes in the slice data structure and their relation to the underlying array:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+我们继续对 `s` 进行切片, 观察切片的数据结构和它引用的底层数组:
+
+.html _tr/div_end.html
 
 	s = s[2:4]
 
 .image go-slices-usage-and-internals_slice-2.png
 
+.html _tr/div_begin_en.html
+
 Slicing does not copy the slice's data. It creates a new slice value that points to the original array. This makes slice operations as efficient as manipulating array indices. Therefore, modifying the _elements_ (not the slice itself) of a re-slice modifies the elements of the original slice:
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片操作并不复制切片指向的元素. 它创建一个新的切片并复用原来切片的底层数组.
+这使得切片操作和数组索引一样高效. 因此, 通过一个新切片修改元素会影响到原始切片的对应元素.
+
+.html _tr/div_end.html
+
 	d := []byte{'r', 'o', 'a', 'd'}
-	e := d[2:] 
+	e := d[2:]
 	// e == []byte{'a', 'd'}
 	e[1] = 'm'
 	// e == []byte{'a', 'm'}
 	// d == []byte{'r', 'o', 'a', 'm'}
 
+.html _tr/div_begin_en.html
+
 Earlier we sliced `s` to a length shorter than its capacity. We can grow s to its capacity by slicing it again:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+前面创建的切片 `s` 长度小于它的容量. 我们可以增长切片的长度为它的容量:
+
+.html _tr/div_end.html
 
 	s = s[:cap(s)]
 
 .image go-slices-usage-and-internals_slice-3.png
 
+.html _tr/div_begin_en.html
+
 A slice cannot be grown beyond its capacity. Attempting to do so will cause a runtime panic, just as when indexing outside the bounds of a slice or array. Similarly, slices cannot be re-sliced below zero to access earlier elements in the array.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+切片增长不能超出其容量. 增长超出切片容量将会导致运行时异常, 就像切片或数组的索引超
+出范围引起异常一样. 同样, 不能使用小于零的索引去访问切片之前的元素.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 * Growing slices (the copy and append functions)
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 切片的生长(copy and append 函数)
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 To increase the capacity of a slice one must create a new, larger slice and copy the contents of the original slice into it. This technique is how dynamic array implementations from other languages work behind the scenes. The next example doubles the capacity of `s` by making a new slice, `t`, copying the contents of `s` into `t`, and then assigning the slice value `t` to `s`:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+要增加切片的容量必须创建一个新的、更大容量的切片, 然后将原有切片的内容复制到新的切片.
+整个技术是一些支持动态数组语言的常见实现. 下面的例子将切片 `s` 容量翻倍, 先创建一个2倍
+容量的新切片 `t` , 复制 `s` 的元素到 `t` , 然后将 `t` 赋值给 `s` :
+
+.html _tr/div_end.html
 
 	t := make([]byte, len(s), (cap(s)+1)*2) // +1 in case cap(s) == 0
 	for i := range s {
@@ -133,19 +492,62 @@ To increase the capacity of a slice one must create a new, larger slice and copy
 	}
 	s = t
 
+.html _tr/div_begin_en.html
+
 The looping piece of this common operation is made easier by the built-in copy function. As the name suggests, copy copies data from a source slice to a destination slice. It returns the number of elements copied.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+循环中复制的操作可以由 copy 内置函数替代. copy 函数将源切片的元素复制到目的切片.
+它返回复制元素的数目.
+
+.html _tr/div_end.html
 
 	func copy(dst, src []T) int
 
+.html _tr/div_begin_en.html
+
 The `copy` function supports copying between slices of different lengths (it will copy only up to the smaller number of elements). In addition, `copy` can handle source and destination slices that share the same underlying array, handling overlapping slices correctly.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`copy` 函数支持不同长度的切片之间的复制(它只复制较短切片的长度个元素).
+此外,  `copy` 函数可以正确处理源和目的切片有重叠的情况.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 Using `copy`, we can simplify the code snippet above:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+使用 `copy` 函数, 我们可以简化上面的代码片段:
+
+.html _tr/div_end.html
 
 	t := make([]byte, len(s), (cap(s)+1)*2)
 	copy(t, s)
 	s = t
 
+.html _tr/div_begin_en.html
+
 A common operation is to append data to the end of a slice. This function appends byte elements to a slice of bytes, growing the slice if necessary, and returns the updated slice value:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+一个常见的操作是将数据追加到切片的尾部. 下面的函数将元素追加到切片尾部,
+必要的话会增加切片的容量, 最后返回更新的切片:
+
+.html _tr/div_end.html
 
 	func AppendByte(slice []byte, data ...byte) []byte {
 	    m := len(slice)
@@ -161,33 +563,98 @@ A common operation is to append data to the end of a slice. This function append
 	    return slice
 	}
 
+.html _tr/div_begin_en.html
+
 One could use `AppendByte` like this:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+下面是 `AppendByte` 的一种用法:
+
+.html _tr/div_end.html
 
 	p := []byte{2, 3, 5}
 	p = AppendByte(p, 7, 11, 13)
 	// p == []byte{2, 3, 5, 7, 11, 13}
 
+.html _tr/div_begin_en.html
+
 Functions like `AppendByte` are useful because they offer complete control over the way the slice is grown. Depending on the characteristics of the program, it may be desirable to allocate in smaller or larger chunks, or to put a ceiling on the size of a reallocation.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+类似 `AppendByte` 的函数比较实用, 因为它提供了切片容量增长的完全控制.
+根据程序的特点, 可能希望分配较小的活较大的块, 或则是超过某个大小再分配.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 But most programs don't need complete control, so Go provides a built-in `append` function that's good for most purposes; it has the signature
 
-	func append(s []T, x ...T) []T 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+但大多数程序不需要完全的控制, 因此Go提供了一个内置函数 `append`,
+用于大多数场合. 它的函数签名:
+
+.html _tr/div_end.html
+
+	func append(s []T, x ...T) []T
+
+.html _tr/div_begin_en.html
 
 The `append` function appends the elements `x` to the end of the slice `s`, and grows the slice if a greater capacity is needed.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`append` 函数将 `x` 追加到切片 `s` 的末尾, 并且在必要的时候增加容量.
+
+.html _tr/div_end.html
 
 	a := make([]int, 1)
 	// a == []int{0}
 	a = append(a, 1, 2, 3)
 	// a == []int{0, 1, 2, 3}
 
+.html _tr/div_begin_en.html
+
 To append one slice to another, use `...` to expand the second argument to a list of arguments.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+如果是要将一个切片追加到另一个切片尾部, 需要使用 `...` 语法将第2个参数展开为参数列表.
+
+.html _tr/div_end.html
+
+.html _tr/div_end.html
 
 	a := []string{"John", "Paul"}
 	b := []string{"George", "Ringo", "Pete"}
 	a = append(a, b...) // equivalent to "append(a, b[0], b[1], b[2])"
 	// a == []string{"John", "Paul", "George", "Ringo", "Pete"}
 
+.html _tr/div_begin_en.html
+
 Since the zero value of a slice (`nil`) acts like a zero-length slice, you can declare a slice variable and then append to it in a loop:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+由于切片的零值 `nil` 用起来就像一个长度为零的切片, 我们可以声明一个切片变量然后在循环
+中向它追加数据:
+
+.html _tr/div_end.html
 
 	// Filter returns a new slice holding only
 	// the elements of s that satisfy f()
@@ -201,11 +668,42 @@ Since the zero value of a slice (`nil`) acts like a zero-length slice, you can d
 	    return p
 	}
 
+.html _tr/div_begin_en.html
+
 * A possible "gotcha"
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 可能的"陷阱"
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 As mentioned earlier, re-slicing a slice doesn't make a copy of the underlying array. The full array will be kept in memory until it is no longer referenced. Occasionally this can cause the program to hold all the data in memory when only a small piece of it is needed.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+正如前面所说, 切片操作并不会复制底层的数组. 整个数组将被保存在内存中, 直到它不再被引用.
+有时候可能会因为一个小的内存引用导致保存所有的数据.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 For example, this `FindDigits` function loads a file into memory and searches it for the first group of consecutive numeric digits, returning them as a new slice.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+例如,  `FindDigits` 函数加载整个文件到内存, 然后搜索第一个连续的数字, 最后结果以切片方式返回.
+
+.html _tr/div_end.html
 
 	var digitRegexp = regexp.MustCompile("[0-9]+")
 
@@ -214,9 +712,30 @@ For example, this `FindDigits` function loads a file into memory and searches it
 	    return digitRegexp.Find(b)
 	}
 
+.html _tr/div_begin_en.html
+
 This code behaves as advertised, but the returned `[]byte` points into an array containing the entire file. Since the slice references the original array, as long as the slice is kept around the garbage collector can't release the array; the few useful bytes of the file keep the entire contents in memory.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+这段代码的行为和描述类似, 返回的 `[]byte` 指向保存整个文件的数组. 因为切片引用了原始的数组,
+导致 GC 不能释放数组的空间；只用到少数几个字节却导致整个文件的内容都一直保存在内存里.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 To fix this problem one can copy the interesting data to a new slice before returning it:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+要修复整个问题, 可以将感兴趣的数据复制到一个新的切片中:
+
+.html _tr/div_end.html
 
 	func CopyDigits(filename string) []byte {
 	    b, _ := ioutil.ReadFile(filename)
@@ -226,8 +745,47 @@ To fix this problem one can copy the interesting data to a new slice before retu
 	    return c
 	}
 
+.html _tr/div_begin_en.html
+
 A more concise version of this function could be constructed by using `append`. This is left as an exercise for the reader.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+可以使用 `append` 实现一个更简洁的版本. 这留给读者作为练习.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 * Further Reading
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 延伸阅读
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 [[http://golang.org/doc/effective_go.html][Effective Go]] contains an in-depth treatment of [[http://golang.org/doc/effective_go.html#slices][slices]] and [[http://golang.org/doc/effective_go.html#arrays][arrays]], and the Go [[http://golang.org/doc/go_spec.html][language specification]] defines [[http://golang.org/doc/go_spec.html#Slice_types][slices]] and their [[http://golang.org/doc/go_spec.html#Length_and_capacity][associated]] [[http://golang.org/doc/go_spec.html#Making_slices_maps_and_channels][helper]] [[http://golang.org/doc/go_spec.html#Appending_and_copying_slices][functions]].
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+[[/doc/effective_go.html][实效 Go 编程]] 包含了对
+[[/doc/effective_go.html#切片][切片]]和
+[[/doc/effective_go.html#数组][数组]]更深入的探讨；
+[[/ref/spec][Go 编程语言规范]]对
+[[/ref/spec#Slice_types][切片类型]]和
+[[/ref/spec#Array_types][数组类型]]
+以及操作他们的内建函数([[/ref/spec#Length_and_capacity][len/cap]],
+[[/ref/spec#Making_slices_maps_and_channels][make]]和
+[[/ref/spec#Appending_and_copying_slices][copy/append]])
+进行了定义.
+
+.html _tr/div_end.html
