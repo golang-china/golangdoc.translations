@@ -4,11 +4,43 @@ Tags: cgo, technical
 
 Andrew Gerrand
 
+* 
+
+.html _tr/div_begin_en.html
+
 * Introduction
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 引言
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Cgo lets Go packages call C code. Given a Go source file written with some special features, cgo outputs Go and C files that can be combined into a single Go package.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Cgo允许在Go包中调用C代码. 如果Go代码含有特殊的cgo语法, 可以通过cgo生成相应的Go和C文件, 它们可以被编译到一个Go包中.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 To lead with an example, here's a Go package that provides two functions - `Random` and `Seed` - that wrap C's `random` and `srandom` functions.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+以一个例子开始, 下面的Go包提供了 `Random` 和 `Seed` 两个函数, 它们是基于C语言的 `random` 和 `srandom` 函数的实现.
+
+.html _tr/div_end.html
 
 	package rand
 
@@ -25,53 +57,203 @@ To lead with an example, here's a Go package that provides two functions - `Rand
 	    C.srandom(C.uint(i))
 	}
 
+.html _tr/div_begin_en.html
+
 Let's look at what's happening here, starting with the import statement.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+我们从 `import` 语句开始, 讲解相关的代码.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 The `rand` package imports `"C"`, but you'll find there's no such package in the standard Go library. That's because `C` is a "pseudo-package", a special name interpreted by cgo as a reference to C's name space.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`rand` 包导入了一个 `"C"` 包, 但是这个包并不是由Go标准库提供. 因为 C 包是Cgo工具生成的一个虚拟包, 它映射到C语言的名字空间.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The `rand` package contains four references to the `C` package: the calls to `C.random` and `C.srandom`, the conversion `C.uint(i)`, and the `import` statement.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`rand` 包中有几个地方使用了 C 包： `C.random`、`C.srandom`、`C.uint(i)` 和 `import` 语句.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The `Random` function calls the standard C library's `random` function and returns the result.  In C, `random` returns a value of the C type `long`, which cgo represents as the type `C.long`. It must be converted to a Go type before it can be used by Go code outside this package, using an ordinary Go type conversion:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`Random` 函数调用C语言标准库中的 `random` 函数, 然后返回结果.  在C语言中, `random` 返回的结果为 `long` 类型, 对应cgo生成的 `C.long`. 在函数返回前我们必须将C类型转换为Go类型.
+
+.html _tr/div_end.html
 
 	func Random() int {
 	    return int(C.random())
 	}
 
+.html _tr/div_begin_en.html
+
 Here's an equivalent function that uses a temporary variable to illustrate the type conversion more explicitly:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+下面是一个等价的实现, 为了更好说明类型转换的使用, 这里使用了一个临时变量.
+
+.html _tr/div_end.html
 
 	func Random() int {
 	    var r C.long = C.random()
 	    return int(r)
 	}
 
+.html _tr/div_begin_en.html
+
 The `Seed` function does the reverse, in a way. It takes a regular Go `int`, converts it to the C `unsigned`int` type, and passes it to the C function `srandom`.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Seed 函数进行相反的类型转换. 它将传入的Go的 `int` 类型变量转换为C语言的 `unsigned int`, 然后传入C语言的 `srandom` 函数.
+
+.html _tr/div_end.html
 
 	func Seed(i int) {
 	    C.srandom(C.uint(i))
 	}
 
+.html _tr/div_begin_en.html
+
 Note that cgo knows the `unsigned`int` type as `C.uint`; see the [[http://golang.org/cmd/cgo][cgo documentation]] for a complete list of these numeric type names.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Cgo能够知道 `unsigned int` 对应 `C.uint` 类型. 关于数值类型的详细说明可以参考 [[/cmd/cgo][cgo文档]].
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The one detail of this example we haven't examined yet is the comment above the `import` statement.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+到此为止, 只有 `import` 语句的注释还没有解释.
+
+.html _tr/div_end.html
 
 	/*
 	#include <stdlib.h>
 	*/
 	import "C"
 
+.html _tr/div_begin_en.html
+
 Cgo recognizes this comment.  Any lines starting with `#cgo` followed by a space character are removed; these become directives for cgo. The remaining lines are used as a header when compiling the C parts of the package.  In this case those lines are just a single `#include` statement, but they can be almost any C code.  The `#cgo` directives are used to provide flags for the compiler and linker when building the C parts of the package.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Cgo可以识别这个注释. 注释中, 任意以 `#cgo` 开头的行会被忽略, 它们是cgo的扩展命令.  剩余的行在编译包的C代码时时, 将被当作头文件处理. 在这个例子中, 虽然只有一个 `#include` 语句, 但是可以包含任意的C语言代码. 在构建包中C代码时, `#cgo` 规则可以指定用于编译和连接的选项.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 There is a limitation: if your program uses any `//export` directives, then the C code in the comment may only include declarations (`extern`int`f();`), not definitions (`int`f()`{`return`1;`}`).  You can use `//export` directives to make Go functions accessible to C code.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+有一点要注意：如果使用了 `//export` 规则, 那么注释中的C代码将只能包含对应函数的声明(`extern int f();`),  而不能是对应函数的定义(`int f() { return 1; }`). 使用 `//export` 规则, 可以使Go函数被C语言函数调用.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The `#cgo` and `//export` directives are documented in the [[http://golang.org/cmd/cgo/][cgo documentation]].
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+关于 `#cgo` 和 `//export` 的用法在 [[/cmd/cgo/][cgo文档]] 中有详细说明.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 * Strings and things
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 字符串相关
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 Unlike Go, C doesn't have an explicit string type. Strings in C are represented by a zero-terminated array of chars.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+和Go语言不同, C语言没有明确的字符串类型. 在C语言中, 字符串表现为以 `NULL` 结尾的 `char`数组.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Conversion between Go and C strings is done with the `C.CString`, `C.GoString`, and `C.GoStringN` functions. These conversions make a copy of the string data.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go语言和C语言字符串之间的转换由以下函数完成：`C.CString`、`C.GoString` 和 `C.GoStringN`. 这些函数函数在转换时均构造了一个字符串的副本.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 This next example implements a `Print` function that writes a string to standard output using C's `fputs` function from the `stdio` library:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+这里是 Print 函数的另一个实现, 它通过C语言的 `stdio` 标准库函数 `fputs` 将字符串写到标准输出：
+
+.html _tr/div_end.html
 
 	package print
 
@@ -86,9 +268,30 @@ This next example implements a `Print` function that writes a string to standard
 	    C.free(unsafe.Pointer(cs))
 	}
 
+.html _tr/div_begin_en.html
+
 Memory allocations made by C code are not known to Go's memory manager. When you create a C string with `C.CString` (or any C memory allocation) you must remember to free the memory when you're done with it by calling `C.free`.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go语言的GC并不能管理C语言函数分配的内存. 当使用 `C.CString`(使用C函数分配了内存)返回C字符串时, 必须要记得在完成后用 `C.free` 释放对应的内存.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The call to `C.CString` returns a pointer to the start of the char array, so before the function exits we convert it to an [[http://golang.org/pkg/unsafe/#Pointer][`unsafe.Pointer`]] and release the memory allocation with `C.free`. A common idiom in cgo programs is to [[http://golang.org/doc/articles/defer_panic_recover.html][`defer`]] the free immediately after allocating (especially when the code that follows is more complex than a single function call), as in this rewrite of `Print`:
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+`C.CString` 返回C语言字符串起始地址, 因此在函数返回时将它转换为 [[http://golang.org/pkg/unsafe/#Pointer][`unsafe.Pointer`]] 类型,
+然后用 `C.free` 释放对应内存空间. cgo 中的一个常用习惯是在创建新内存后使用 `defer` 释放对应的内存 (特别是在后面代码很复杂时), 下面是重写的 `Print` 函数：
+
+.html _tr/div_end.html
 
 	func Print(s string) {
 	    cs := C.CString(s)
@@ -96,14 +299,75 @@ The call to `C.CString` returns a pointer to the start of the char array, so bef
 	    C.fputs(cs, (*C.FILE)(C.stdout))
 	}
 
+.html _tr/div_begin_en.html
+
 * Building cgo packages
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 构建cgo包
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 To build cgo packages, just use [[http://golang.org/cmd/go/#Compile_packages_and_dependencies][`go`build`]] or [[http://golang.org/cmd/go/#Compile_and_install_packages_and_dependencies][`go`install`]] as usual. The go tool recognizes the special `"C"` import and automatically uses cgo for those files.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+要构建cgo包, 只要直接简单执行 [[/cmd/go/#Compile_packages_and_dependencies][`go`build`]] 或 [[/cmd/go/#Compile_and_install_packages_and_dependencies][`go`install`]] 命令.  go命令可以识别 `"C"` 虚拟包的语法, 并且可以自动调用cgo生成相应的中间代码文件.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 * More cgo resources
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+* 更多的Cgo资源
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 The [[http://golang.org/cmd/cgo/][cgo command]] documentation has more detail about the C pseudo-package and the build process. The [[http://golang.org/misc/cgo/][cgo examples]] in the Go tree demonstrate more advanced concepts.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+在 [[/cmd/cgo/][cgo命令]]  文档中有C包的更多的细节说明和构建的详细流程.  在Go目录树中的 [[/misc/cgo/][cgo 例子]] 演示了更全面的用法.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 For a simple, idiomatic example of a cgo-based package, see Russ Cox's [[http://code.google.com/p/gosqlite/source/browse/sqlite/sqlite.go][gosqlite]]. Also, the Go Project Dashboard lists [[https://godashboard.appspot.com/project?tag=cgo][several other cgo packages]].
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+如果是简单的Cgo例子, 可以参考 [[http://research.swtch.com/][Russ Cox]] 的 [[http://code.google.com/p/gosqlite/source/browse/sqlite/sqlite.go][gosqlite]] 项目.  在 [[https://godashboard.appspot.com/project?tag=cgo][several other cgo packages]] 列表中有很多基于cgo的项目.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 Finally, if you're curious as to how all this works internally, take a look at the introductory comment of the runtime package's [[http://golang.org/src/pkg/runtime/cgocall.c][cgocall.c]].
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+最后, 如果想了解Cgo的工作原理, 可以查看runtime包中的 [[/src/pkg/runtime/cgocall.c][cgocall.c]] 代码.
+
+.html _tr/div_end.html
+
