@@ -4,20 +4,106 @@ Tags: release
 
 Ian Lance Taylor
 
+* 
+
+.html _tr/div_begin_en.html
+
 * Introduction
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 The Go language has always been defined by a [[http://golang.org/ref/spec][spec]], not an implementation.  The Go team has written two different compilers that implement that spec: gc and gccgo.  Having two different implementations helps ensure that the spec is complete and correct: when the compilers disagree, we fix the spec, and change one or both compilers accordingly.  Gc is the original compiler, and the go tool uses it by default.  Gccgo is a different implementation with a different focus, and in this post we’ll take a closer look at it.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Go语言开始就由一个 [[http://golang.org/ref/spec][语言规范]] 定义, 并不是倚赖某个具体实现. Go开发小组针对语言规范, 实现了两个不同版本的编译器: gc和gccgo.  有两个不同的实现有助于保持语言规范的完整和完整: 当两个实现相互冲突时, 我们修改语言规范, 或者是修改实现以保持和规范一致.  Gc是默认的编译器, 专门针对go编写. Gccgo是另一个不同实现(有不同的侧重目标), 下面我们将详细介绍.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 Gccgo is distributed as part of GCC, the GNU Compiler Collection.  GCC supports several different frontends for different languages; gccgo is a Go frontend connected to the GCC backend.  The Go frontend is separate from the GCC project and is designed to be able to connect to other compiler backends, but currently only supports GCC.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Gccgo是作为gcc的一个部分发布, 属于gcc编译器集合. GCC前端可以支持多种不同的编程语言: gccgo是针对go语言的前端实现. Go前端同时保持和GCC相对独立, 它的设计目标之一是可以连接的到不同的编译器后端, 当然目前只支持GCC.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Compared to gc, gccgo is slower to compile code but supports more powerful optimizations, so a CPU-bound program built by gccgo will usually run faster.  All the optimizations implemented in GCC over the years are available, including inlining, loop optimizations, vectorization, instruction scheduling, and more.  While it does not always produce better code, in some cases programs compiled with gccgo can run 30% faster.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+gccgo的编译速度比gc较慢一点, 但是可以生成更优的代码, 因此程序执行速度会更快. GCC的优化技术经过多年完善, 涵盖 循环优化、指令等各个方面. 虽然gccgo不一定总是产生最好的代码, 但是在某些情况下它编译的程序运行效率可以提高达30%.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The gc compiler supports only the most popular processors: x86 (32-bit and 64-bit) and ARM.  Gccgo, however, supports all the processors that GCC supports.  Not all those processors have been thoroughly tested for gccgo, but many have, including x86 (32-bit and 64-bit), SPARC, MIPS, PowerPC and even Alpha.  Gccgo has also been tested on operating systems that the gc compiler does not support, notably Solaris.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+GC编译器只支持主流的处理器: X86(32/64位)和ARM. Gccgo可以支持GCC所支持的绝大部分类型处理器. 目前gccgo已经测试的处理器类型包括: X86(32/64)、SPARC、MIPS、PowerPC和Alpha等. Gccgo也测试了GC编译器所不支持的操作系统, 特别是Solaris系统.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 Gccgo provides the standard, complete Go library.  Many of the core features of the Go runtime are the same in both gccgo and gc, including the goroutine scheduler, channels, the memory allocator, and the garbage collector.  Gccgo supports splitting goroutine stacks as the gc compiler does, but currently only on x86 (32-bit or 64-bit) and only when using the gold linker (on other processors, each goroutine will have a large stack, and a deep series of function calls may run past the end of the stack and crash the program).
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+Gccgo同时提供了标准且完备的go语言标准库. gccgo和gc的关于Go运行时的一些特性也尽量保持一致, 比如: goroutine的调度、channels、内存分配和垃圾回收等. Gccgo在X86已经支持goroutine的动态堆栈, 需要使用gold连接器(在其他处理器, 每个goroutine还是会分配一个大的栈, 如果出现深度的函数嵌套调用会导致堆栈溢出).
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 Gccgo distributions do not yet include a version of the go command.  However, if you install the go command from a standard Go release, it already supports gccgo via the `-compiler` option: go build `-compiler`gccgo`myprog`.  The tools used for calls between Go and C/C++, cgo and SWIG, also support gccgo.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+目前发布的Gccgo还不包含go命令.  但是通过Go正式版本安装的go命令已经可以支持gccgo, 需要使用 -compiler选项: go build -compiler gccgo myprog . 用于连接Go和C/C++的cgo和SWIG工具同样支持gccgo.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
 
 We have put the Go frontend under the same BSD license as the rest of the Go tools.  You can download the source code for the frontend at the [[http://code.google.com/p/gofrontend][gofrontend Google Code project]]. Note that when the Go frontend is linked with the GCC backend to make gccgo, GCC’s GPL license takes precedence.
 
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+我们已经将针对GCC的Go前端采用和Go相同的BSD许可证发布. 可以从 [[http://code.google.com/p/gofrontend][gofrontend Google Code project]] 下载代码. 需要注意的是Go前端和GCC后端连接时, 采用GPL许可证(译注:  应该是BSD被GPL传染的原因).
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_en.html
+
 The latest release of GCC, 4.7.1, includes gccgo with support for Go 1.  If you need better performance for CPU-bound Go programs, or you need to support processors or operating systems that the gc compiler does not support, gccgo might be the answer.
+
+.html _tr/div_end.html
+
+.html _tr/div_begin_zh_CN.html
+
+最新的GCC 4.7.1, 包含的gccgo完美支持Go1. 对于用户, 如果需要更好编译优化, 或者是使用GC所不支持的处理器或操作系统, gccgo可能是一个更好的选择.
+
+.html _tr/div_end.html
