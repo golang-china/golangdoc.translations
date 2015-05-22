@@ -9,6 +9,7 @@ chai2010       <chaishushan@gmail.com>
 Kaoet          <onetwogoo@live.com>
 liudiwu        <snake_dragon@126.com>
 Oling Cat      <olingcat@gmail.com>
+Roy Lieu       <roy@rootk.com>
 samchen        <wmydz1@gmail.com>
 Shenghou Ma    <minux@golang.org>
 Xing Xing      <mikespook@gmail.com>
