@@ -6,7 +6,10 @@
 
 // package sys contains system- and configuration- and architecture-specific
 // constants used by the runtime.
-package sys // import "runtime/internal/sys"
+
+// package sys contains system- and configuration- and architecture-specific
+// constants used by the runtime.
+package sys
 
 const DefaultGoroot = `/usr/local/Cellar/go/1.6.2/libexec`
 
@@ -376,21 +379,21 @@ const GoosAndroid = 0
 
 const GoosAndroid = 0
 
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
+const GoosAndroid = 0
+
 const GoosAndroid = 1
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
-
-const GoosAndroid = 0
 
 const GoosAndroid = 0
 
@@ -625,14 +628,25 @@ const SpAlign = 1*(1-GoarchArm64) + 16*GoarchArm64
 const StackGuardMultiplier = 1
 
 const (
-    TheChar       = '9'
-    BigEndian     = 1
+    TheChar       = '6'
+    BigEndian     = 0
     CacheLineSize = 64
+    PhysPageSize  = 4096
+    PCQuantum     = 1
+    Int64Align    = 8
+    HugePageSize  = 1 << 21
+    MinFrameSize  = 0
+)
+
+const (
+    TheChar       = '7'
+    BigEndian     = 0
+    CacheLineSize = 32
     PhysPageSize  = 65536
     PCQuantum     = 4
     Int64Align    = 8
     HugePageSize  = 0
-    MinFrameSize  = 32
+    MinFrameSize  = 8
 )
 
 const (
@@ -644,17 +658,6 @@ const (
     Int64Align    = 8
     HugePageSize  = 0
     MinFrameSize  = 8
-)
-
-const (
-    TheChar       = '6'
-    BigEndian     = 0
-    CacheLineSize = 64
-    PhysPageSize  = 4096
-    PCQuantum     = 1
-    Int64Align    = 8
-    HugePageSize  = 1 << 21
-    MinFrameSize  = 0
 )
 
 const (
@@ -702,17 +705,6 @@ const (
 )
 
 const (
-    TheChar       = '7'
-    BigEndian     = 0
-    CacheLineSize = 32
-    PhysPageSize  = 65536
-    PCQuantum     = 4
-    Int64Align    = 8
-    HugePageSize  = 0
-    MinFrameSize  = 8
-)
-
-const (
     TheChar       = '8'
     BigEndian     = 0
     CacheLineSize = 64
@@ -721,6 +713,17 @@ const (
     Int64Align    = 4
     HugePageSize  = 1 << 21
     MinFrameSize  = 0
+)
+
+const (
+    TheChar       = '9'
+    BigEndian     = 1
+    CacheLineSize = 64
+    PhysPageSize  = 65536
+    PCQuantum     = 4
+    Int64Align    = 8
+    HugePageSize  = 0
+    MinFrameSize  = 32
 )
 
 const TheGoarch = `amd64`
@@ -741,7 +744,7 @@ const TheGoarch = `mips64le`
 
 const TheGoarch = `ppc64`
 
-const TheGoos = `solaris`
+const TheGoos = `linux`
 
 const TheGoos = `darwin`
 
@@ -753,23 +756,23 @@ const TheGoos = `plan9`
 
 const TheGoos = `windows`
 
-const TheGoos = `linux`
+const TheGoos = `netbsd`
 
 const TheGoos = `android`
 
 const TheGoos = `dragonfly`
 
-const TheGoos = `netbsd`
+const TheGoos = `solaris`
 
 const TheGoos = `openbsd`
 
 const TheVersion = `go1.6.2`
 
+type Uintreg uint64
+
+type Uintreg uint64
+
 type Uintreg uint32
-
-type Uintreg uint64
-
-type Uintreg uint64
 
 type Uintreg uint64
 

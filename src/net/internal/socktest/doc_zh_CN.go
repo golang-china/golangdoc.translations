@@ -5,6 +5,8 @@
 // +build ingore
 
 // Package socktest provides utilities for socket testing.
+
+// Package socktest provides utilities for socket testing.
 package socktest // import "net/internal/socktest"
 
 import (
@@ -50,13 +52,13 @@ type Filter func(*Status) (AfterFilter, error)
 type FilterType int
 
 // Sockets maps a socket descriptor to the status of socket.
+type Sockets map[int]Status
+
+// Sockets maps a socket descriptor to the status of socket.
+type Sockets map[int]Status
+
+// Sockets maps a socket descriptor to the status of socket.
 type Sockets map[syscall.Handle]Status
-
-// Sockets maps a socket descriptor to the status of socket.
-type Sockets map[int]Status
-
-// Sockets maps a socket descriptor to the status of socket.
-type Sockets map[int]Status
 
 // A Stat represents a per-cookie socket statistics.
 type Stat struct {

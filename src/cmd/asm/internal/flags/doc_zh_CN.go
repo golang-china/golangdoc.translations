@@ -4,7 +4,11 @@
 
 // +build ingore
 
-// Package flags implements top-level flags and the usage message for the assembler.
+// Package flags implements top-level flags and the usage message for the
+// assembler.
+
+// Package flags implements top-level flags and the usage message for the
+// assembler.
 package flags // import "cmd/asm/internal/flags"
 
 import (
@@ -30,8 +34,8 @@ var (
     AllErrors  = flag.Bool("e", false, "no limit on number of errors reported")
 )
 
-// MultiFlag allows setting a value multiple times to collect a list, as in -I=dir1
-// -I=dir2.
+// MultiFlag allows setting a value multiple times to collect a list, as in
+// -I=dir1 -I=dir2.
 type MultiFlag []string
 
 func Parse()

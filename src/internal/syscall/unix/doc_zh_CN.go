@@ -24,6 +24,14 @@ const (
 type GetRandomFlag uintptr
 
 // GetRandom calls the Linux getrandom system call. See
+//
+//
+// https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c6e9d6f38894798696f23c8084ca7edbf16ee895
+
+// GetRandom calls the Linux getrandom system call. See
+//
+//
+//
 // https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c6e9d6f38894798696f23c8084ca7edbf16ee895
 func GetRandom(p []byte, flags GetRandomFlag) (n int, err error)
 

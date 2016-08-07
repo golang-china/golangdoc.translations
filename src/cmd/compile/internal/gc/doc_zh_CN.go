@@ -195,6 +195,46 @@ const (
 //             %F Mpflt*    Big floats
 //
 //       %S, %T and %N obey use the following flags to set the format mode:
+
+// Format conversions
+//
+//       %L int        Line numbers
+//
+//       %E int        etype values (aka 'Kind')
+//
+//       %O int        Node Opcodes
+//           Flags: "%#O": print go syntax. (automatic unless fmtmode == FDbg)
+//
+//       %J Node*    Node details
+//           Flags: "%hJ" suppresses things not relevant until walk.
+//
+//       %V Val*        Constant values
+//
+//       %S Sym*        Symbols
+//           Flags: +,- #: mode (see below)
+//               "%hS"    unqualified identifier in any mode
+//               "%hhS"  in export mode: unqualified identifier if exported, qualified if not
+//
+//       %T Type*    Types
+//           Flags: +,- #: mode (see below)
+//               'l' definition instead of name.
+//               'h' omit "func" and receiver in function types
+//               'u' (only in -/Sym mode) print type identifiers wit package name instead of prefix.
+//
+//       %N Node*    Nodes
+//           Flags: +,- #: mode (see below)
+//               'h' (only in +/debug mode) suppress recursion
+//               'l' (only in Error mode) print "foo (type Bar)"
+//
+//       %H NodeList*    NodeLists
+//           Flags: those of %N
+//               ','  separate items with ',' instead of ';'
+//
+//     In mparith2.go and mparith3.go:
+//           %B Mpint*    Big integers
+//           %F Mpflt*    Big floats
+//
+//     %S, %T and %N obey use the following flags to set the format mode:
 const (
     FErr = iota
     FDbg
@@ -658,6 +698,16 @@ const (
 //     uchar    nel[4];        // number of elements
 //     uchar    cap[4];        // allocated number of elements
 // } Array;
+
+// note this is the runtime representation
+// of the compilers arrays.
+//
+// typedef    struct
+// {                    // must not move anything
+//     uchar    array[8];    // pointer to data
+//     uchar    nel[4];        // number of elements
+//     uchar    cap[4];        // allocated number of elements
+// } Array;
 var Array_array int // runtime offsetof(Array,array) - same for String
 
 
@@ -681,6 +731,11 @@ var (
 )
 
 var Debug_checknil int
+
+var (
+    Debug_export int // if set, print debugging information about export data
+
+)
 
 var Debug_gcprog int // set by -d gcprog
 
@@ -740,11 +795,6 @@ var Widthint int
 var Widthptr int
 
 var Widthreg int
-
-var (
-    Debug_export int // if set, print debugging information about export data
-
-)
 
 type Arch struct {
     Thechar      int
@@ -1050,20 +1100,21 @@ type Label struct {
     Used bool
 }
 
-// A Level encodes the reference state and context applied to (stack, heap) allocated
-// memory.
+// A Level encodes the reference state and context applied to (stack, heap)
+// allocated memory.
 //
-// value is the overall sum of *(1) and &(-1) operations encountered along a path
-// from a destination (sink, return value) to a source (allocation, parameter).
+// value is the overall sum of *(1) and &(-1) operations encountered along a
+// path from a destination (sink, return value) to a source (allocation,
+// parameter).
 //
-// suffixValue is the maximum-copy-started-suffix-level applied to a sink. For example:
-// sink = x.left.left --> level=2, x is dereferenced twice and does not escape to
-// sink. sink = &Node{x} --> level=-1, x is accessible from sink via one "address
-// of" sink = &Node{&Node{x}} --> level=-2, x is accessible from sink via two "address
-// of" sink = &Node{&Node{x.left}} --> level=-1, but x is NOT accessible from sink
-// because it was indirected and then copied. (The copy operations are sometimes
-// implicit in the source code; in this case, value of x.left was copied into a
-// field of a newly allocated Node)
+// suffixValue is the maximum-copy-started-suffix-level applied to a sink. For
+// example: sink = x.left.left --> level=2, x is dereferenced twice and does not
+// escape to sink. sink = &Node{x} --> level=-1, x is accessible from sink via
+// one "address of" sink = &Node{&Node{x}} --> level=-2, x is accessible from
+// sink via two "address of" sink = &Node{&Node{x.left}} --> level=-1, but x is
+// NOT accessible from sink because it was indirected and then copied. (The copy
+// operations are sometimes implicit in the source code; in this case, value of
+// x.left was copied into a field of a newly allocated Node)
 //
 // There's one of these for each Node, and the integer values rarely exceed even
 // what can be stored in 4 bits, never mind 8.
@@ -1119,7 +1170,8 @@ type Mpint struct {
     Rune bool // set if syntax indicates default type rune
 }
 
-// Name holds Node fields used only by named nodes (ONAME, OPACK, some OLITERAL).
+// Name holds Node fields used only by named nodes (ONAME, OPACK, some
+// OLITERAL).
 type Name struct {
     Pack      *Node // real package for import . names
     Pkg       *Pkg  // pkg for OPACK nodes
@@ -1610,8 +1662,8 @@ func Eqtype(t1 *Type, t2 *Type) bool
 
 func Exit(code int)
 
-// Export writes the export data for localpkg to out and returns the number of bytes
-// written.
+// Export writes the export data for localpkg to out and returns the number of
+// bytes written.
 func Export(out *obj.Biobuf, trace bool) int
 
 func Fatalf(fmt_ string, args ...interface{})
@@ -1642,12 +1694,20 @@ func Getoutarg(t *Type) **Type
 //     proc=1    goroutine run in new proc
 //     proc=2    defer call save away stack
 //     proc=3    normal call to C pointer (not Go func value)
+
+// generate:
+//     call f
+//     proc=-1    normal call but no return
+//     proc=0    normal call
+//     proc=1    goroutine run in new proc
+//     proc=2    defer call save away stack
+//     proc=3    normal call to C pointer (not Go func value)
 func Ginscall(f *Node, proc int)
 
 func Gvardef(n *Node)
 
-// Fmt '%H': NodeList. Flags: all those of %N plus ',': separate with comma's instead
-// of semicolons.
+// Fmt '%H': NodeList. Flags: all those of %N plus ',': separate with comma's
+// instead of semicolons.
 func Hconv(l *NodeList, flag int) string
 
 // Igen computes the address &n, stores it in a register r,
@@ -1872,9 +1932,9 @@ func (*Node) SetBigInt(x *big.Int)
 // n must be an integer constant.
 func (*Node) SetInt(i int64)
 
-// SetOpt sets the optimizer data for the node, which must not have been used with
-// SetVal. SetOpt(nil) is ignored for Vals to simplify call sites that are clearing
-// Opts.
+// SetOpt sets the optimizer data for the node, which must not have been used
+// with SetVal. SetOpt(nil) is ignored for Vals to simplify call sites that are
+// clearing Opts.
 func (*Node) SetOpt(x interface{})
 
 // SetVal sets the Val for the node, which must not have been used with SetOpt.

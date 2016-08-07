@@ -8,6 +8,11 @@
 //
 // The run program is invoked via the dist tool.
 // To invoke manually: go tool dist test -run api --no-rebuild
+
+// Binary api computes the exported API of a set of Go packages.
+//
+// The run program is invoked via the dist tool.
+// To invoke manually: go tool dist test -run api --no-rebuild
 package main // go get cmd/api
 
 import (

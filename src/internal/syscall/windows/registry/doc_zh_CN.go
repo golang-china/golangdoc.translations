@@ -6,8 +6,8 @@
 
 // Package registry provides access to the Windows registry.
 //
-// Here is a simple example, opening a registry key and reading a string value from
-// it.
+// Here is a simple example, opening a registry key and reading a string value
+// from it.
 //
 //     k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 //     if err != nil {
@@ -21,8 +21,28 @@
 //     }
 //     fmt.Printf("Windows system root is %q\n", s)
 //
-// NOTE: This package is a copy of golang.org/x/sys/windows/registry with KeyInfo.ModTime
-// removed to prevent dependency cycles.
+// NOTE: This package is a copy of golang.org/x/sys/windows/registry with
+// KeyInfo.ModTime removed to prevent dependency cycles.
+
+// Package registry provides access to the Windows registry.
+//
+// Here is a simple example, opening a registry key and reading a string value
+// from it.
+//
+//     k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
+//     if err != nil {
+//         log.Fatal(err)
+//     }
+//     defer k.Close()
+//
+//     s, _, err := k.GetStringValue("SystemRoot")
+//     if err != nil {
+//         log.Fatal(err)
+//     }
+//     fmt.Printf("Windows system root is %q\n", s)
+//
+// NOTE: This package is a copy of golang.org/x/sys/windows/registry with
+// KeyInfo.ModTime removed to prevent dependency cycles.
 package registry // import "internal/syscall/windows/registry"
 
 import (
@@ -176,13 +196,14 @@ func (Key) GetStringsValue(name string) (val []string, valtype uint32, err error
 
 // GetValue retrieves the type and data for the specified value associated with
 // an open key k. It fills up buffer buf and returns the retrieved byte count n.
-// If buf is too small to fit the stored value it returns ErrShortBuffer error along
-// with the required buffer size n. If no buffer is provided, it returns true and
-// actual buffer size n. If no buffer is provided, GetValue returns the value's
-// type only. If the value does not exist, the error returned is ErrNotExist.
+// If buf is too small to fit the stored value it returns ErrShortBuffer error
+// along with the required buffer size n. If no buffer is provided, it returns
+// true and actual buffer size n. If no buffer is provided, GetValue returns the
+// value's type only. If the value does not exist, the error returned is
+// ErrNotExist.
 //
-// GetValue is a low level function. If value's type is known, use the appropriate
-// Get*Value function instead.
+// GetValue is a low level function. If value's type is known, use the
+// appropriate Get*Value function instead.
 func (Key) GetValue(name string, buf []byte) (n int, valtype uint32, err error)
 
 // ReadSubKeyNames returns the names of subkeys of key k.

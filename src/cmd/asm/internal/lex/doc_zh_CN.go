@@ -5,7 +5,9 @@
 // +build ingore
 
 // Package lex implements lexical analysis for the assembler.
-package lex // import "cmd/asm/internal/lex"
+
+// Package lex implements lexical analysis for the assembler.
+package lex
 
 import (
     "bytes"
@@ -81,8 +83,14 @@ type Token struct {
 // A TokenReader is like a reader, but returns lex tokens of type Token. It also
 // can tell you what the text of the most recently returned token is, and where
 // it was found. The underlying scanner elides all spaces except newline, so the
-// input looks like a stream of Tokens; original spacing is lost but we don't need
-// it.
+// input looks like a stream of Tokens; original spacing is lost but we don't
+// need it.
+
+// A TokenReader is like a reader, but returns lex tokens of type Token. It also
+// can tell you what the text of the most recently returned token is, and where
+// it was found. The underlying scanner elides all spaces except newline, so the
+// input looks like a stream of Tokens; original spacing is lost but we don't
+// need it.
 type TokenReader interface {
     // Next returns the next token.
     Next() ScanToken
@@ -121,7 +129,8 @@ func HistLine() int32
 // InitHist sets the line count to 1, for reproducible testing.
 func InitHist()
 
-// IsRegisterShift reports whether the token is one of the ARM register shift operators.
+// IsRegisterShift reports whether the token is one of the ARM register shift
+// operators.
 func IsRegisterShift(r ScanToken) bool
 
 // Make returns a Token with the given rune (ScanToken) and text representation.
@@ -179,7 +188,8 @@ func (*Stack) Line() int
 
 func (*Stack) Next() ScanToken
 
-// Push adds tr to the top (end) of the input stack. (Popping happens automatically.)
+// Push adds tr to the top (end) of the input stack. (Popping happens
+// automatically.)
 func (*Stack) Push(tr TokenReader)
 
 func (*Stack) SetPos(line int, file string)

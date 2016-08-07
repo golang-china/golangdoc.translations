@@ -11,7 +11,9 @@ import (
     "strings"
 )
 
-//  	amd64
+// *    amd64
+
+// amd64
 const (
     AAAA = obj.ABaseAMD64 + obj.A_ARCHSPECIFIC + iota
     AAAD
@@ -1033,6 +1035,54 @@ const (
 )
 
 const (
+
+    // Combinations used in the manual.
+    VEX_128_0F_WIG      = vex128 | vex0F | vexWIG
+    VEX_128_66_0F_W0    = vex128 | vex66 | vex0F | vexW0
+    VEX_128_66_0F_W1    = vex128 | vex66 | vex0F | vexW1
+    VEX_128_66_0F_WIG   = vex128 | vex66 | vex0F | vexWIG
+    VEX_128_66_0F38_W0  = vex128 | vex66 | vex0F38 | vexW0
+    VEX_128_66_0F38_W1  = vex128 | vex66 | vex0F38 | vexW1
+    VEX_128_66_0F38_WIG = vex128 | vex66 | vex0F38 | vexWIG
+    VEX_128_66_0F3A_W0  = vex128 | vex66 | vex0F3A | vexW0
+    VEX_128_66_0F3A_W1  = vex128 | vex66 | vex0F3A | vexW1
+    VEX_128_66_0F3A_WIG = vex128 | vex66 | vex0F3A | vexWIG
+    VEX_128_F2_0F_WIG   = vex128 | vexF2 | vex0F | vexWIG
+    VEX_128_F3_0F_WIG   = vex128 | vexF3 | vex0F | vexWIG
+    VEX_256_66_0F_WIG   = vex256 | vex66 | vex0F | vexWIG
+    VEX_256_66_0F38_W0  = vex256 | vex66 | vex0F38 | vexW0
+    VEX_256_66_0F38_W1  = vex256 | vex66 | vex0F38 | vexW1
+    VEX_256_66_0F38_WIG = vex256 | vex66 | vex0F38 | vexWIG
+    VEX_256_66_0F3A_W0  = vex256 | vex66 | vex0F3A | vexW0
+    VEX_256_66_0F3A_W1  = vex256 | vex66 | vex0F3A | vexW1
+    VEX_256_66_0F3A_WIG = vex256 | vex66 | vex0F3A | vexWIG
+    VEX_256_F2_0F_WIG   = vex256 | vexF2 | vex0F | vexWIG
+    VEX_256_F3_0F_WIG   = vex256 | vexF3 | vex0F | vexWIG
+    VEX_LIG_0F_WIG      = vexLIG | vex0F | vexWIG
+    VEX_LIG_66_0F_WIG   = vexLIG | vex66 | vex0F | vexWIG
+    VEX_LIG_66_0F38_W0  = vexLIG | vex66 | vex0F38 | vexW0
+    VEX_LIG_66_0F38_W1  = vexLIG | vex66 | vex0F38 | vexW1
+    VEX_LIG_66_0F3A_WIG = vexLIG | vex66 | vex0F3A | vexWIG
+    VEX_LIG_F2_0F_W0    = vexLIG | vexF2 | vex0F | vexW0
+    VEX_LIG_F2_0F_W1    = vexLIG | vexF2 | vex0F | vexW1
+    VEX_LIG_F2_0F_WIG   = vexLIG | vexF2 | vex0F | vexWIG
+    VEX_LIG_F3_0F_W0    = vexLIG | vexF3 | vex0F | vexW0
+    VEX_LIG_F3_0F_W1    = vexLIG | vexF3 | vex0F | vexW1
+    VEX_LIG_F3_0F_WIG   = vexLIG | vexF3 | vex0F | vexWIG
+    VEX_LZ_0F_WIG       = vexLZ | vex0F | vexWIG
+    VEX_LZ_0F38_W0      = vexLZ | vex0F38 | vexW0
+    VEX_LZ_0F38_W1      = vexLZ | vex0F38 | vexW1
+    VEX_LZ_66_0F38_W0   = vexLZ | vex66 | vex0F38 | vexW0
+    VEX_LZ_66_0F38_W1   = vexLZ | vex66 | vex0F38 | vexW1
+    VEX_LZ_F2_0F38_W0   = vexLZ | vexF2 | vex0F38 | vexW0
+    VEX_LZ_F2_0F38_W1   = vexLZ | vexF2 | vex0F38 | vexW1
+    VEX_LZ_F2_0F3A_W0   = vexLZ | vexF2 | vex0F3A | vexW0
+    VEX_LZ_F2_0F3A_W1   = vexLZ | vexF2 | vex0F3A | vexW1
+    VEX_LZ_F3_0F38_W0   = vexLZ | vexF3 | vex0F38 | vexW0
+    VEX_LZ_F3_0F38_W1   = vexLZ | vexF3 | vex0F38 | vexW1
+)
+
+const (
     Yxxx = iota
     Ynone
     Yi0 // $0
@@ -1159,54 +1209,6 @@ const (
     Zvex_r_v_rm
     Zvex_v_rm_r
     Zmax
-)
-
-const (
-
-    // Combinations used in the manual.
-    VEX_128_0F_WIG      = vex128 | vex0F | vexWIG
-    VEX_128_66_0F_W0    = vex128 | vex66 | vex0F | vexW0
-    VEX_128_66_0F_W1    = vex128 | vex66 | vex0F | vexW1
-    VEX_128_66_0F_WIG   = vex128 | vex66 | vex0F | vexWIG
-    VEX_128_66_0F38_W0  = vex128 | vex66 | vex0F38 | vexW0
-    VEX_128_66_0F38_W1  = vex128 | vex66 | vex0F38 | vexW1
-    VEX_128_66_0F38_WIG = vex128 | vex66 | vex0F38 | vexWIG
-    VEX_128_66_0F3A_W0  = vex128 | vex66 | vex0F3A | vexW0
-    VEX_128_66_0F3A_W1  = vex128 | vex66 | vex0F3A | vexW1
-    VEX_128_66_0F3A_WIG = vex128 | vex66 | vex0F3A | vexWIG
-    VEX_128_F2_0F_WIG   = vex128 | vexF2 | vex0F | vexWIG
-    VEX_128_F3_0F_WIG   = vex128 | vexF3 | vex0F | vexWIG
-    VEX_256_66_0F_WIG   = vex256 | vex66 | vex0F | vexWIG
-    VEX_256_66_0F38_W0  = vex256 | vex66 | vex0F38 | vexW0
-    VEX_256_66_0F38_W1  = vex256 | vex66 | vex0F38 | vexW1
-    VEX_256_66_0F38_WIG = vex256 | vex66 | vex0F38 | vexWIG
-    VEX_256_66_0F3A_W0  = vex256 | vex66 | vex0F3A | vexW0
-    VEX_256_66_0F3A_W1  = vex256 | vex66 | vex0F3A | vexW1
-    VEX_256_66_0F3A_WIG = vex256 | vex66 | vex0F3A | vexWIG
-    VEX_256_F2_0F_WIG   = vex256 | vexF2 | vex0F | vexWIG
-    VEX_256_F3_0F_WIG   = vex256 | vexF3 | vex0F | vexWIG
-    VEX_LIG_0F_WIG      = vexLIG | vex0F | vexWIG
-    VEX_LIG_66_0F_WIG   = vexLIG | vex66 | vex0F | vexWIG
-    VEX_LIG_66_0F38_W0  = vexLIG | vex66 | vex0F38 | vexW0
-    VEX_LIG_66_0F38_W1  = vexLIG | vex66 | vex0F38 | vexW1
-    VEX_LIG_66_0F3A_WIG = vexLIG | vex66 | vex0F3A | vexWIG
-    VEX_LIG_F2_0F_W0    = vexLIG | vexF2 | vex0F | vexW0
-    VEX_LIG_F2_0F_W1    = vexLIG | vexF2 | vex0F | vexW1
-    VEX_LIG_F2_0F_WIG   = vexLIG | vexF2 | vex0F | vexWIG
-    VEX_LIG_F3_0F_W0    = vexLIG | vexF3 | vex0F | vexW0
-    VEX_LIG_F3_0F_W1    = vexLIG | vexF3 | vex0F | vexW1
-    VEX_LIG_F3_0F_WIG   = vexLIG | vexF3 | vex0F | vexWIG
-    VEX_LZ_0F_WIG       = vexLZ | vex0F | vexWIG
-    VEX_LZ_0F38_W0      = vexLZ | vex0F38 | vexW0
-    VEX_LZ_0F38_W1      = vexLZ | vex0F38 | vexW1
-    VEX_LZ_66_0F38_W0   = vexLZ | vex66 | vex0F38 | vexW0
-    VEX_LZ_66_0F38_W1   = vexLZ | vex66 | vex0F38 | vexW1
-    VEX_LZ_F2_0F38_W0   = vexLZ | vexF2 | vex0F38 | vexW0
-    VEX_LZ_F2_0F38_W1   = vexLZ | vexF2 | vex0F38 | vexW1
-    VEX_LZ_F2_0F3A_W0   = vexLZ | vexF2 | vex0F3A | vexW0
-    VEX_LZ_F2_0F3A_W1   = vexLZ | vexF2 | vex0F3A | vexW1
-    VEX_LZ_F3_0F38_W0   = vexLZ | vexF3 | vex0F38 | vexW0
-    VEX_LZ_F3_0F38_W1   = vexLZ | vexF3 | vex0F38 | vexW1
 )
 
 var Anames = []string{

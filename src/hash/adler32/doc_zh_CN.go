@@ -7,19 +7,20 @@
 // Package adler32 implements the Adler-32 checksum.
 //
 // It is defined in RFC 1950:
-//
-//	Adler-32 is composed of two sums accumulated per byte: s1 is
-//	the sum of all bytes, s2 is the sum of all s1 values. Both sums
-//	are done modulo 65521. s1 is initialized to 1, s2 to zero.  The
-//	Adler-32 checksum is stored as s2*65536 + s1 in most-
-//	significant-byte first (network) order.
+//     Adler-32 is composed of two sums accumulated per byte: s1 is
+//     the sum of all bytes, s2 is the sum of all s1 values. Both sums
+//     are done modulo 65521. s1 is initialized to 1, s2 to zero.  The
+//     Adler-32 checksum is stored as s2*65536 + s1 in most-
+//     significant-byte first (network) order.
 
 // adler32包实现了Adler-32校验和算法，参见RFC 1950：
 //
-//	Adler-32由两个每字节累积的和组成：
-//	s1是所有字节的累积，s2是所有s1的累积。两个累积值都取65521的余数。s1初始为1，s2初始为0。
-//	Afler-32校验和保存为s2*65536 + s1。（最高有效字节在前/大端在前）
+//     Adler-32由两个每字节累积的和组成：
+//     s1是所有字节的累积，s2是所有s1的累积。两个累积值都取65521的余数。s1初始为1，s2初始为0。
+//     Afler-32校验和保存为s2*65536 + s1。（最高有效字节在前/大端在前）
 package adler32
+
+import "hash"
 
 // The size of an Adler-32 checksum in bytes.
 
@@ -32,6 +33,8 @@ const Size = 4
 func Checksum(data []byte) uint32
 
 // New returns a new hash.Hash32 computing the Adler-32 checksum.
+// Its Sum method will lay the value out in big-endian byte order.
 
 // 返回一个计算Adler-32校验和的hash.Hash32接口。
 func New() hash.Hash32
+

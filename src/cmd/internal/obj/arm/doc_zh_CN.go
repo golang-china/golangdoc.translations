@@ -202,7 +202,7 @@ const (
     C_NCLASS /* must be the last */
 )
 
-//  scond byte
+// scond byte
 const (
     C_SCOND = (1 << 4) - 1
     C_SBIT  = 1 << 4
@@ -260,7 +260,7 @@ const (
     NREG   = 16
 )
 
-//  -1 disables use of REGARG
+// -1 disables use of REGARG
 const (
     REGARG = -1
 )

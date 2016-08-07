@@ -8,7 +8,12 @@
 // efficiently representing HTTP header fields in the context of HTTP/2.
 //
 // See http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-09
-package hpack // import "internal/golang.org/x/net/http2/hpack"
+
+// Package hpack implements HPACK, a compression format for
+// efficiently representing HTTP header fields in the context of HTTP/2.
+//
+// See http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-09
+package hpack
 
 import (
     "bufio"
@@ -178,7 +183,8 @@ func TestHuffmanDecode(t *testing.T)
 
 func TestHuffmanDecodeFuzz(t *testing.T)
 
-// Fuzz crash, originally reported at https://github.com/bradfitz/http2/issues/56
+// Fuzz crash, originally reported at
+// https://github.com/bradfitz/http2/issues/56
 func TestHuffmanFuzzCrash(t *testing.T)
 
 func TestHuffmanMaxStrLen(t *testing.T)

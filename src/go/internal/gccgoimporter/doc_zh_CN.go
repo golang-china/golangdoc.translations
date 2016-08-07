@@ -5,7 +5,9 @@
 // +build ingore
 
 // Package gccgoimporter implements Import for gccgo-generated object files.
-package gccgoimporter // import "go/internal/gccgoimporter"
+
+// Package gccgoimporter implements Import for gccgo-generated object files.
+package gccgoimporter
 
 import (
     "bufio"

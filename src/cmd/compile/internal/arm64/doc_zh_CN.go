@@ -35,15 +35,26 @@ func BtoR(b uint64) int
 
 func Main()
 
-//  * track register variables including external registers:
+// * track register variables including external registers:
 //  		reg
 //  		R0
 //  		R1
-//  	..	...
+//  		...
 //  		R31
 //  		F0
 //  		F1
-//  	..	...
+//  		...
+//  		F31
+
+// * track register variables including external registers:
+//  		reg
+//  		R0
+//  		R1
+//  		...
+//  		R31
+//  		F0
+//  		F1
+//  		...
 //  		F31
 func RtoB(r int) uint64
 

@@ -13,11 +13,55 @@
 // GIF的说明文档在 http://www.w3.org/Graphics/GIF/spec-gif89a.txt。
 package gif
 
-// Decode reads a GIF image from r and returns the first embedded image as an
-// image.Image.
+import (
+    "bufio"
+    "bytes"
+    "compress/lzw"
+    "errors"
+    "fmt"
+    "image"
+    "image/color"
+    "image/color/palette"
+    "image/draw"
+    "io"
+)
+
+// GIF represents the possibly multiple images stored in a GIF file.
+
+// GIF代表一个GIF文件上的多个图像。
+type GIF struct {
+    Image     []*image.Paletted // The successive images.
+    Delay     []int             // The successive delay times, one per frame, in 100ths of a second.
+    LoopCount int               // The loop count.
+}
+
+// Options are the encoding parameters.
+type Options struct {
+    // NumColors is the maximum number of colors used in the image.
+    // It ranges from 1 to 256.
+    NumColors int
+
+    // Quantizer is used to produce a palette with size NumColors.
+    // palette.Plan9 is used in place of a nil Quantizer.
+    Quantizer draw.Quantizer
+
+    // Drawer is used to convert the source image to the desired palette.
+    // draw.FloydSteinberg is used in place of a nil Drawer.
+    Drawer draw.Drawer
+}
+
+// Decode reads a GIF image from r and returns the first embedded
+// image as an image.Image.
 
 // Decode从r中读取一个GIF图像，然后返回的image.Image是第一个嵌入的图。
 func Decode(r io.Reader) (image.Image, error)
+
+// DecodeAll reads a GIF image from r and returns the sequential frames
+// and timing information.
+
+// DecodeAll
+// 从r上读取一个GIF图片，并且返回顺序的帧和时间信息。
+func DecodeAll(r io.Reader) (*GIF, error)
 
 // DecodeConfig returns the global color model and dimensions of a GIF image
 // without decoding the entire image.
@@ -32,33 +76,3 @@ func Encode(w io.Writer, m image.Image, o *Options) error
 // and delay between frames.
 func EncodeAll(w io.Writer, g *GIF) error
 
-// GIF represents the possibly multiple images stored in a GIF file.
-
-// GIF代表一个GIF文件上的多个图像。
-type GIF struct {
-	Image     []*image.Paletted // The successive images.
-	Delay     []int             // The successive delay times, one per frame, in 100ths of a second.
-	LoopCount int               // The loop count.
-}
-
-// DecodeAll reads a GIF image from r and returns the sequential frames and timing
-// information.
-
-// DecodeAll
-// 从r上读取一个GIF图片，并且返回顺序的帧和时间信息。
-func DecodeAll(r io.Reader) (*GIF, error)
-
-// Options are the encoding parameters.
-type Options struct {
-	// NumColors is the maximum number of colors used in the image.
-	// It ranges from 1 to 256.
-	NumColors int
-
-	// Quantizer is used to produce a palette with size NumColors.
-	// palette.Plan9 is used in place of a nil Quantizer.
-	Quantizer draw.Quantizer
-
-	// Drawer is used to convert the source image to the desired palette.
-	// draw.FloydSteinberg is used in place of a nil Drawer.
-	Drawer draw.Drawer
-}

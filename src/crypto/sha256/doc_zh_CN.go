@@ -4,21 +4,26 @@
 
 // +build ingore
 
-// Package sha256 implements the SHA224 and SHA256 hash algorithms as defined in
-// FIPS 180-4.
+// Package sha256 implements the SHA224 and SHA256 hash algorithms as defined
+// in FIPS 180-4.
 
 // sha256包实现了SHA224和SHA256哈希算法，参见FIPS 180-4。
 package sha256
+
+import (
+    "crypto"
+    "hash"
+)
 
 // The blocksize of SHA256 and SHA224 in bytes.
 
 // SHA224和SHA256的字节块大小。
 //
-//	const Size = 32
+//     const Size = 32
 //
 // SHA256校验和的字节长度。
 //
-//	const Size224 = 28
+//     const Size224 = 28
 //
 // SHA224校验和的字节长度。
 const BlockSize = 64
@@ -48,3 +53,4 @@ func Sum224(data []byte) (sum224 [Size224]byte)
 
 // 返回数据的SHA256校验和。
 func Sum256(data []byte) [Size]byte
+

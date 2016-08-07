@@ -13,3 +13,4 @@ package errors
 
 // New 返回一个按给定文本格式化的错误。
 func New(text string) error
+

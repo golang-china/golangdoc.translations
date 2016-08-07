@@ -55,13 +55,13 @@ const (
     BuildmodeShared
 )
 
-//  *  Emit .debug_frame
+// *  Emit .debug_frame
 const (
     CIERESERVE          = 16
     DATAALIGNMENTFACTOR = -4
 )
 
-//  *  Walk DWarfDebugInfoEntries, and emit .debug_info
+// *  Walk DWarfDebugInfoEntries, and emit .debug_info
 const (
     COMPUNITHEADERSIZE = 4 + 2 + 4 + 1
 )
@@ -832,7 +832,7 @@ const (
     STN_UNDEF            = 0
 )
 
-//  * Go linker interface
+// * Go linker interface
 const (
     ELF64HDRSIZE  = 64
     ELF64PHDRSIZE = 56
@@ -847,7 +847,7 @@ const (
     ELF32RELSIZE  = 8
 )
 
-//  * Total amount of space to reserve at the start of the file
+// * Total amount of space to reserve at the start of the file
 //  * for Header, PHeaders, SHeaders, and interp.
 //  * May waste some.
 //  * On FreeBSD, cannot be larger than a page.
@@ -912,19 +912,45 @@ const (
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-// of the Software, and to permit persons to whom the Software is furnished to do
-// so, subject to the following conditions:
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// Derived from Plan 9 from User Space's src/libmach/elf.h, elf.c
+// http://code.swtch.com/plan9port/src/tip/src/libmach/
+//
+//     Copyright © 2004 Russ Cox.
+//     Portions Copyright © 2008-2010 Google Inc.
+//     Portions Copyright © 2010 The Go Authors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 const (
     ElfClassNone = 0
     ElfClass32   = 1
@@ -1008,7 +1034,7 @@ const (
     ElfSectFlagExec  = 0x4
 )
 
-//  *  Elf.
+// *  Elf.
 const (
     ElfStrDebugAbbrev = iota
     ElfStrDebugAranges
@@ -1057,14 +1083,14 @@ const (
     ElfTypeCore         = 4
 )
 
-//  whence for ldpkg
+// whence for ldpkg
 const (
     FileObj = 0 + iota
     ArchiveObj
     Pkgdef
 )
 
-//  * Debugging Information Entries and their attributes.
+// * Debugging Information Entries and their attributes.
 const (
     HASHSIZE = 107
 )
@@ -1190,7 +1216,7 @@ const (
     IMAGE_REL_AMD64_SSPAN32          = 0x0010
 )
 
-//  * Total amount of space to reserve at the start of the file
+// * Total amount of space to reserve at the start of the file
 //  * for Header, PHeaders, and SHeaders.
 //  * May waste some.
 const (
@@ -1220,7 +1246,7 @@ const (
     LC_ENCRYPTION_INFO_64   = 0x2C
 )
 
-//  * Generate short opcodes when possible, long ones when necessary.
+// * Generate short opcodes when possible, long ones when necessary.
 //  * See section 6.2.5
 const (
     LINE_BASE   = -1
@@ -1303,7 +1329,7 @@ const (
     BucketSize = 8
 )
 
-//  * We use the 64-bit data structures on both 32- and 64-bit machines
+// * We use the 64-bit data structures on both 32- and 64-bit machines
 //  * in order to write the code just once.  The 64-bit data structure is
 //  * written in the 32-bit format on the 32-bit machines.
 const (
@@ -1320,19 +1346,45 @@ const (
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-// of the Software, and to permit persons to whom the Software is furnished to do
-// so, subject to the following conditions:
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// Derived from Plan 9 from User Space's src/libmach/elf.h, elf.c
+// http://code.swtch.com/plan9port/src/tip/src/libmach/
+//
+//     Copyright © 2004 Russ Cox.
+//     Portions Copyright © 2008-2010 Google Inc.
+//     Portions Copyright © 2010 The Go Authors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 const (
     N_EXT  = 0x01
     N_TYPE = 0x1e
@@ -1363,7 +1415,7 @@ const (
     RV_TYPE_MASK      = RV_CHECK_OVERFLOW - 1
 )
 
-//  * Relocation types.
+// * Relocation types.
 const (
     R_X86_64_NONE           = 0
     R_X86_64_64             = 1
@@ -1711,6 +1763,12 @@ const (
     Tag_ABI_VFP_args         = 28
 )
 
+var (
+
+    // buffered output
+    Bso obj.Biobuf
+)
+
 var ELF_NOTE_BUILDINFO_NAME = []byte("GNU\x00")
 
 var ELF_NOTE_GO_NAME = []byte("Go\x00\x00")
@@ -1849,12 +1907,6 @@ var (
     Linkmode int
 )
 
-var (
-
-    // buffered output
-    Bso obj.Biobuf
-)
-
 type ArHdr struct {
     name string
     date string
@@ -1913,6 +1965,16 @@ type Auto struct {
 //     "shared": combine all packages passed on the command line, and their
 //       dependencies, into a single shared library that will be used when
 //       building with the -linkshared option.
+
+// A BuildMode indicates the sort of object we are building:
+//
+//     "exe": build a main package and everything it imports into an executable.
+//     "c-shared": build a main package, plus all packages that it imports, into a
+//       single C shared library. The only callable symbols will be those functions
+//       marked as exported.
+//     "shared": combine all packages passed on the command line, and their
+//       dependencies, into a single shared library that will be used when
+//       building with the -linkshared option.
 type BuildMode uint8
 
 type COFFSym struct {
@@ -1943,7 +2005,7 @@ type DWAttr struct {
     data  interface{}
 }
 
-//  * Defining Abbrevs.  This is hardcoded, and there will be
+// * Defining Abbrevs.  This is hardcoded, and there will be
 //  * only a handful of them.  The DWARF spec places no restriction on
 //  * the ordering of attributes in the Abbrevs and DIEs, and we will
 //  * always write them out in the order of declaration in the abbrev.
@@ -1972,7 +2034,7 @@ type Dll struct {
     next     *Dll
 }
 
-//  * ELF header.
+// * ELF header.
 type ElfEhdr struct {
     ident     [EI_NIDENT]uint8
     type_     uint16
@@ -2052,7 +2114,7 @@ type ElfObj struct {
     shstrndx  uint32
 }
 
-//  * Program header.
+// * Program header.
 type ElfPhdr struct {
     type_  uint32
     flags  uint32
@@ -2112,7 +2174,7 @@ type ElfSectBytes64 struct {
     Entsize [8]uint8
 }
 
-//  * Section header.
+// * Section header.
 type ElfShdr struct {
     name      uint32
     type_     uint32
@@ -2157,7 +2219,7 @@ type ElfSymBytes64 struct {
     Size  [8]uint8
 }
 
-//  * Note header.  The ".note" section contains an array of notes.  Each
+// * Note header.  The ".note" section contains an array of notes.  Each
 //  * begins with this header, aligned to a word boundary.  Immediately
 //  * following the note header is n_namesz bytes of name, padded to the
 //  * next word boundary.  Then comes n_descsz bytes of descriptor, again
@@ -2736,7 +2798,7 @@ func Diag(format string, args ...interface{})
 
 func Domacholink() int64
 
-//  * This is the main entry point for generating dwarf.  After emitting
+// * This is the main entry point for generating dwarf.  After emitting
 //  * the mandatory debug_abbrev section, it calls writelines() to set up
 //  * the per-compilation unit part of the DIE tree, while simultaneously
 //  * emitting the debug_line section.  When the final tree contains
@@ -2781,8 +2843,8 @@ func Elfadddynsym(ctxt *Link, s *LSym)
 
 func Elfemitreloc()
 
-// Initialize the global variable that describes the ELF header. It will be updated
-// as we write section and prog headers.
+// Initialize the global variable that describes the ELF header. It will be
+// updated as we write section and prog headers.
 func Elfinit()
 
 func Elfwritedynent(s *LSym, tag int, val uint64)

@@ -4,21 +4,24 @@
 
 // +build ingore
 
-// Package sha512 implements the SHA384 and SHA512 hash algorithms as defined in
-// FIPS 180-2.
+// Package sha512 implements the SHA-384, SHA-512, SHA-512/224, and SHA-512/256
+// hash algorithms as defined in FIPS 180-4.
 
 // sha512包实现了SHA384和SHA512哈希算法，参见FIPS 180-2。
 package sha512
 
-// The blocksize of SHA512 and SHA384 in bytes.
+import (
+    "crypto"
+    "hash"
+)
 
 // SHA384和SHA512的字节块大小。
 //
-//	const Size = 64
+//     const Size = 64
 //
 // SHA512校验和的字节长度。
 //
-//	const Size384 = 48
+//     const Size384 = 48
 //
 // SHA384校验和的字节长度。
 const BlockSize = 128
@@ -29,12 +32,12 @@ const Size = 64
 // The size of a SHA384 checksum in bytes.
 const Size384 = 48
 
-// New returns a new hash.Hash computing the SHA512 checksum.
+// New returns a new hash.Hash computing the SHA-512 checksum.
 
 // 返回一个新的使用SHA512校验算法的hash.Hash接口。
 func New() hash.Hash
 
-// New384 returns a new hash.Hash computing the SHA384 checksum.
+// New384 returns a new hash.Hash computing the SHA-384 checksum.
 
 // 返回一个新的使用SHA384校验算法的hash.Hash接口。
 func New384() hash.Hash
@@ -48,3 +51,4 @@ func Sum384(data []byte) (sum384 [Size384]byte)
 
 // 返回数据的SHA512校验和。
 func Sum512(data []byte) [Size]byte
+

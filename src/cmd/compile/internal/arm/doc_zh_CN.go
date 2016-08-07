@@ -57,17 +57,30 @@ func BtoR(b uint64) int
 
 func Main()
 
-//  		reg
+// *    bit    reg
 //  		R0
 //  		R1
-//  	..	...
+//  		...
 //  		R10
 //  	12  R12
 //  *
 //  		reg
 //  		F2
 //  		F3
-//  	..	...
+//  		...
+//  		F15
+
+// reg
+//  		R0
+//  		R1
+//  		...
+//  		R10
+//  	12  R12
+//  *
+//  		reg
+//  		F2
+//  		F3
+//  		...
 //  		F15
 func RtoB(r int) uint64
 

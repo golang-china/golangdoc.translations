@@ -11,6 +11,14 @@
 // is unknown due to an error. Operations on unknown
 // values produce unknown values unless specified
 // otherwise.
+
+// Package constant implements Values representing untyped
+// Go constants and their corresponding operations.
+//
+// A special Unknown value may be used when a value
+// is unknown due to an error. Operations on unknown
+// values produce unknown values unless specified
+// otherwise.
 package constant // import "go/constant"
 
 import (
@@ -68,12 +76,12 @@ type Value interface {
 func BinaryOp(x Value, op token.Token, y Value) Value
 
 // BitLen returns the number of bits required to represent the absolute value x
-// in binary representation; x must be an Int or an Unknown. If x is Unknown, the
-// result is 0.
+// in binary representation; x must be an Int or an Unknown. If x is Unknown,
+// the result is 0.
 func BitLen(x Value) int
 
-// BoolVal returns the Go boolean value of x, which must be a Bool or an Unknown.
-// If x is Unknown, the result is false.
+// BoolVal returns the Go boolean value of x, which must be a Bool or an
+// Unknown. If x is Unknown, the result is false.
 func BoolVal(x Value) bool
 
 // Bytes returns the bytes for the absolute value of x in little-
@@ -94,20 +102,20 @@ func Denom(x Value) Value
 // Float32Val is like Float64Val but for float32 instead of float64.
 func Float32Val(x Value) (float32, bool)
 
-// Float64Val returns the nearest Go float64 value of x and whether the result is
-// exact; x must be numeric or an Unknown, but not Complex. For values too small
-// (too close to 0) to represent as float64, Float64Val silently underflows to 0.
-// The result sign always matches the sign of x, even for 0. If x is Unknown, the
-// result is (0, false).
+// Float64Val returns the nearest Go float64 value of x and whether the result
+// is exact; x must be numeric or an Unknown, but not Complex. For values too
+// small (too close to 0) to represent as float64, Float64Val silently
+// underflows to 0. The result sign always matches the sign of x, even for 0. If
+// x is Unknown, the result is (0, false).
 func Float64Val(x Value) (float64, bool)
 
-// Imag returns the imaginary part of x, which must be a numeric or unknown value.
-// If x is Unknown, the result is Unknown.
+// Imag returns the imaginary part of x, which must be a numeric or unknown
+// value. If x is Unknown, the result is Unknown.
 func Imag(x Value) Value
 
-// Int64Val returns the Go int64 value of x and whether the result is exact; x must
-// be an Int or an Unknown. If the result is not exact, its value is undefined.
-// If x is Unknown, the result is (0, false).
+// Int64Val returns the Go int64 value of x and whether the result is exact; x
+// must be an Int or an Unknown. If the result is not exact, its value is
+// undefined. If x is Unknown, the result is (0, false).
 func Int64Val(x Value) (int64, bool)
 
 // MakeBool returns the Bool value for x.
@@ -165,8 +173,8 @@ func Shift(x Value, op token.Token, s uint) Value
 // otherwise it is != 0. If x is Unknown, the result is 1.
 func Sign(x Value) int
 
-// StringVal returns the Go string value of x, which must be a String or an Unknown.
-// If x is Unknown, the result is "".
+// StringVal returns the Go string value of x, which must be a String or an
+// Unknown. If x is Unknown, the result is "".
 func StringVal(x Value) string
 
 func TestBytes(t *testing.T)
@@ -192,8 +200,8 @@ func ToFloat(x Value) Value
 func ToInt(x Value) Value
 
 // Uint64Val returns the Go uint64 value of x and whether the result is exact; x
-// must be an Int or an Unknown. If the result is not exact, its value is undefined.
-// If x is Unknown, the result is (0, false).
+// must be an Int or an Unknown. If the result is not exact, its value is
+// undefined. If x is Unknown, the result is (0, false).
 func Uint64Val(x Value) (uint64, bool)
 
 // UnaryOp returns the result of the unary expression op y.

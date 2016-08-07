@@ -5,6 +5,8 @@
 // +build ingore
 
 // Package whitelist defines exceptions for the vet tool.
+
+// Package whitelist defines exceptions for the vet tool.
 package whitelist // import "cmd/vet/internal/whitelist"
 
 // UnkeyedLiteral are types that are actually slices, but

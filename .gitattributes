@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+*. text eol=lf
+.* text eol=lf
+*.go text eol=lf
+*.html text eol=lf
+*.tmpl text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.json text eol=lf

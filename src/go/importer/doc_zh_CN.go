@@ -5,6 +5,8 @@
 // +build ingore
 
 // Package importer provides access to export data importers.
+
+// Package importer provides access to export data importers.
 package importer // import "go/importer"
 
 import (

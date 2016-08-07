@@ -5,7 +5,16 @@
 // +build ingore
 
 // Package tempfile provides tools to create and delete temporary files
+
+// Package tempfile provides tools to create and delete temporary files
 package tempfile
+
+import (
+    "fmt"
+    "os"
+    "path/filepath"
+    "sync"
+)
 
 // Cleanup removes any temporary files selected for deferred cleaning.
 func Cleanup()
@@ -15,3 +24,4 @@ func DeferDelete(path string)
 
 // New returns an unused filename for output files.
 func New(dir, prefix, suffix string) (*os.File, error)
+

@@ -4,9 +4,12 @@
 
 // +build ingore
 
-// Package asm implements the parser and instruction generator for the assembler.
-// TODO: Split apart?
-package asm // import "cmd/asm/internal/asm"
+// Package asm implements the parser and instruction generator for the
+// assembler. TODO: Split apart?
+
+// Package asm implements the parser and instruction generator for the
+// assembler. TODO: Split apart?
+package asm
 
 import (
     "bytes"

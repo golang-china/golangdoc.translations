@@ -4,12 +4,19 @@
 
 // +build ingore
 
-// Go execution tracer. The tracer captures a wide range of execution events like
-// goroutine creation/blocking/unblocking, syscall enter/exit/block, GC-related
-// events, changes of heap size, processor start/stop, etc and writes them to an
-// io.Writer in a compact form. A precise nanosecond-precision timestamp and a stack
-// trace is captured for most events. A trace can be analyzed later with 'go tool
-// trace' command.
+// Go execution tracer. The tracer captures a wide range of execution events
+// like goroutine creation/blocking/unblocking, syscall enter/exit/block,
+// GC-related events, changes of heap size, processor start/stop, etc and writes
+// them to an io.Writer in a compact form. A precise nanosecond-precision
+// timestamp and a stack trace is captured for most events. A trace can be
+// analyzed later with 'go tool trace' command.
+
+// Go execution tracer. The tracer captures a wide range of execution events
+// like goroutine creation/blocking/unblocking, syscall enter/exit/block,
+// GC-related events, changes of heap size, processor start/stop, etc and writes
+// them to an io.Writer in a compact form. A precise nanosecond-precision
+// timestamp and a stack trace is captured for most events. A trace can be
+// analyzed later with 'go tool trace' command.
 package trace // import "runtime/trace"
 
 import (

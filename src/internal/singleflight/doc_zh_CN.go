@@ -6,6 +6,9 @@
 
 // Package singleflight provides a duplicate function call suppression
 // mechanism.
+
+// Package singleflight provides a duplicate function call suppression
+// mechanism.
 package singleflight // import "internal/singleflight"
 
 import (

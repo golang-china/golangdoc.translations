@@ -9,11 +9,16 @@
 // sha1包实现了SHA1哈希算法，参见RFC 3174。
 package sha1
 
+import (
+    "crypto"
+    "hash"
+)
+
 // The blocksize of SHA1 in bytes.
 
 // SHA1的块大小。
 //
-//	const Size = 20
+//     const Size = 20
 //
 // SHA1校验和的字节数。
 const BlockSize = 64
@@ -30,3 +35,4 @@ func New() hash.Hash
 
 // 返回数据data的SHA1校验和。
 func Sum(data []byte) [Size]byte
+

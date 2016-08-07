@@ -10,7 +10,7 @@ import (
     "log"
 )
 
-//  Used by ../internal/ld/dwarf.go
+// Used by ../internal/ld/dwarf.go
 const (
     DWARFREGSP = 31
     DWARFREGLR = 30

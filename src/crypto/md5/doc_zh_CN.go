@@ -9,6 +9,13 @@
 // md5 包实现了在 RFC 1321 中定义的 MD5 哈希算法.
 package md5
 
+import (
+    "crypto"
+    "hash"
+    "runtime"
+    "unsafe"
+)
+
 // The blocksize of MD5 in bytes.
 
 // MD5 块大小，以字节为单位.
@@ -28,3 +35,4 @@ func New() hash.Hash
 
 // Sum 返回 data 的 MD5 校验和.
 func Sum(data []byte) [Size]byte
+

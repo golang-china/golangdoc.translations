@@ -25,6 +25,28 @@
 // Use Info.Types[expr].Type for the results of type inference.
 //
 // For a tutorial, see https://golang.org/s/types-tutorial.
+
+// Package types declares the data types and implements
+// the algorithms for type-checking of Go packages. Use
+// Config.Check to invoke the type checker for a package.
+// Alternatively, create a new type checked with NewChecker
+// and invoke it incrementally by calling Checker.Files.
+//
+// Type-checking consists of several interdependent phases:
+//
+// Name resolution maps each identifier (ast.Ident) in the program to the
+// language object (Object) it denotes.
+// Use Info.{Defs,Uses,Implicits} for the results of name resolution.
+//
+// Constant folding computes the exact constant value (constant.Value)
+// for every expression (ast.Expr) that is a compile-time constant.
+// Use Info.Types[expr].Value for the results of constant folding.
+//
+// Type inference computes the type (Type) of every expression (ast.Expr)
+// and checks for compliance with the language specification.
+// Use Info.Types[expr].Type for the results of type inference.
+//
+// For a tutorial, see https://golang.org/s/types-tutorial.
 package types // import "go/types"
 
 import (
@@ -396,8 +418,8 @@ type Info struct {
 }
 
 // An Initializer describes a package-level variable, or a list of variables in
-// case of a multi-valued initialization expression, and the corresponding initialization
-// expression.
+// case of a multi-valued initialization expression, and the corresponding
+// initialization expression.
 type Initializer struct {
     Lhs []*Var // var Lhs = Rhs
     Rhs ast.Expr
@@ -422,8 +444,9 @@ type Map struct {
 }
 
 // A MethodSet is an ordered set of concrete or abstract (interface) methods; a
-// method is a MethodVal selection, and they are ordered by ascending m.Obj().Id().
-// The zero value for a MethodSet is a ready-to-use empty method set.
+// method is a MethodVal selection, and they are ordered by ascending
+// m.Obj().Id(). The zero value for a MethodSet is a ready-to-use empty method
+// set.
 type MethodSet struct {
     list []*Selection
 }
@@ -611,9 +634,9 @@ type Struct struct {
     offsetsOnce sync.Once // for threadsafe lazy initialization of offsets
 }
 
-// A Tuple represents an ordered list of variables; a nil *Tuple is a valid (empty)
-// tuple. Tuples are used as components of signatures and to represent the type
-// of multiple assignments; they are not first class types of Go.
+// A Tuple represents an ordered list of variables; a nil *Tuple is a valid
+// (empty) tuple. Tuples are used as components of signatures and to represent
+// the type of multiple assignments; they are not first class types of Go.
 type Tuple struct {
     vars []*Var
 }
@@ -649,7 +672,8 @@ type Var struct {
     used      bool // set if the variable was used
 }
 
-// AssertableTo reports whether a value of type V can be asserted to have type T.
+// AssertableTo reports whether a value of type V can be asserted to have type
+// T.
 func AssertableTo(V *Interface, T Type) bool
 
 // AssignableTo reports whether a value of type V is assignable to a variable of
@@ -763,7 +787,8 @@ func NewField(pos token.Pos, pkg *Package, name string, typ Type, anonymous bool
 
 func NewFunc(pos token.Pos, pkg *Package, name string, sig *Signature) *Func
 
-// NewInterface returns a new interface for the given methods and embedded types.
+// NewInterface returns a new interface for the given methods and embedded
+// types.
 func NewInterface(methods []*Func, embeddeds []*Named) *Interface
 
 func NewLabel(pos token.Pos, pkg *Package, name string) *Label
@@ -775,8 +800,8 @@ func NewMap(key, elem Type) *Map
 // It always returns a non-nil method set, even if it is empty.
 func NewMethodSet(T Type) *MethodSet
 
-// NewNamed returns a new named type for the given type name, underlying type, and
-// associated methods. The underlying type must not be a *Named.
+// NewNamed returns a new named type for the given type name, underlying type,
+// and associated methods. The underlying type must not be a *Named.
 func NewNamed(obj *TypeName, underlying Type, methods []*Func) *Named
 
 // NewPackage returns a new Package for the given package path and name;
@@ -805,9 +830,9 @@ func NewSignature(recv *Var, params, results *Tuple, variadic bool) *Signature
 func NewSlice(elem Type) *Slice
 
 // NewStruct returns a new struct with the given fields and corresponding field
-// tags. If a field with index i has a tag, tags[i] must be that tag, but len(tags)
-// may be only as long as required to hold the tag with the largest index i. Consequently,
-// if no field has a tag, tags may be nil.
+// tags. If a field with index i has a tag, tags[i] must be that tag, but
+// len(tags) may be only as long as required to hold the tag with the largest
+// index i. Consequently, if no field has a tag, tags may be nil.
 func NewStruct(fields []*Var, tags []string) *Struct
 
 // NewTuple returns a new tuple for the given variables.
@@ -845,7 +870,8 @@ func TestZeroTok(t *testing.T)
 // package-level objects, and may be nil.
 func TypeString(typ Type, qf Qualifier) string
 
-// WriteExpr writes the (possibly simplified) string representation for x to buf.
+// WriteExpr writes the (possibly simplified) string representation for x to
+// buf.
 func WriteExpr(buf *bytes.Buffer, x ast.Expr)
 
 // WriteSignature writes the representation of the signature sig to buf,
@@ -943,8 +969,9 @@ func (*Initializer) String() string
 // Complete returns the receiver.
 func (*Interface) Complete() *Interface
 
-// Embedded returns the i'th embedded type of interface t for 0 <= i < t.NumEmbeddeds().
-// The types are ordered by the corresponding TypeName's unique Id.
+// Embedded returns the i'th embedded type of interface t for 0 <= i <
+// t.NumEmbeddeds(). The types are ordered by the corresponding TypeName's
+// unique Id.
 func (*Interface) Embedded(i int) *Named
 
 // Empty returns true if t is the empty interface.
@@ -961,8 +988,8 @@ func (*Interface) Method(i int) *Func
 // NumEmbeddeds returns the number of embedded types in interface t.
 func (*Interface) NumEmbeddeds() int
 
-// NumExplicitMethods returns the number of explicitly declared methods of interface
-// t.
+// NumExplicitMethods returns the number of explicitly declared methods of
+// interface t.
 func (*Interface) NumExplicitMethods() int
 
 // NumMethods returns the total number of methods of interface t.
@@ -990,7 +1017,8 @@ func (*MethodSet) At(i int) *Selection
 // Len returns the number of methods in s.
 func (*MethodSet) Len() int
 
-// Lookup returns the method with matching package and name, or nil if not found.
+// Lookup returns the method with matching package and name, or nil if not
+// found.
 func (*MethodSet) Lookup(pkg *Package, name string) *Selection
 
 func (*MethodSet) String() string
@@ -1002,15 +1030,15 @@ func (*Named) AddMethod(m *Func)
 // Method returns the i'th method of named type t for 0 <= i < t.NumMethods().
 func (*Named) Method(i int) *Func
 
-// NumMethods returns the number of explicit methods whose receiver is named type
-// t.
+// NumMethods returns the number of explicit methods whose receiver is named
+// type t.
 func (*Named) NumMethods() int
 
 // TypeName returns the type name for the named type t.
 func (*Named) Obj() *TypeName
 
-// SetUnderlying sets the underlying type and marks t as complete. TODO(gri) determine
-// if there's a better solution rather than providing this function
+// SetUnderlying sets the underlying type and marks t as complete. TODO(gri)
+// determine if there's a better solution rather than providing this function
 func (*Named) SetUnderlying(underlying Type)
 
 func (*Named) String() string
@@ -1054,8 +1082,8 @@ func (*Package) SetName(name string)
 
 func (*Package) String() string
 
-// Imported returns the package that was imported. It is distinct from Pkg(), which
-// is the package containing the import statement.
+// Imported returns the package that was imported. It is distinct from Pkg(),
+// which is the package containing the import statement.
 func (*PkgName) Imported() *Package
 
 func (*PkgName) String() string
@@ -1204,8 +1232,8 @@ func (*StdSizes) Sizeof(T Type) int64
 // Field returns the i'th field for 0 <= i < NumFields().
 func (*Struct) Field(i int) *Var
 
-// NumFields returns the number of fields in the struct (including blank and anonymous
-// fields).
+// NumFields returns the number of fields in the struct (including blank and
+// anonymous fields).
 func (*Struct) NumFields() int
 
 func (*Struct) String() string

@@ -1143,7 +1143,7 @@ func Rconv(r int) string
 
 func SYSARG4(op1 int, Cn int, Cm int, op2 int) int
 
-//  form offset parameter to SYS; special register number
+// form offset parameter to SYS; special register number
 func SYSARG5(op0 int, op1 int, Cn int, Cm int, op2 int) int
 
 func SYSHINT(x uint32) uint32

@@ -75,7 +75,7 @@ const (
 
 const Beof = -1
 
-//  ARM scond byte
+// ARM scond byte
 const (
     C_SCOND     = (1 << 4) - 1
     C_SBIT      = 1 << 4
@@ -105,7 +105,7 @@ const (
     HistVersion = 1
 )
 
-//  executable header types
+// executable header types
 const (
     Hunknown = 0 + iota
     Hdarwin
@@ -466,8 +466,8 @@ var (
     Fieldtrack_enabled   int
 )
 
-// An Addr is an argument to an instruction. The general forms and their encodings
-// are:
+// An Addr is an argument to an instruction. The general forms and their
+// encodings are:
 //
 //     sym±offset(symkind)(reg)(index*scale)
 //         Memory reference at address &sym(symkind) + offset + reg + index*scale.
@@ -646,15 +646,32 @@ type LSym struct {
     R      []Reloc
 }
 
-// A LineHist records the history of the file input stack, which maps the virtual
-// line number, an incrementing count of lines processed in any input file and typically
-// named lineno, to a stack of file:line pairs showing the path of inclusions that
-// led to that position. The first line directive (//line in Go, #line in assembly)
-// is treated as pushing a new entry on the stack, so that errors can report both
-// the actual and translated line number.
+// A LineHist records the history of the file input stack, which maps the
+// virtual line number, an incrementing count of lines processed in any input
+// file and typically named lineno, to a stack of file:line pairs showing the
+// path of inclusions that led to that position. The first line directive
+// (//line in Go, #line in assembly) is treated as pushing a new entry on the
+// stack, so that errors can report both the actual and translated line number.
 //
-// In typical use, the virtual lineno begins at 1, and file line numbers also begin
-// at 1, but the only requirements placed upon the numbers by this code are:
+// In typical use, the virtual lineno begins at 1, and file line numbers also
+// begin at 1, but the only requirements placed upon the numbers by this code
+// are:
+//
+//     - calls to Push, Update, and Pop must be monotonically increasing in lineno
+//     - except as specified by those methods, virtual and file line number increase
+//       together, so that given (only) calls Push(10, "x.go", 1) and Pop(15),
+//       virtual line 12 corresponds to x.go line 3.
+
+// A LineHist records the history of the file input stack, which maps the
+// virtual line number, an incrementing count of lines processed in any input
+// file and typically named lineno, to a stack of file:line pairs showing the
+// path of inclusions that led to that position. The first line directive
+// (//line in Go, #line in assembly) is treated as pushing a new entry on the
+// stack, so that errors can report both the actual and translated line number.
+//
+// In typical use, the virtual lineno begins at 1, and file line numbers also
+// begin at 1, but the only requirements placed upon the numbers by this code
+// are:
 //
 //     - calls to Push, Update, and Pop must be monotonically increasing in lineno
 //     - except as specified by those methods, virtual and file line number increase
@@ -772,6 +789,10 @@ type Pcdata struct {
 // Pcdata iterator.
 //
 //     for(pciterinit(ctxt, &it, &pcd); !it.done; pciternext(&it)) { it.value holds in [it.pc, it.nextpc) }
+
+// Pcdata iterator.
+//
+//     for(pciterinit(ctxt, &it, &pcd); !it.done; pciternext(&it)) { it.value holds in [it.pc, it.nextpc) }
 type Pciter struct {
     d       Pcdata
     p       []byte
@@ -832,9 +853,9 @@ type Prog struct {
     Info ProgInfo
 }
 
-// ProgInfo holds information about the instruction for use by clients such as the
-// compiler. The exact meaning of this data is up to the client and is not interpreted
-// by the cmd/internal/obj/... packages.
+// ProgInfo holds information about the instruction for use by clients such as
+// the compiler. The exact meaning of this data is up to the client and is not
+// interpreted by the cmd/internal/obj/... packages.
 type ProgInfo struct {
     _        struct{} // to prevent unkeyed literals. Trailing zero-sized field will take space.
     Flags    uint32   // flag bits
@@ -951,7 +972,7 @@ func Linklookup(ctxt *Link, name string, v int) *LSym
 
 func Linknew(arch *LinkArch) *Link
 
-//  * start a new Prog list.
+// * start a new Prog list.
 func Linknewplist(ctxt *Link) *Plist
 
 func Linkprfile(ctxt *Link, line int)
@@ -1014,12 +1035,12 @@ func (*LineHist) LineString(lineno int) string
 // Pop records that at lineno the current file was popped from the input stack.
 func (*LineHist) Pop(lineno int)
 
-// Push records that at that lineno a new file with the given name was pushed onto
-// the input stack.
+// Push records that at that lineno a new file with the given name was pushed
+// onto the input stack.
 func (*LineHist) Push(lineno int, file string)
 
-// Update records that at lineno the file name and line number were changed using
-// a line directive (//line in Go, #line in assembly).
+// Update records that at lineno the file name and line number were changed
+// using a line directive (//line in Go, #line in assembly).
 func (*LineHist) Update(lineno int, file string, line int)
 
 // AddImport adds a package to the list of imported packages.

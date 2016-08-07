@@ -5,7 +5,9 @@
 // +build ingore
 
 // Package gcimporter implements Import for gc-generated object files.
-package gcimporter // import "go/internal/gcimporter"
+
+// Package gcimporter implements Import for gc-generated object files.
+package gcimporter
 
 import (
     "bufio"
@@ -78,7 +80,8 @@ func TestImportStdLib(t *testing.T)
 
 func TestImportTestdata(t *testing.T)
 
-// TODO(gri) Remove this function once we switched to new export format by default
+// TODO(gri) Remove this function once we switched to new export format by
+// default
 //
 //     (and update the comment and want list in TestImportTestdata).
 func TestImportTestdataNewExport(t *testing.T)

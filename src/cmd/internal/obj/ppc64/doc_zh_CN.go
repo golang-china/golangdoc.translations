@@ -321,7 +321,7 @@ const (
     ABL = obj.ACALL
 )
 
-//  * GENERAL:
+// * GENERAL:
 //  *
 //  * compiler allocates R3 up as temps
 //  * compiler allocates register variables R7-R27
@@ -400,7 +400,7 @@ const (
     NOSCHED = 1 << 9
 )
 
-//  * powerpc 64
+// * powerpc 64
 const (
     NSNAME = 8
     NSYM   = 50
@@ -898,7 +898,7 @@ type Optab struct {
 
 func AOP_IRR(op uint32, d uint32, a uint32, simm uint32) uint32
 
-//  the order is dest, a/s, b/imm for both arithmetic and logical operations
+// the order is dest, a/s, b/imm for both arithmetic and logical operations
 func AOP_RRR(op uint32, d uint32, a uint32, b uint32) uint32
 
 func DRconv(a int) string

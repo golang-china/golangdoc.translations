@@ -7,6 +7,10 @@
 // Package sysdll is an internal leaf package that records and reports
 // which Windows DLL names are used by Go itself. These DLLs are then
 // only loaded from the System32 directory. See Issue 14959.
+
+// Package sysdll is an internal leaf package that records and reports
+// which Windows DLL names are used by Go itself. These DLLs are then
+// only loaded from the System32 directory. See Issue 14959.
 package sysdll // import "internal/syscall/windows/sysdll"
 
 // IsSystemDLL reports whether the named dll key (a base name, like

@@ -46,7 +46,12 @@ func BtoF(b uint64) int
 
 func BtoR(b uint64) int
 
-//  		reg
+// *    bit    reg
+//  		X0
+//  	...
+//  		X15
+
+// reg
 //  		X0
 //  	...
 //  		X15

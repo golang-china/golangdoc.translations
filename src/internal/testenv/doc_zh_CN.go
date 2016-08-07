@@ -10,6 +10,13 @@
 // It is an internal package because these details are specific
 // to the Go team's test setup (on build.golang.org) and not
 // fundamental to tests in general.
+
+// Package testenv provides information about what functionality
+// is available in different testing environments run by the Go team.
+//
+// It is an internal package because these details are specific
+// to the Go team's test setup (on build.golang.org) and not
+// fundamental to tests in general.
 package testenv // import "internal/testenv"
 
 import (
@@ -33,8 +40,8 @@ func HasExec() bool
 // external (non-localhost) networks.
 func HasExternalNetwork() bool
 
-// HasGoBuild reports whether the current system can build programs with ``go build''
-// and then run them with os.StartProcess or exec.Command.
+// HasGoBuild reports whether the current system can build programs with ``go
+// build'' and then run them with os.StartProcess or exec.Command.
 func HasGoBuild() bool
 
 // HasGoRun reports whether the current system can run programs with ``go run.''
@@ -50,12 +57,12 @@ func MustHaveExec(t *testing.T)
 // If not, MustHaveExternalNetwork calls t.Skip with an explanation.
 func MustHaveExternalNetwork(t *testing.T)
 
-// MustHaveGoBuild checks that the current system can build programs with ``go build''
-// and then run them with os.StartProcess or exec.Command. If not, MustHaveGoBuild
-// calls t.Skip with an explanation.
+// MustHaveGoBuild checks that the current system can build programs with ``go
+// build'' and then run them with os.StartProcess or exec.Command. If not,
+// MustHaveGoBuild calls t.Skip with an explanation.
 func MustHaveGoBuild(t *testing.T)
 
-// MustHaveGoRun checks that the current system can run programs with ``go run.''
-// If not, MustHaveGoRun calls t.Skip with an explanation.
+// MustHaveGoRun checks that the current system can run programs with ``go
+// run.'' If not, MustHaveGoRun calls t.Skip with an explanation.
 func MustHaveGoRun(t *testing.T)
 

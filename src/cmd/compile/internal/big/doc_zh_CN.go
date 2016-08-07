@@ -579,8 +579,8 @@ func TestFloatPredicates(t *testing.T)
 
 func TestFloatQuo(t *testing.T)
 
-// TestFloatQuoSmoke tests all divisions x/y for values x, y in the range [-n, +n];
-// it serves as a smoke test for basic correctness of division.
+// TestFloatQuoSmoke tests all divisions x/y for values x, y in the range [-n,
+// +n]; it serves as a smoke test for basic correctness of division.
 func TestFloatQuoSmoke(t *testing.T)
 
 func TestFloatRat(t *testing.T)
@@ -782,13 +782,13 @@ func (*Float) Acc() Accuracy
 
 // Add sets z to the rounded sum x+y and returns z. If z's precision is 0, it is
 // changed to the larger of x's or y's precision before the operation. Rounding
-// is performed according to z's precision and rounding mode; and z's accuracy reports
-// the result error relative to the exact (not rounded) result. Add panics with
-// ErrNaN if x and y are infinities with opposite signs. The value of z is undefined
-// in that case.
+// is performed according to z's precision and rounding mode; and z's accuracy
+// reports the result error relative to the exact (not rounded) result. Add
+// panics with ErrNaN if x and y are infinities with opposite signs. The value
+// of z is undefined in that case.
 //
-// BUG(gri) When rounding ToNegativeInf, the sign of Float values rounded to 0 is
-// incorrect.
+// BUG(gri) When rounding ToNegativeInf, the sign of Float values rounded to 0
+// is incorrect.
 func (*Float) Add(x, y *Float) *Float
 
 // Append appends to buf the string form of the floating-point number x,
@@ -1053,15 +1053,41 @@ func (*Float) Sub(x, y *Float) *Float
 //     'b'    decimal integer mantissa using x.Prec() bits, or -0
 //     'p'    hexadecimal fraction with 0.5 <= 0.mantissa < 1.0, or -0
 //
-// If format is a different character, Text returns a "%" followed by the unrecognized
-// format character.
+// If format is a different character, Text returns a "%" followed by the
+// unrecognized format character.
 //
-// The precision prec controls the number of digits (excluding the exponent) printed
-// by the 'e', 'E', 'f', 'g', and 'G' formats. For 'e', 'E', and 'f' it is the number
-// of digits after the decimal point. For 'g' and 'G' it is the total number of
-// digits. A negative precision selects the smallest number of decimal digits necessary
-// to identify the value x uniquely using x.Prec() mantissa bits. The prec value
-// is ignored for the 'b' or 'p' format.
+// The precision prec controls the number of digits (excluding the exponent)
+// printed by the 'e', 'E', 'f', 'g', and 'G' formats. For 'e', 'E', and 'f' it
+// is the number of digits after the decimal point. For 'g' and 'G' it is the
+// total number of digits. A negative precision selects the smallest number of
+// decimal digits necessary to identify the value x uniquely using x.Prec()
+// mantissa bits. The prec value is ignored for the 'b' or 'p' format.
+
+// Text converts the floating-point number x to a string according to the given
+// format and precision prec. The format is one of:
+//
+//     'e'    -d.dddde±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'E'    -d.ddddE±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'f'    -ddddd.dddd, no exponent
+//     'g'    like 'e' for large exponents, like 'f' otherwise
+//     'G'    like 'E' for large exponents, like 'f' otherwise
+//     'b'    -ddddddp±dd, binary exponent
+//     'p'    -0x.dddp±dd, binary exponent, hexadecimal mantissa
+//
+// For the binary exponent formats, the mantissa is printed in normalized form:
+//
+//     'b'    decimal integer mantissa using x.Prec() bits, or -0
+//     'p'    hexadecimal fraction with 0.5 <= 0.mantissa < 1.0, or -0
+//
+// If format is a different character, Text returns a "%" followed by the
+// unrecognized format character.
+//
+// The precision prec controls the number of digits (excluding the exponent)
+// printed by the 'e', 'E', 'f', 'g', and 'G' formats. For 'e', 'E', and 'f' it
+// is the number of digits after the decimal point. For 'g' and 'G' it is the
+// total number of digits. A negative precision selects the smallest number of
+// decimal digits necessary to identify the value x uniquely using x.Prec()
+// mantissa bits. The prec value is ignored for the 'b' or 'p' format.
 func (*Float) Text(format byte, prec int) string
 
 // Uint64 returns the unsigned integer resulting from truncating x
@@ -1398,7 +1424,8 @@ func (*Rat) SetString(s string) (*Rat, bool)
 //     +1 if x >  0
 func (*Rat) Sign() int
 
-// String returns a string representation of x in the form "a/b" (even if b == 1).
+// String returns a string representation of x in the form "a/b" (even if b ==
+// 1).
 func (*Rat) String() string
 
 // Sub sets z to the difference x-y and returns z.

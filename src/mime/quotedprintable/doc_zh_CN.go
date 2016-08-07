@@ -4,6 +4,20 @@
 
 // +build ingore
 
+// Package quotedprintable implements quoted-printable encoding as specified by
+// RFC 2045.
+
+// Package quotedprintable implements quoted-printable encoding as specified by
+// RFC 2045.
 package quotedprintable
 
+import (
+    "bufio"
+    "bytes"
+    "fmt"
+    "io"
+)
+
+// NewReader returns a quoted-printable reader, decoding from r.
 func NewReader(r io.Reader) io.Reader
+

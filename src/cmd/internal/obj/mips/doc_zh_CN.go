@@ -199,7 +199,7 @@ const (
     FuncAlign = 8
 )
 
-//  * mips 64
+// * mips 64
 const (
     NSNAME = 8
     NSYM   = 50

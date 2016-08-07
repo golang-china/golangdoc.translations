@@ -33,7 +33,8 @@ var Pseudos = map[string]int{
     "TEXT":     obj.ATEXT,
 }
 
-// Arch wraps the link architecture object with more architecture-specific information.
+// Arch wraps the link architecture object with more architecture-specific
+// information.
 type Arch struct {
 
     // Map of instruction names to enumeration.
@@ -53,14 +54,16 @@ type Arch struct {
 // cond was unrecognized.
 func ARM64Suffix(prog *obj.Prog, cond string) bool
 
-// ARMConditionCodes handles the special condition code situation for the ARM. It
-// returns a boolean to indicate success; failure means cond was unrecognized.
+// ARMConditionCodes handles the special condition code situation for the ARM.
+// It returns a boolean to indicate success; failure means cond was
+// unrecognized.
 func ARMConditionCodes(prog *obj.Prog, cond string) bool
 
-// ARMMRCOffset implements the peculiar encoding of the MRC and MCR instructions.
-// The difference between MRC and MCR is represented by a bit high in the word,
-// not in the usual way by the opcode itself. Asm must use AMRC for both instructions,
-// so we return the opcode for MRC so that asm doesn't need to import obj/arm.
+// ARMMRCOffset implements the peculiar encoding of the MRC and MCR
+// instructions. The difference between MRC and MCR is represented by a bit high
+// in the word, not in the usual way by the opcode itself. Asm must use AMRC for
+// both instructions, so we return the opcode for MRC so that asm doesn't need
+// to import obj/arm.
 func ARMMRCOffset(op int, cond string, x0, x1, x2, x3, x4, x5 int64) (offset int64, op0 int16, ok bool)
 
 // IsARM64CMP reports whether the op (as defined by an arm.A* constant) is
@@ -122,7 +125,7 @@ func ParseARM64Suffix(cond string) (uint8, bool)
 // codes, such as ".P.W". An initial period is ignored.
 func ParseARMCondition(cond string) (uint8, bool)
 
-// Set configures the architecture specified by GOARCH and returns its representation.
-// It returns nil if GOARCH is not recognized.
+// Set configures the architecture specified by GOARCH and returns its
+// representation. It returns nil if GOARCH is not recognized.
 func Set(GOARCH string) *Arch
 
