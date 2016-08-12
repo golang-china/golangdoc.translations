@@ -4,28 +4,14 @@
 
 // +build ingore
 
-package armasm // import "cmd/internal/unvendor/golang.org/x/arch/arm/armasm"
+package armasm
 
 import (
-    "bufio"
     "bytes"
-    "debug/elf"
     "encoding/binary"
-    "encoding/hex"
-    "flag"
     "fmt"
     "io"
-    "io/ioutil"
-    "log"
-    "math/rand"
-    "os"
-    "os/exec"
-    "regexp"
-    "runtime"
-    "strconv"
     "strings"
-    "testing"
-    "time"
 )
 
 const (
@@ -135,19 +121,32 @@ const (
 )
 
 const (
-    AddrPostIndex // [R], X – use address R, set R = R + X
-    AddrPreIndex  // [R, X]! – use address R + X, set R = R + X
-    AddrOffset    // [R, X] – use address R + X
-    AddrLDM       // R – [R] but formats as R, for LDM/STM only
-    AddrLDM_WB    // R! - [R], X where X is instruction-specific amount, for LDM/STM only
-)
-
-const (
+    _   Mode = iota
     ModeARM
     ModeThumb
 )
 
 const (
+    _ instArg = iota
+)
+
+const (
+    _   Op  = iota
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     ADC_EQ
     ADC_NE
     ADC_CS
@@ -437,7 +436,21 @@ const (
     BXJ
     BXJ_ZZ
     CLREX
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     CLZ_EQ
     CLZ_NE
     CLZ_CS
@@ -504,7 +517,20 @@ const (
     DBG_ZZ
     DMB
     DSB
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     EOR_EQ
     EOR_NE
     EOR_CS
@@ -538,7 +564,21 @@ const (
     EOR_S
     EOR_S_ZZ
     ISB
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     LDM_EQ
     LDM_NE
     LDM_CS
@@ -1182,7 +1222,19 @@ const (
     PLD_W
     PLD
     PLI
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     POP_EQ
     POP_NE
     POP_CS
@@ -1680,7 +1732,21 @@ const (
     SEL
     SEL_ZZ
     SETEND
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     SEV_EQ
     SEV_NE
     SEV_CS
@@ -3170,7 +3236,21 @@ const (
     UMULL_S
     UMULL_S_ZZ
     UNDEF
-
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
+    _
     UQADD16_EQ
     UQADD16_NE
     UQADD16_CS
@@ -4645,6 +4725,15 @@ const (
     YIELD_ZZ
 )
 
+const (
+    _             AddrMode = iota
+    AddrPostIndex          // [R], X – use address R, set R = R + X
+    AddrPreIndex           // [R, X]! – use address R + X, set R = R + X
+    AddrOffset             // [R, X] – use address R + X
+    AddrLDM                // R – [R] but formats as R, for LDM/STM only
+    AddrLDM_WB             // R! - [R], X where X is instruction-specific amount, for LDM/STM only
+)
+
 // An AddrMode is an ARM addressing mode.
 type AddrMode uint8
 
@@ -4662,25 +4751,6 @@ type Args [4]Arg
 
 // An Endian is the argument to the SETEND instruction.
 type Endian uint8
-
-// An ExtDis is a connection between an external disassembler and a test.
-type ExtDis struct {
-    Arch     Mode
-    Dec      chan ExtInst
-    File     *os.File
-    Size     int
-    KeepFile bool
-    Cmd      *exec.Cmd
-}
-
-// A ExtInst represents a single decoded instruction parsed
-// from an external disassembler's output.
-type ExtInst struct {
-    addr uint32
-    enc  [4]byte
-    nenc int
-    text string
-}
 
 type Float32Imm float32
 
@@ -4735,8 +4805,8 @@ type PCRel int32
 // The zero value denotes R0, not the absence of a register.
 type Reg uint8
 
-// A RegList is a register list. Bits at indexes x = 0 through 15 indicate whether
-// the corresponding Rx register is in the list.
+// A RegList is a register list. Bits at indexes x = 0 through 15 indicate
+// whether the corresponding Rx register is in the list.
 type RegList uint16
 
 // A RegShift is a register shifted by a constant.
@@ -4771,44 +4841,23 @@ type Shift uint8
 func Decode(src []byte, mode Mode) (inst Inst, err error)
 
 // GNUSyntax returns the GNU assembler syntax for the instruction, as defined by
-// GNU binutils. This form typically matches the syntax defined in the ARM Reference
-// Manual.
+// GNU binutils. This form typically matches the syntax defined in the ARM
+// Reference Manual.
 func GNUSyntax(inst Inst) string
 
 // GoSyntax returns the Go assembler syntax for the instruction. The syntax was
-// originally defined by Plan 9. The pc is the program counter of the instruction,
-// used for expanding PC-relative addresses into absolute ones. The symname function
-// queries the symbol table for the program being disassembled. Given a target address
-// it returns the name and base address of the symbol containing the target, if
-// any; otherwise it returns "", 0. The reader r should read from the text segment
-// using text addresses as offsets; it is used to display pc-relative loads as constant
-// loads.
+// originally defined by Plan 9. The pc is the program counter of the
+// instruction, used for expanding PC-relative addresses into absolute ones. The
+// symname function queries the symbol table for the program being disassembled.
+// Given a target address it returns the name and base address of the symbol
+// containing the target, if any; otherwise it returns "", 0. The reader r
+// should read from the text segment using text addresses as offsets; it is used
+// to display pc-relative loads as constant loads.
 func GoSyntax(inst Inst, pc uint64, symname func(uint64) (string, uint64), text io.ReaderAt) string
-
-func TestDecode(t *testing.T)
-
-func TestObjdumpARMCond(t *testing.T)
-
-func TestObjdumpARMManual(t *testing.T)
-
-func TestObjdumpARMTestdata(t *testing.T)
-
-func TestObjdumpARMUncond(t *testing.T)
-
-func TestObjdumpARMVFP(t *testing.T)
-
-// Run runs the given command - the external disassembler - and returns
-// a buffered reader of its standard output.
-func (*ExtDis) Run(cmd ...string) (*bufio.Reader, error)
-
-// Wait waits for the command started with Run to exit.
-func (*ExtDis) Wait() error
 
 func (Endian) IsArg()
 
 func (Endian) String() string
-
-func (ExtInst) String() string
 
 func (Float32Imm) IsArg()
 

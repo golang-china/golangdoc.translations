@@ -5,29 +5,15 @@
 // +build ingore
 
 // Package x86asm implements decoding of x86 machine code.
-package x86asm // import "cmd/internal/unvendor/golang.org/x/arch/x86/x86asm"
+package x86asm
 
 import (
-    "bufio"
     "bytes"
-    "debug/elf"
     "encoding/binary"
-    "encoding/hex"
     "errors"
-    "flag"
     "fmt"
-    "io"
-    "io/ioutil"
-    "log"
-    "math/rand"
-    "os"
-    "os/exec"
-    "regexp"
     "runtime"
-    "strconv"
     "strings"
-    "testing"
-    "time"
 )
 
 const (
@@ -74,6 +60,192 @@ const (
 )
 
 const (
+    _   Reg = iota
+
+    // 8-bit
+    AL
+    CL
+    DL
+    BL
+    AH
+    CH
+    DH
+    BH
+    SPB
+    BPB
+    SIB
+    DIB
+    R8B
+    R9B
+    R10B
+    R11B
+    R12B
+    R13B
+    R14B
+    R15B
+
+    // 16-bit
+    AX
+    CX
+    DX
+    BX
+    SP
+    BP
+    SI
+    DI
+    R8W
+    R9W
+    R10W
+    R11W
+    R12W
+    R13W
+    R14W
+    R15W
+
+    // 32-bit
+    EAX
+    ECX
+    EDX
+    EBX
+    ESP
+    EBP
+    ESI
+    EDI
+    R8L
+    R9L
+    R10L
+    R11L
+    R12L
+    R13L
+    R14L
+    R15L
+
+    // 64-bit
+    RAX
+    RCX
+    RDX
+    RBX
+    RSP
+    RBP
+    RSI
+    RDI
+    R8
+    R9
+    R10
+    R11
+    R12
+    R13
+    R14
+    R15
+
+    // Instruction pointer.
+    IP  // 16-bit
+    EIP // 32-bit
+    RIP // 64-bit
+
+    // 387 floating point registers.
+    F0
+    F1
+    F2
+    F3
+    F4
+    F5
+    F6
+    F7
+
+    // MMX registers.
+    M0
+    M1
+    M2
+    M3
+    M4
+    M5
+    M6
+    M7
+
+    // XMM registers.
+    X0
+    X1
+    X2
+    X3
+    X4
+    X5
+    X6
+    X7
+    X8
+    X9
+    X10
+    X11
+    X12
+    X13
+    X14
+    X15
+
+    // Segment registers.
+    ES
+    CS
+    SS
+    DS
+    FS
+    GS
+
+    // System registers.
+    GDTR
+    IDTR
+    LDTR
+    MSW
+    TASK
+
+    // Control registers.
+    CR0
+    CR1
+    CR2
+    CR3
+    CR4
+    CR5
+    CR6
+    CR7
+    CR8
+    CR9
+    CR10
+    CR11
+    CR12
+    CR13
+    CR14
+    CR15
+
+    // Debug registers.
+    DR0
+    DR1
+    DR2
+    DR3
+    DR4
+    DR5
+    DR6
+    DR7
+    DR8
+    DR9
+    DR10
+    DR11
+    DR12
+    DR13
+    DR14
+    DR15
+
+    // Task registers.
+    TR0
+    TR1
+    TR2
+    TR3
+    TR4
+    TR5
+    TR6
+    TR7
+)
+
+const (
+    _   Op  = iota
+
     AAA
     AAD
     AAM
@@ -681,189 +853,6 @@ const (
     XTEST
 )
 
-const (
-
-    // 8-bit
-    AL
-    CL
-    DL
-    BL
-    AH
-    CH
-    DH
-    BH
-    SPB
-    BPB
-    SIB
-    DIB
-    R8B
-    R9B
-    R10B
-    R11B
-    R12B
-    R13B
-    R14B
-    R15B
-
-    // 16-bit
-    AX
-    CX
-    DX
-    BX
-    SP
-    BP
-    SI
-    DI
-    R8W
-    R9W
-    R10W
-    R11W
-    R12W
-    R13W
-    R14W
-    R15W
-
-    // 32-bit
-    EAX
-    ECX
-    EDX
-    EBX
-    ESP
-    EBP
-    ESI
-    EDI
-    R8L
-    R9L
-    R10L
-    R11L
-    R12L
-    R13L
-    R14L
-    R15L
-
-    // 64-bit
-    RAX
-    RCX
-    RDX
-    RBX
-    RSP
-    RBP
-    RSI
-    RDI
-    R8
-    R9
-    R10
-    R11
-    R12
-    R13
-    R14
-    R15
-
-    // Instruction pointer.
-    IP  // 16-bit
-    EIP // 32-bit
-    RIP // 64-bit
-
-    // 387 floating point registers.
-    F0
-    F1
-    F2
-    F3
-    F4
-    F5
-    F6
-    F7
-
-    // MMX registers.
-    M0
-    M1
-    M2
-    M3
-    M4
-    M5
-    M6
-    M7
-
-    // XMM registers.
-    X0
-    X1
-    X2
-    X3
-    X4
-    X5
-    X6
-    X7
-    X8
-    X9
-    X10
-    X11
-    X12
-    X13
-    X14
-    X15
-
-    // Segment registers.
-    ES
-    CS
-    SS
-    DS
-    FS
-    GS
-
-    // System registers.
-    GDTR
-    IDTR
-    LDTR
-    MSW
-    TASK
-
-    // Control registers.
-    CR0
-    CR1
-    CR2
-    CR3
-    CR4
-    CR5
-    CR6
-    CR7
-    CR8
-    CR9
-    CR10
-    CR11
-    CR12
-    CR13
-    CR14
-    CR15
-
-    // Debug registers.
-    DR0
-    DR1
-    DR2
-    DR3
-    DR4
-    DR5
-    DR6
-    DR7
-    DR8
-    DR9
-    DR10
-    DR11
-    DR12
-    DR13
-    DR14
-    DR15
-
-    // Task registers.
-    TR0
-    TR1
-    TR2
-    TR3
-    TR4
-    TR5
-    TR6
-    TR7
-)
-
 // These are the errors returned by Decode.
 var (
     ErrInvalidMode  = errors.New("invalid x86 mode in Decode")
@@ -882,25 +871,6 @@ type Arg interface {
 // If an instruction has fewer than 4 arguments,
 // the final elements in the array are nil.
 type Args [4]Arg
-
-// An ExtDis is a connection between an external disassembler and a test.
-type ExtDis struct {
-    Arch     int
-    Dec      chan ExtInst
-    File     *os.File
-    Size     int
-    KeepFile bool
-    Cmd      *exec.Cmd
-}
-
-// A ExtInst represents a single decoded instruction parsed
-// from an external disassembler's output.
-type ExtInst struct {
-    addr uint32
-    enc  [32]byte
-    nenc int
-    text string
-}
 
 // An Imm is an integer constant.
 type Imm int64
@@ -957,172 +927,21 @@ type Rel int32
 func Decode(src []byte, mode int) (inst Inst, err error)
 
 // GNUSyntax returns the GNU assembler syntax for the instruction, as defined by
-// GNU binutils. This general form is often called ``AT&T syntax'' as a reference
-// to AT&T System V Unix.
+// GNU binutils. This general form is often called ``AT&T syntax'' as a
+// reference to AT&T System V Unix.
 func GNUSyntax(inst Inst) string
 
 // GoSyntax returns the Go assembler syntax for the instruction. The syntax was
-// originally defined by Plan 9. The pc is the program counter of the instruction,
-// used for expanding PC-relative addresses into absolute ones. The symname function
-// queries the symbol table for the program being disassembled. Given a target address
-// it returns the name and base address of the symbol containing the target, if
-// any; otherwise it returns "", 0.
+// originally defined by Plan 9. The pc is the program counter of the
+// instruction, used for expanding PC-relative addresses into absolute ones. The
+// symname function queries the symbol table for the program being disassembled.
+// Given a target address it returns the name and base address of the symbol
+// containing the target, if any; otherwise it returns "", 0.
 func GoSyntax(inst Inst, pc uint64, symname func(uint64) (string, uint64)) string
 
-// IntelSyntax returns the Intel assembler syntax for the instruction, as defined
-// by Intel's XED tool.
+// IntelSyntax returns the Intel assembler syntax for the instruction, as
+// defined by Intel's XED tool.
 func IntelSyntax(inst Inst) string
-
-func TestDecode(t *testing.T)
-
-func TestObjdump320F(t *testing.T)
-
-func TestObjdump320F38(t *testing.T)
-
-func TestObjdump320F3A(t *testing.T)
-
-func TestObjdump32Manual(t *testing.T)
-
-func TestObjdump32ModRM(t *testing.T)
-
-func TestObjdump32OneByte(t *testing.T)
-
-func TestObjdump32Prefix(t *testing.T)
-
-func TestObjdump32Testdata(t *testing.T)
-
-func TestObjdump640F(t *testing.T)
-
-func TestObjdump640F38(t *testing.T)
-
-func TestObjdump640F3A(t *testing.T)
-
-func TestObjdump64Manual(t *testing.T)
-
-func TestObjdump64ModRM(t *testing.T)
-
-func TestObjdump64OneByte(t *testing.T)
-
-func TestObjdump64Prefix(t *testing.T)
-
-func TestObjdump64REX0F(t *testing.T)
-
-func TestObjdump64REX0F38(t *testing.T)
-
-func TestObjdump64REX0F3A(t *testing.T)
-
-func TestObjdump64REXModRM(t *testing.T)
-
-func TestObjdump64REXOneByte(t *testing.T)
-
-func TestObjdump64REXPrefix(t *testing.T)
-
-func TestObjdump64REXTestdata(t *testing.T)
-
-func TestObjdump64Testdata(t *testing.T)
-
-func TestPlan9320F(t *testing.T)
-
-func TestPlan9320F38(t *testing.T)
-
-func TestPlan9320F3A(t *testing.T)
-
-func TestPlan932Manual(t *testing.T)
-
-func TestPlan932ModRM(t *testing.T)
-
-func TestPlan932OneByte(t *testing.T)
-
-func TestPlan932Prefix(t *testing.T)
-
-func TestPlan932Testdata(t *testing.T)
-
-func TestPlan9640F(t *testing.T)
-
-func TestPlan9640F38(t *testing.T)
-
-func TestPlan9640F3A(t *testing.T)
-
-func TestPlan964Manual(t *testing.T)
-
-func TestPlan964ModRM(t *testing.T)
-
-func TestPlan964OneByte(t *testing.T)
-
-func TestPlan964Prefix(t *testing.T)
-
-func TestPlan964REX0F(t *testing.T)
-
-func TestPlan964REX0F38(t *testing.T)
-
-func TestPlan964REX0F3A(t *testing.T)
-
-func TestPlan964REXModRM(t *testing.T)
-
-func TestPlan964REXOneByte(t *testing.T)
-
-func TestPlan964REXPrefix(t *testing.T)
-
-func TestPlan964REXTestdata(t *testing.T)
-
-func TestPlan964Testdata(t *testing.T)
-
-func TestRegString(t *testing.T)
-
-func TestXed320F(t *testing.T)
-
-func TestXed320F38(t *testing.T)
-
-func TestXed320F3A(t *testing.T)
-
-func TestXed32Manual(t *testing.T)
-
-func TestXed32ModRM(t *testing.T)
-
-func TestXed32OneByte(t *testing.T)
-
-func TestXed32Prefix(t *testing.T)
-
-func TestXed32Testdata(t *testing.T)
-
-func TestXed640F(t *testing.T)
-
-func TestXed640F38(t *testing.T)
-
-func TestXed640F3A(t *testing.T)
-
-func TestXed64Manual(t *testing.T)
-
-func TestXed64ModRM(t *testing.T)
-
-func TestXed64OneByte(t *testing.T)
-
-func TestXed64Prefix(t *testing.T)
-
-func TestXed64REX0F(t *testing.T)
-
-func TestXed64REX0F38(t *testing.T)
-
-func TestXed64REX0F3A(t *testing.T)
-
-func TestXed64REXModRM(t *testing.T)
-
-func TestXed64REXOneByte(t *testing.T)
-
-func TestXed64REXPrefix(t *testing.T)
-
-func TestXed64REXTestdata(t *testing.T)
-
-func TestXed64Testdata(t *testing.T)
-
-// Run runs the given command - the external disassembler - and returns
-// a buffered reader of its standard output.
-func (*ExtDis) Run(cmd ...string) (*bufio.Reader, error)
-
-// Wait waits for the command started with Run to exit.
-func (*ExtDis) Wait() error
-
-func (ExtInst) String() string
 
 func (Imm) String() string
 
