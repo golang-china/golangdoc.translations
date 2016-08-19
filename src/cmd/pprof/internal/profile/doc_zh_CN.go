@@ -29,95 +29,110 @@ import (
     "time"
 )
 
-var (
 
-    // LegacyHeapAllocated instructs the heapz parsers to use the
-    // allocated memory stats instead of the default in-use memory. Note
-    // that tcmalloc doesn't provide all allocated memory, only in-use
-    // stats.
-    LegacyHeapAllocated bool
+var (
+	// LegacyHeapAllocated instructs the heapz parsers to use the
+	// allocated memory stats instead of the default in-use memory. Note
+	// that tcmalloc doesn't provide all allocated memory, only in-use
+	// stats.
+	LegacyHeapAllocated bool
 )
+
+
+// Demangler maps symbol names to a human-readable form. This may
+// include C++ demangling and additional simplification. Names that
+// are not demangled may be missing from the resulting map.
 
 // Demangler maps symbol names to a human-readable form. This may include C++
 // demangling and additional simplification. Names that are not demangled may be
 // missing from the resulting map.
 type Demangler func(name []string) (map[string]string, error)
 
+
 // Function corresponds to Profile.Function
 type Function struct {
-    ID         uint64
-    Name       string
-    SystemName string
-    Filename   string
-    StartLine  int64
+	ID         uint64
+	Name       string
+	SystemName string
+	Filename   string
+	StartLine  int64
 }
+
 
 // Label corresponds to Profile.Label
 type Label struct {
 }
 
+
 // Line corresponds to Profile.Line
 type Line struct {
-    Function *Function
-    Line     int64
+	Function *Function
+	Line     int64
 }
+
 
 // Location corresponds to Profile.Location
 type Location struct {
-    ID      uint64
-    Mapping *Mapping
-    Address uint64
-    Line    []Line
+	ID      uint64
+	Mapping *Mapping
+	Address uint64
+	Line    []Line
 }
+
 
 // Mapping corresponds to Profile.Mapping
 type Mapping struct {
-    ID              uint64
-    Start           uint64
-    Limit           uint64
-    Offset          uint64
-    File            string
-    BuildID         string
-    HasFunctions    bool
-    HasFilenames    bool
-    HasLineNumbers  bool
-    HasInlineFrames bool
+	ID              uint64
+	Start           uint64
+	Limit           uint64
+	Offset          uint64
+	File            string
+	BuildID         string
+	HasFunctions    bool
+	HasFilenames    bool
+	HasLineNumbers  bool
+	HasInlineFrames bool
 }
+
 
 // Profile is an in-memory representation of profile.proto.
 type Profile struct {
-    SampleType []*ValueType
-    Sample     []*Sample
-    Mapping    []*Mapping
-    Location   []*Location
-    Function   []*Function
+	SampleType []*ValueType
+	Sample     []*Sample
+	Mapping    []*Mapping
+	Location   []*Location
+	Function   []*Function
 
-    DropFrames string
-    KeepFrames string
+	DropFrames string
+	KeepFrames string
 
-    TimeNanos     int64
-    DurationNanos int64
-    PeriodType    *ValueType
-    Period        int64
+	TimeNanos     int64
+	DurationNanos int64
+	PeriodType    *ValueType
+	Period        int64
 }
+
 
 // Sample corresponds to Profile.Sample
 type Sample struct {
-    Location []*Location
-    Value    []int64
-    Label    map[string][]string
-    NumLabel map[string][]int64
+	Location []*Location
+	Value    []int64
+	Label    map[string][]string
+	NumLabel map[string][]int64
 }
+
 
 // TagMatch selects tags for filtering
 type TagMatch func(key, val string, nval int64) bool
 
+
 // ValueType corresponds to Profile.ValueType
 type ValueType struct {
-    Type string // cpu, wall, inuse_space, etc
-    Unit string // seconds, nanoseconds, bytes, etc
+	Type string // cpu, wall, inuse_space, etc
+	Unit string // seconds, nanoseconds, bytes, etc
 
 }
+
 
 // Parse parses a profile and checks for its validity.  The input
 // may be a gzip-compressed encoded protobuf or one of many legacy

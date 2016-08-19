@@ -11,13 +11,13 @@
 //
 //     k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 //     if err != nil {
-//         log.Fatal(err)
+//     	log.Fatal(err)
 //     }
 //     defer k.Close()
 //
 //     s, _, err := k.GetStringValue("SystemRoot")
 //     if err != nil {
-//         log.Fatal(err)
+//     	log.Fatal(err)
 //     }
 //     fmt.Printf("Windows system root is %q\n", s)
 //
@@ -31,85 +31,92 @@
 //
 //     k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 //     if err != nil {
-//         log.Fatal(err)
+//     	log.Fatal(err)
 //     }
 //     defer k.Close()
 //
 //     s, _, err := k.GetStringValue("SystemRoot")
 //     if err != nil {
-//         log.Fatal(err)
+//     	log.Fatal(err)
 //     }
 //     fmt.Printf("Windows system root is %q\n", s)
 //
 // NOTE: This package is a copy of golang.org/x/sys/windows/registry with
 // KeyInfo.ModTime removed to prevent dependency cycles.
-package registry // import "internal/syscall/windows/registry"
+package registry
 
 import (
     "errors"
-    "internal/syscall/windows/sysdll"
     "io"
     "syscall"
     "unicode/utf16"
     "unsafe"
 )
 
-const (
-    // Registry key security and access rights.
-    // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms724878.aspx
-    // for details.
-    ALL_ACCESS         = 0xf003f
-    CREATE_LINK        = 0x00020
-    CREATE_SUB_KEY     = 0x00004
-    ENUMERATE_SUB_KEYS = 0x00008
-    EXECUTE            = 0x20019
-    NOTIFY             = 0x00010
-    QUERY_VALUE        = 0x00001
-    READ               = 0x20019
-    SET_VALUE          = 0x00002
-    WOW64_32KEY        = 0x00200
-    WOW64_64KEY        = 0x00100
-    WRITE              = 0x20006
-)
 
 const (
-    // Windows defines some predefined root keys that are always open.
-    // An application can use these keys as entry points to the registry.
-    // Normally these keys are used in OpenKey to open new keys,
-    // but they can also be used anywhere a Key is required.
-    CLASSES_ROOT   = Key(syscall.HKEY_CLASSES_ROOT)
-    CURRENT_USER   = Key(syscall.HKEY_CURRENT_USER)
-    LOCAL_MACHINE  = Key(syscall.HKEY_LOCAL_MACHINE)
-    USERS          = Key(syscall.HKEY_USERS)
-    CURRENT_CONFIG = Key(syscall.HKEY_CURRENT_CONFIG)
+	// Registry key security and access rights. See
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724878.aspx
+	// for details.
+	ALL_ACCESS         = 0xf003f
+	CREATE_LINK        = 0x00020
+	CREATE_SUB_KEY     = 0x00004
+	ENUMERATE_SUB_KEYS = 0x00008
+	EXECUTE            = 0x20019
+	NOTIFY             = 0x00010
+	QUERY_VALUE        = 0x00001
+	READ               = 0x20019
+	SET_VALUE          = 0x00002
+	WOW64_32KEY        = 0x00200
+	WOW64_64KEY        = 0x00100
+	WRITE              = 0x20006
 )
 
+
+
 const (
-    // Registry value types.
-    NONE                       = 0
-    SZ                         = 1
-    EXPAND_SZ                  = 2
-    BINARY                     = 3
-    DWORD                      = 4
-    DWORD_BIG_ENDIAN           = 5
-    LINK                       = 6
-    MULTI_SZ                   = 7
-    RESOURCE_LIST              = 8
-    FULL_RESOURCE_DESCRIPTOR   = 9
-    RESOURCE_REQUIREMENTS_LIST = 10
-    QWORD                      = 11
+	// Windows defines some predefined root keys that are always open.
+	// An application can use these keys as entry points to the registry.
+	// Normally these keys are used in OpenKey to open new keys,
+	// but they can also be used anywhere a Key is required.
+	CLASSES_ROOT   = Key(syscall.HKEY_CLASSES_ROOT)
+	CURRENT_USER   = Key(syscall.HKEY_CURRENT_USER)
+	LOCAL_MACHINE  = Key(syscall.HKEY_LOCAL_MACHINE)
+	USERS          = Key(syscall.HKEY_USERS)
+	CURRENT_CONFIG = Key(syscall.HKEY_CURRENT_CONFIG)
 )
+
+
+
+const (
+	// Registry value types.
+	NONE                       = 0
+	SZ                         = 1
+	EXPAND_SZ                  = 2
+	BINARY                     = 3
+	DWORD                      = 4
+	DWORD_BIG_ENDIAN           = 5
+	LINK                       = 6
+	MULTI_SZ                   = 7
+	RESOURCE_LIST              = 8
+	FULL_RESOURCE_DESCRIPTOR   = 9
+	RESOURCE_REQUIREMENTS_LIST = 10
+	QWORD                      = 11
+)
+
+
 
 var (
-    // ErrShortBuffer is returned when the buffer was too short for the operation.
-    ErrShortBuffer = syscall.ERROR_MORE_DATA
-
-    // ErrNotExist is returned when a registry key or value does not exist.
-    ErrNotExist = syscall.ERROR_FILE_NOT_FOUND
-
-    // ErrUnexpectedType is returned by Get*Value when the value's type was unexpected.
-    ErrUnexpectedType = errors.New("unexpected key value type")
+	// ErrShortBuffer is returned when the buffer was too short for the
+	// operation.
+	ErrShortBuffer = syscall.ERROR_MORE_DATA
+	// ErrNotExist is returned when a registry key or value does not exist.
+	ErrNotExist = syscall.ERROR_FILE_NOT_FOUND
+	// ErrUnexpectedType is returned by Get*Value when the value's type was
+	// unexpected.
+	ErrUnexpectedType = errors.New("unexpected key value type")
 )
+
 
 // Key is a handle to an open Windows registry key.
 // Keys can be obtained by calling OpenKey; there are
@@ -117,15 +124,17 @@ var (
 // Keys can be used directly in the Windows API.
 type Key syscall.Handle
 
+
 // A KeyInfo describes the statistics of a key. It is returned by Stat.
 type KeyInfo struct {
-    SubKeyCount     uint32
-    MaxSubKeyLen    uint32 // size of the key's subkey with the longest name, in Unicode characters, not including the terminating zero byte
-    ValueCount      uint32
-    MaxValueNameLen uint32 // size of the key's longest value name, in Unicode characters, not including the terminating zero byte
-    MaxValueLen     uint32 // longest data component among the key's values, in bytes
-    lastWriteTime   syscall.Filetime
+	SubKeyCount     uint32
+	MaxSubKeyLen    uint32 // size of the key's subkey with the longest name, in Unicode characters, not including the terminating zero byte
+	ValueCount      uint32
+	MaxValueNameLen uint32 // size of the key's longest value name, in Unicode characters, not including the terminating zero byte
+	MaxValueLen     uint32 // longest data component among the key's values, in bytes
+	lastWriteTime   syscall.Filetime
 }
+
 
 // CreateKey creates a key named path under open key k.
 // CreateKey returns the new key and a boolean flag that reports
@@ -240,8 +249,6 @@ func (Key) SetStringValue(name, value string) error
 // under key k to value and MULTI_SZ. The value strings
 // must not contain a zero byte.
 func (Key) SetStringsValue(name string, value []string) error
-
-func (Key) SetValue(name string, valtype uint32, data []byte) error
 
 // Stat retrieves information about the open key k.
 func (Key) Stat() (*KeyInfo, error)

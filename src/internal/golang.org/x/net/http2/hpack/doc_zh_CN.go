@@ -36,65 +36,73 @@ import (
 // Huffman-encoded strings.
 var ErrInvalidHuffman = errors.New("hpack: invalid Huffman-encoded data")
 
+
 // ErrStringLength is returned by Decoder.Write when the max string length
 // (as configured by Decoder.SetMaxStringLength) would be violated.
 var ErrStringLength = errors.New("hpack: string too long")
 
+
 // A Decoder is the decoding context for incremental processing of
 // header blocks.
 type Decoder struct {
-    dynTab dynamicTable
-    emit   func(f HeaderField)
+	dynTab dynamicTable
+	emit   func(f HeaderField)
 
-    emitEnabled bool // whether calls to emit are enabled
-    maxStrLen   int  // 0 means unlimited
+	emitEnabled bool // whether calls to emit are enabled
+	maxStrLen   int  // 0 means unlimited
 
-    // buf is the unparsed buffer. It's only written to
-    // saveBuf if it was truncated in the middle of a header
-    // block. Because it's usually not owned, we can only
-    // process it under Write.
-    buf []byte // not owned; only valid during Write
+	// buf is the unparsed buffer. It's only written to
+	// saveBuf if it was truncated in the middle of a header
+	// block. Because it's usually not owned, we can only
+	// process it under Write.
+	buf []byte // not owned; only valid during Write
 
-    // saveBuf is previous data passed to Write which we weren't able
-    // to fully parse before. Unlike buf, we own this data.
-    saveBuf bytes.Buffer
+	// saveBuf is previous data passed to Write which we weren't able
+	// to fully parse before. Unlike buf, we own this data.
+	saveBuf bytes.Buffer
 }
+
 
 // A DecodingError is something the spec defines as a decoding error.
 type DecodingError struct {
-    Err error
+	Err error
 }
 
+
+
 type Encoder struct {
-    dynTab dynamicTable
-    // minSize is the minimum table size set by
-    // SetMaxDynamicTableSize after the previous Header Table Size
-    // Update.
-    minSize uint32
-    // maxSizeLimit is the maximum table size this encoder
-    // supports. This will protect the encoder from too large
-    // size.
-    maxSizeLimit uint32
-    // tableSizeUpdate indicates whether "Header Table Size
-    // Update" is required.
-    tableSizeUpdate bool
-    w               io.Writer
-    buf             []byte
+	dynTab dynamicTable
+	// minSize is the minimum table size set by
+	// SetMaxDynamicTableSize after the previous Header Table Size
+	// Update.
+	minSize uint32
+	// maxSizeLimit is the maximum table size this encoder
+	// supports. This will protect the encoder from too large
+	// size.
+	maxSizeLimit uint32
+	// tableSizeUpdate indicates whether "Header Table Size
+	// Update" is required.
+	tableSizeUpdate bool
+	w               io.Writer
+	buf             []byte
 }
+
 
 // A HeaderField is a name-value pair. Both the name and value are
 // treated as opaque sequences of octets.
 type HeaderField struct {
-    Name, Value string
+	Name, Value string
 
-    // Sensitive means that this header field should never be
-    // indexed.
-    Sensitive bool
+	// Sensitive means that this header field should never be
+	// indexed.
+	Sensitive bool
 }
+
 
 // An InvalidIndexError is returned when an encoder references a table
 // entry before the static table or after the end of the dynamic table.
 type InvalidIndexError int
+
 
 // AppendHuffmanString appends s, as encoded in Huffman codes, to dst
 // and returns the extended buffer.

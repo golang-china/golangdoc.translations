@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -42,30 +42,27 @@ import (
 
 // Handler会在子进程中创建一个CGI环境来运行可执行程序。
 type Handler struct {
-    Path string // path to the CGI executable
-    Root string // root URI prefix of handler or empty for "/"
+	Path string // path to the CGI executable  // CGI可执行脚本的地址
+	Root string // root URI prefix of handler or empty for "/"  // URI的前缀ROOT部分，如果为空的话就代表“/”
 
-    // Dir specifies the CGI executable's working directory.
-    // If Dir is empty, the base directory of Path is used.
-    // If Path has no base directory, the current working
-    // directory is used.
-    Dir string
+	// Dir说明CGI可执行脚本运行所在的工作路径。
+	// 如果Dir为空，Path参数指的文件所在的路径就会被使用。
+	// 如果Path没有路径，那么Dir就会使用当前的执行目录。
+	Dir string
 
-    Env        []string    // extra environment variables to set, if any, as "key=value"
-    InheritEnv []string    // environment variables to inherit from host, as "key"
-    Logger     *log.Logger // optional log for errors or nil to use log.Print
-    Args       []string    // optional arguments to pass to child process
+	Env        []string    // extra environment variables to set, if any, as "key=value"  // 需要额外设置的环境变量，如果有的话，形如“key=value”
+	InheritEnv []string    // environment variables to inherit from host, as "key" // 需要继承自宿主的环境变量，形如“key”
+	Logger     *log.Logger // optional log for errors or nil to use log.Print  // 可选。错误的日志处理器，如果是nil的话就默认使用log.Print
+	Args       []string    // optional arguments to pass to child process  // 可选。给子进程传递的附加参数。
+	Stderr     io.Writer   // optional stderr for the child process; nil means os.Stderr
 
-    // PathLocationHandler specifies the root http Handler that
-    // should handle internal redirects when the CGI process
-    // returns a Location header value starting with a "/", as
-    // specified in RFC 3875 § 6.3.2. This will likely be
-    // http.DefaultServeMux.
-    //
-    // If nil, a CGI response with a local URI path is instead sent
-    // back to the client and not redirected internally.
-    PathLocationHandler http.Handler
+	// PathLocationHandler是http Handler，它说明的是在CGI进程返回的Location header信息是以“/”开头的时候（location是在RFC 3875 § 6.3.2），
+	// 根目录应当如何处理内部的重定向规则。这个值可以是http.DefaultServeMux。
+	//
+	// 如果为空，一个带有本地URI路径的CGI回复会立刻返回给客户端，并且没有进行任何的内部重定向。
+	PathLocationHandler http.Handler
 }
+
 
 // Request returns the HTTP request as represented in the current
 // environment. This assumes the current program is being run

@@ -7,7 +7,7 @@
 // Package importer provides access to export data importers.
 
 // Package importer provides access to export data importers.
-package importer // import "go/importer"
+package importer
 
 import (
     "go/internal/gccgoimporter"
@@ -20,6 +20,7 @@ import (
 // A Lookup function returns a reader to access package data for
 // a given import path, or an error if no matching package is found.
 type Lookup func(path string) (io.ReadCloser, error)
+
 
 // Default returns an Importer for the compiler that built the running binary.
 // If available, the result implements types.ImporterFrom.

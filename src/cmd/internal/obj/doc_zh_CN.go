@@ -1,39 +1,46 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // +build ingore
 
-package obj // import "cmd/internal/obj"
+package obj
 
 import (
     "bufio"
     "bytes"
-    "encoding/binary"
+    "cmd/internal/sys"
     "flag"
     "fmt"
-    "io"
     "log"
     "math"
     "os"
     "path/filepath"
-    "runtime"
     "sort"
     "strconv"
     "strings"
-    "testing"
     "time"
 )
 
+// Each architecture is allotted a distinct subspace of opcode values
+// for declaring its arch-specific opcodes.
+// Within this subspace, the first arch-specific opcode should be
+// at offset A_ARCHSPECIFIC.
+//
+// Subspaces are aligned to a power of two so opcodes can be masked
+// with AMask and used as compact array indices.
 const (
-    ABase386 = (1 + iota) << 12
-    ABaseARM
-    ABaseAMD64
-    ABasePPC64
-    ABaseARM64
-    ABaseMIPS64
-    AMask = 1<<12 - 1 // AND with this to use the opcode as an array index.
+	ABase386 = (1 + iota) << 12
+	ABaseARM
+	ABaseAMD64
+	ABasePPC64
+	ABaseARM64
+	ABaseMIPS64
+	ABaseS390X
+	AMask = 1<<12 - 1 // AND with this to use the opcode as an array index.
+
 )
+
 
 // Prog.as opcodes.
 // These are the portable opcodes, common to all architectures.
@@ -43,608 +50,849 @@ const (
 // distinct space for its instructions. The offset is a power of
 // two so it can be masked to return to origin zero.
 // See the definitions of ABase386 etc.
+
+// These are the portable opcodes.
 const (
-    AXXX = 0 + iota
-    ACALL
-    ACHECKNIL
-    ADATA
-    ADUFFCOPY
-    ADUFFZERO
-    AEND
-    AFUNCDATA
-    AGLOBL
-    AJMP
-    ANOP
-    APCDATA
-    ARET
-    ATEXT
-    ATYPE
-    AUNDEF
-    AUSEFIELD
-    AVARDEF
-    AVARKILL
-    AVARLIVE
-    A_ARCHSPECIFIC
+	AXXX As = iota
+	ACALL
+	ACHECKNIL
+	ADUFFCOPY
+	ADUFFZERO
+	AEND
+	AFUNCDATA
+	AGLOBL
+	AJMP
+	ANOP
+	APCDATA
+	ARET
+	ATEXT
+	ATYPE
+	AUNDEF
+	AUSEFIELD
+	AVARDEF
+	AVARKILL
+	AVARLIVE
+	A_ARCHSPECIFIC
 )
+
 
 // Auto.name
 const (
-    A_AUTO = 1 + iota
-    A_PARAM
+	A_AUTO = 1 + iota
+	A_PARAM
 )
 
-const Beof = -1
+
+//  ARM scond byte
 
 // ARM scond byte
 const (
-    C_SCOND     = (1 << 4) - 1
-    C_SBIT      = 1 << 4
-    C_PBIT      = 1 << 5
-    C_WBIT      = 1 << 6
-    C_FBIT      = 1 << 7
-    C_UBIT      = 1 << 7
-    C_SCOND_XOR = 14
+	C_SCOND     = (1 << 4) - 1
+	C_SBIT      = 1 << 4
+	C_PBIT      = 1 << 5
+	C_WBIT      = 1 << 6
+	C_FBIT      = 1 << 7
+	C_UBIT      = 1 << 7
+	C_SCOND_XOR = 14
 )
 
-const (
-    FmtWidth = 1 << iota
-    FmtLeft
-    FmtSharp
-    FmtSign
-    FmtUnsigned
-    FmtShort
-    FmtLong
-    FmtComma
-    FmtByte
-    FmtBody // for printing export bodies
-)
 
 // symbol version, incremented each time a file is loaded.
 // version==1 is reserved for savehist.
 const (
-    HistVersion = 1
+	HistVersion = 1
 )
+
+
+//  executable header types
 
 // executable header types
 const (
-    Hunknown = 0 + iota
-    Hdarwin
-    Hdragonfly
-    Helf
-    Hfreebsd
-    Hlinux
-    Hnacl
-    Hnetbsd
-    Hopenbsd
-    Hplan9
-    Hsolaris
-    Hwindows
+	Hunknown = 0 + iota
+	Hdarwin
+	Hdragonfly
+	Hfreebsd
+	Hlinux
+	Hnacl
+	Hnetbsd
+	Hopenbsd
+	Hplan9
+	Hsolaris
+	Hwindows
 )
+
+
 
 const (
-    KindBool = 1 + iota
-    KindInt
-    KindInt8
-    KindInt16
-    KindInt32
-    KindInt64
-    KindUint
-    KindUint8
-    KindUint16
-    KindUint32
-    KindUint64
-    KindUintptr
-    KindFloat32
-    KindFloat64
-    KindComplex64
-    KindComplex128
-    KindArray
-    KindChan
-    KindFunc
-    KindInterface
-    KindMap
-    KindPtr
-    KindSlice
-    KindString
-    KindStruct
-    KindUnsafePointer
-    KindDirectIface = 1 << 5
-    KindGCProg      = 1 << 6
-    KindNoPointers  = 1 << 7
-    KindMask        = (1 << 5) - 1
+	KindBool = 1 + iota
+	KindInt
+	KindInt8
+	KindInt16
+	KindInt32
+	KindInt64
+	KindUint
+	KindUint8
+	KindUint16
+	KindUint32
+	KindUint64
+	KindUintptr
+	KindFloat32
+	KindFloat64
+	KindComplex64
+	KindComplex128
+	KindArray
+	KindChan
+	KindFunc
+	KindInterface
+	KindMap
+	KindPtr
+	KindSlice
+	KindString
+	KindStruct
+	KindUnsafePointer
+	KindDirectIface = 1 << 5
+	KindGCProg      = 1 << 6
+	KindNoPointers  = 1 << 7
+	KindMask        = (1 << 5) - 1
 )
+
+
 
 const (
-    LOG = 5
+	LOG = 5
 )
+
+
 
 const (
-    NAME_NONE = 0 + iota
-    NAME_EXTERN
-    NAME_STATIC
-    NAME_AUTO
-    NAME_PARAM
-    // A reference to name@GOT(SB) is a reference to the entry in the global offset
-    // table for 'name'.
-    NAME_GOTREF
+	NAME_NONE = 0 + iota
+	NAME_EXTERN
+	NAME_STATIC
+	NAME_AUTO
+	NAME_PARAM
+	// A reference to name@GOT(SB) is a reference to the entry in the global
+	// offset table for 'name'.
+	NAME_GOTREF
 )
+
+
 
 const (
-    // Don't profile the marked routine.
-    //
-    // Deprecated: Not implemented, do not use.
-    NOPROF = 1
-
-    // It is ok for the linker to get multiple of these symbols.  It will
-    // pick one of the duplicates to use.
-    DUPOK = 2
-
-    // Don't insert stack check preamble.
-    NOSPLIT = 4
-
-    // Put this data in a read-only section.
-    RODATA = 8
-
-    // This data contains no pointers.
-    NOPTR = 16
-
-    // This is a wrapper function and should not count as disabling 'recover'.
-    WRAPPER = 32
-
-    // This function uses its incoming context register.
-    NEEDCTXT = 64
-
-    // When passed to ggloblsym, causes Local to be set to true on the LSym it creates.
-    LOCAL = 128
-
-    // Allocate a word of thread local storage and store the offset from the
-    // thread local base to the thread local storage in this variable.
-    TLSBSS = 256
-
-    // Do not insert instructions to allocate a stack frame for this function.
-    // Only valid on functions that declare a frame size of 0.
-    // TODO(mwhudson): only implemented for ppc64x at present.
-    NOFRAME = 512
+	// Don't profile the marked routine.
+	//
+	// Deprecated: Not implemented, do not use.
+	NOPROF = 1
+	// It is ok for the linker to get multiple of these symbols. It will
+	// pick one of the duplicates to use.
+	DUPOK = 2
+	// Don't insert stack check preamble.
+	NOSPLIT = 4
+	// Put this data in a read-only section.
+	RODATA = 8
+	// This data contains no pointers.
+	NOPTR = 16
+	// This is a wrapper function and should not count as disabling 'recover'.
+	WRAPPER = 32
+	// This function uses its incoming context register.
+	NEEDCTXT = 64
+	// When passed to ggloblsym, causes Local to be set to true on the LSym it
+	// creates.
+	LOCAL = 128
+	// Allocate a word of thread local storage and store the offset from the
+	// thread local base to the thread local storage in this variable.
+	TLSBSS = 256
+	// Do not insert instructions to allocate a stack frame for this function.
+	// Only valid on functions that declare a frame size of 0.
+	// TODO(mwhudson): only implemented for ppc64x at present.
+	NOFRAME = 512
+	// Function can call reflect.Type.Method or reflect.Type.MethodByName.
+	REFLECTMETHOD = 1024
 )
+
 
 // ArgsSizeUnknown is set in Func.argsize to mark all functions
 // whose argument size is unknown (C vararg functions, and
 // assembly code without an explicit specification).
 // This value is generated by the compiler, assembler, or linker.
 const (
-    PCDATA_StackMapIndex       = 0
-    FUNCDATA_ArgsPointerMaps   = 0
-    FUNCDATA_LocalsPointerMaps = 1
-    ArgsSizeUnknown            = -0x80000000
+	PCDATA_StackMapIndex       = 0
+	FUNCDATA_ArgsPointerMaps   = 0
+	FUNCDATA_LocalsPointerMaps = 1
+	ArgsSizeUnknown            = -0x80000000
 )
 
+
+
 const (
-    // Because of masking operations in the encodings, each register
-    // space should start at 0 modulo some power of 2.
-    RBase386    = 1 * 1024
-    RBaseAMD64  = 2 * 1024
-    RBaseARM    = 3 * 1024
-    RBasePPC64  = 4 * 1024  // range [4k, 8k)
-    RBaseARM64  = 8 * 1024  // range [8k, 13k)
-    RBaseMIPS64 = 13 * 1024 // range [13k, 14k)
+	// Because of masking operations in the encodings, each register
+	// space should start at 0 modulo some power of 2.
+	RBase386    = 1 * 1024
+	RBaseAMD64  = 2 * 1024
+	RBaseARM    = 3 * 1024
+	RBasePPC64  = 4 * 1024  // range [4k, 8k)
+	RBaseARM64  = 8 * 1024  // range [8k, 13k)
+	RBaseMIPS64 = 13 * 1024 // range [13k, 14k)
+	RBaseS390X  = 14 * 1024 // range [14k, 15k)
+
 )
+
+
 
 const REG_NONE = 0
 
+
 // Reloc.type
 const (
-    R_ADDR = 1 + iota
-    // R_ADDRPOWER relocates a pair of "D-form" instructions (instructions with 16-bit
-    // immediates in the low half of the instruction word), usually addis followed by
-    // another add or a load, inserting the "high adjusted" 16 bits of the address of
-    // the referenced symbol into the immediate field of the first instruction and the
-    // low 16 bits into that of the second instruction.
-    R_ADDRPOWER
-    // R_ADDRARM64 relocates an adrp, add pair to compute the address of the
-    // referenced symbol.
-    R_ADDRARM64
-    // R_ADDRMIPS (only used on mips64) resolves to a 32-bit external address,
-    // by loading the address into a register with two instructions (lui, ori).
-    R_ADDRMIPS
-    R_SIZE
-    R_CALL
-    R_CALLARM
-    R_CALLARM64
-    R_CALLIND
-    R_CALLPOWER
-    // R_CALLMIPS (only used on mips64) resolves to non-PC-relative target address
-    // of a CALL (JAL) instruction, by encoding the address into the instruction.
-    R_CALLMIPS
-    R_CONST
-    R_PCREL
-    // R_TLS_LE, used on 386, amd64, and ARM, resolves to the offset of the
-    // thread-local symbol from the thread local base and is used to implement the
-    // "local exec" model for tls access (r.Sym is not set on intel platforms but is
-    // set to a TLS symbol -- runtime.tlsg -- in the linker when externally linking).
-    R_TLS_LE
-    // R_TLS_IE, used 386, amd64, and ARM resolves to the PC-relative offset to a GOT
-    // slot containing the offset from the thread-local symbol from the thread local
-    // base and is used to implemented the "initial exec" model for tls access (r.Sym
-    // is not set on intel platforms but is set to a TLS symbol -- runtime.tlsg -- in
-    // the linker when externally linking).
-    R_TLS_IE
-    R_GOTOFF
-    R_PLT0
-    R_PLT1
-    R_PLT2
-    R_USEFIELD
-    R_POWER_TOC
-    R_GOTPCREL
-    // R_JMPMIPS (only used on mips64) resolves to non-PC-relative target address
-    // of a JMP instruction, by encoding the address into the instruction.
-    // The stack nosplit check ignores this since it is not a function call.
-    R_JMPMIPS
+	R_ADDR = 1 + iota
+	// R_ADDRPOWER relocates a pair of "D-form" instructions (instructions with
+	// 16-bit immediates in the low half of the instruction word), usually addis
+	// followed by another add or a load, inserting the "high adjusted" 16 bits
+	// of the address of the referenced symbol into the immediate field of the
+	// first instruction and the low 16 bits into that of the second
+	// instruction.
 
-    // Set a MOV[NZ] immediate field to bits [15:0] of the offset from the thread
-    // local base to the thread local variable defined by the referenced (thread
-    // local) symbol. Error if the offset does not fit into 16 bits.
-    R_ARM64_TLS_LE
+	// R_ADDRPOWER relocates a pair of "D-form" instructions (instructions with
+	// 16-bit immediates in the low half of the instruction word), usually addis
+	// followed by another add or a load, inserting the "high adjusted" 16 bits
+	// of the address of the referenced symbol into the immediate field of the
+	// first instruction and the low 16 bits into that of the second
+	// instruction.
+	R_ADDRPOWER
+	// R_ADDRARM64 relocates an adrp, add pair to compute the address of the
+	// referenced symbol.
+	R_ADDRARM64
+	// R_ADDRMIPS (only used on mips64) resolves to a 32-bit external address,
+	// by loading the address into a register with two instructions (lui, ori).
 
-    // Relocates an ADRP; LD64 instruction sequence to load the offset between
-    // the thread local base and the thread local variable defined by the
-    // referenced (thread local) symbol from the GOT.
-    R_ARM64_TLS_IE
+	// R_ADDRMIPS (only used on mips64) resolves to the low 16 bits of an
+	// external address, by encoding it into the instruction.
+	R_ADDRMIPS
+	// R_ADDROFF resolves to a 32-bit offset from the beginning of the section
+	// holding the data being relocated to the referenced symbol.
+	R_ADDROFF
+	R_SIZE
+	R_CALL
+	R_CALLARM
+	R_CALLARM64
+	R_CALLIND
+	R_CALLPOWER
+	// R_CALLMIPS (only used on mips64) resolves to non-PC-relative target
+	// address of a CALL (JAL) instruction, by encoding the address into the
+	// instruction.
 
-    // R_ARM64_GOTPCREL relocates an adrp, ld64 pair to compute the address of the GOT
-    // slot of the referenced symbol.
-    R_ARM64_GOTPCREL
+	// R_CALLMIPS (only used on mips64) resolves to non-PC-relative target
+	// address of a CALL (JAL) instruction, by encoding the address into the
+	// instruction.
+	R_CALLMIPS
+	R_CONST
+	R_PCREL
+	// R_TLS_LE, used on 386, amd64, and ARM, resolves to the offset of the
+	// thread-local symbol from the thread local base and is used to implement
+	// the "local exec" model for tls access (r.Sym is not set on intel
+	// platforms but is set to a TLS symbol -- runtime.tlsg -- in the linker
+	// when externally linking).
 
-    // R_POWER_TLS_LE is used to implement the "local exec" model for tls
-    // access. It resolves to the offset of the thread-local symbol from the
-    // thread pointer (R13) and inserts this value into the low 16 bits of an
-    // instruction word.
-    R_POWER_TLS_LE
+	// R_TLS_LE, used on 386, amd64, and ARM, resolves to the offset of the
+	// thread-local symbol from the thread local base and is used to implement
+	// the "local exec" model for tls access (r.Sym is not set on intel
+	// platforms but is set to a TLS symbol -- runtime.tlsg -- in the linker
+	// when externally linking).
+	R_TLS_LE
+	// R_TLS_IE, used 386, amd64, and ARM resolves to the PC-relative offset to
+	// a GOT slot containing the offset from the thread-local symbol from the
+	// thread local base and is used to implemented the "initial exec" model for
+	// tls access (r.Sym is not set on intel platforms but is set to a TLS
+	// symbol -- runtime.tlsg -- in the linker when externally linking).
 
-    // R_POWER_TLS_IE is used to implement the "initial exec" model for tls access. It
-    // relocates a D-form, DS-form instruction sequence like R_ADDRPOWER_DS. It
-    // inserts to the offset of GOT slot for the thread-local symbol from the TOC (the
-    // GOT slot is filled by the dynamic linker with the offset of the thread-local
-    // symbol from the thread pointer (R13)).
-    R_POWER_TLS_IE
+	// R_TLS_IE, used 386, amd64, and ARM resolves to the PC-relative offset to
+	// a GOT slot containing the offset from the thread-local symbol from the
+	// thread local base and is used to implemented the "initial exec" model for
+	// tls access (r.Sym is not set on intel platforms but is set to a TLS
+	// symbol -- runtime.tlsg -- in the linker when externally linking).
+	R_TLS_IE
+	R_GOTOFF
+	R_PLT0
+	R_PLT1
+	R_PLT2
+	R_USEFIELD
+	// R_USETYPE resolves to an *rtype, but no relocation is created. The
+	// linker uses this as a signal that the pointed-to type information
+	// should be linked into the final binary, even if there are no other
+	// direct references. (This is used for types reachable by reflection.)
+	R_USETYPE
+	// R_METHODOFF resolves to a 32-bit offset from the beginning of the section
+	// holding the data being relocated to the referenced symbol.
+	// It is a variant of R_ADDROFF used when linking from the uncommonType of a
+	// *rtype, and may be set to zero by the linker if it determines the method
+	// text is unreachable by the linked program.
+	R_METHODOFF
+	R_POWER_TOC
+	R_GOTPCREL
+	// R_JMPMIPS (only used on mips64) resolves to non-PC-relative target
+	// address of a JMP instruction, by encoding the address into the
+	// instruction. The stack nosplit check ignores this since it is not a
+	// function call.
 
-    // R_POWER_TLS marks an X-form instruction such as "MOVD 0(R13)(R31*1), g" as
-    // accessing a particular thread-local symbol. It does not affect code generation
-    // but is used by the system linker when relaxing "initial exec" model code to
-    // "local exec" model code.
-    R_POWER_TLS
+	// R_JMPMIPS (only used on mips64) resolves to non-PC-relative target
+	// address of a JMP instruction, by encoding the address into the
+	// instruction. The stack nosplit check ignores this since it is not a
+	// function call.
+	R_JMPMIPS
+	// R_DWARFREF resolves to the offset of the symbol from its section.
+	R_DWARFREF
+	// Set a MOV[NZ] immediate field to bits [15:0] of the offset from the
+	// thread local base to the thread local variable defined by the referenced
+	// (thread local) symbol. Error if the offset does not fit into 16 bits.
 
-    // R_ADDRPOWER_DS is similar to R_ADDRPOWER above, but assumes the second
-    // instruction is a "DS-form" instruction, which has an immediate field occupying
-    // bits [15:2] of the instruction word. Bits [15:2] of the address of the
-    // relocated symbol are inserted into this field; it is an error if the last two
-    // bits of the address are not 0.
-    R_ADDRPOWER_DS
+	// Set a MOV[NZ] immediate field to bits [15:0] of the offset from the
+	// thread local base to the thread local variable defined by the referenced
+	// (thread local) symbol. Error if the offset does not fit into 16 bits.
+	R_ARM64_TLS_LE
+	// Relocates an ADRP; LD64 instruction sequence to load the offset between
+	// the thread local base and the thread local variable defined by the
+	// referenced (thread local) symbol from the GOT.
+	R_ARM64_TLS_IE
+	// R_ARM64_GOTPCREL relocates an adrp, ld64 pair to compute the address of
+	// the GOT slot of the referenced symbol.
 
-    // R_ADDRPOWER_PCREL relocates a D-form, DS-form instruction sequence like
-    // R_ADDRPOWER_DS but inserts the offset of the GOT slot for the referenced symbol
-    // from the TOC rather than the symbol's address.
-    R_ADDRPOWER_GOT
+	// R_ARM64_GOTPCREL relocates an adrp, ld64 pair to compute the address of
+	// the GOT slot of the referenced symbol.
+	R_ARM64_GOTPCREL
+	// R_POWER_TLS_LE is used to implement the "local exec" model for tls
+	// access. It resolves to the offset of the thread-local symbol from the
+	// thread pointer (R13) and inserts this value into the low 16 bits of an
+	// instruction word.
+	R_POWER_TLS_LE
+	// R_POWER_TLS_IE is used to implement the "initial exec" model for tls
+	// access. It relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS. It inserts to the offset of GOT slot for the thread-local
+	// symbol from the TOC (the GOT slot is filled by the dynamic linker with
+	// the offset of the thread-local symbol from the thread pointer (R13)).
 
-    // R_ADDRPOWER_PCREL relocates two D-form instructions like R_ADDRPOWER, but
-    // inserts the displacement from the place being relocated to the address of the
-    // the relocated symbol instead of just its address.
-    R_ADDRPOWER_PCREL
+	// R_POWER_TLS_IE is used to implement the "initial exec" model for tls
+	// access. It relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS. It inserts to the offset of GOT slot for the thread-local
+	// symbol from the TOC (the GOT slot is filled by the dynamic linker with
+	// the offset of the thread-local symbol from the thread pointer (R13)).
+	R_POWER_TLS_IE
+	// R_POWER_TLS marks an X-form instruction such as "MOVD 0(R13)(R31*1), g"
+	// as accessing a particular thread-local symbol. It does not affect code
+	// generation but is used by the system linker when relaxing "initial exec"
+	// model code to "local exec" model code.
 
-    // R_ADDRPOWER_TOCREL relocates two D-form instructions like R_ADDRPOWER, but
-    // inserts the offset from the TOC to the address of the the relocated symbol
-    // rather than the symbol's address.
-    R_ADDRPOWER_TOCREL
+	// R_POWER_TLS marks an X-form instruction such as "MOVD 0(R13)(R31*1), g"
+	// as accessing a particular thread-local symbol. It does not affect code
+	// generation but is used by the system linker when relaxing "initial exec"
+	// model code to "local exec" model code.
+	R_POWER_TLS
+	// R_ADDRPOWER_DS is similar to R_ADDRPOWER above, but assumes the second
+	// instruction is a "DS-form" instruction, which has an immediate field
+	// occupying bits [15:2] of the instruction word. Bits [15:2] of the address
+	// of the relocated symbol are inserted into this field; it is an error if
+	// the last two bits of the address are not 0.
 
-    // R_ADDRPOWER_TOCREL relocates a D-form, DS-form instruction sequence like
-    // R_ADDRPOWER_DS but inserts the offset from the TOC to the address of the the
-    // relocated symbol rather than the symbol's address.
-    R_ADDRPOWER_TOCREL_DS
+	// R_ADDRPOWER_DS is similar to R_ADDRPOWER above, but assumes the second
+	// instruction is a "DS-form" instruction, which has an immediate field
+	// occupying bits [15:2] of the instruction word. Bits [15:2] of the address
+	// of the relocated symbol are inserted into this field; it is an error if
+	// the last two bits of the address are not 0.
+	R_ADDRPOWER_DS
+	// R_ADDRPOWER_PCREL relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS but inserts the offset of the GOT slot for the referenced
+	// symbol from the TOC rather than the symbol's address.
+
+	// R_ADDRPOWER_PCREL relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS but inserts the offset of the GOT slot for the referenced
+	// symbol from the TOC rather than the symbol's address.
+	R_ADDRPOWER_GOT
+	// R_ADDRPOWER_PCREL relocates two D-form instructions like R_ADDRPOWER, but
+	// inserts the displacement from the place being relocated to the address of
+	// the the relocated symbol instead of just its address.
+
+	// R_ADDRPOWER_PCREL relocates two D-form instructions like R_ADDRPOWER, but
+	// inserts the displacement from the place being relocated to the address of
+	// the the relocated symbol instead of just its address.
+	R_ADDRPOWER_PCREL
+	// R_ADDRPOWER_TOCREL relocates two D-form instructions like R_ADDRPOWER,
+	// but inserts the offset from the TOC to the address of the the relocated
+	// symbol rather than the symbol's address.
+
+	// R_ADDRPOWER_TOCREL relocates two D-form instructions like R_ADDRPOWER,
+	// but inserts the offset from the TOC to the address of the the relocated
+	// symbol rather than the symbol's address.
+	R_ADDRPOWER_TOCREL
+	// R_ADDRPOWER_TOCREL relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS but inserts the offset from the TOC to the address of the
+	// the relocated symbol rather than the symbol's address.
+
+	// R_ADDRPOWER_TOCREL relocates a D-form, DS-form instruction sequence like
+	// R_ADDRPOWER_DS but inserts the offset from the TOC to the address of the
+	// the relocated symbol rather than the symbol's address.
+	R_ADDRPOWER_TOCREL_DS
+	// R_PCRELDBL relocates s390x 2-byte aligned PC-relative addresses.
+	// TODO(mundaym): remove once variants can be serialized - see issue 14218.
+	R_PCRELDBL
+	// R_ADDRMIPSU (only used on mips64) resolves to the sign-adjusted "upper"
+	// 16 bits (bit 16-31) of an external address, by encoding it into the
+	// instruction.
+	R_ADDRMIPSU
+	// R_ADDRMIPSTLS (only used on mips64) resolves to the low 16 bits of a TLS
+	// address (offset from thread pointer), by encoding it into the
+	// instruction.
+	R_ADDRMIPSTLS
 )
+
+
 
 const (
-    STACKSYSTEM = 0
-    StackSystem = STACKSYSTEM
-    StackBig    = 4096
-    StackGuard  = 720*stackGuardMultiplier + StackSystem
-    StackSmall  = 128
-    StackLimit  = StackGuard - StackSystem - StackSmall
+	STACKSYSTEM = 0
+	StackSystem = STACKSYSTEM
+	StackBig    = 4096
+	StackGuard  = 720*stackGuardMultiplier + StackSystem
+	StackSmall  = 128
+	StackLimit  = StackGuard - StackSystem - StackSmall
 )
 
+
+
 const (
-    StackPreempt = -1314 // 0xfff...fade
+	StackPreempt = -1314 // 0xfff...fade
+
 )
+
 
 // LSym.type
 const (
-    Sxxx = iota
-    STEXT
-    SELFRXSECT
+	Sxxx = iota
+	STEXT
+	SELFRXSECT
+	STYPE
+	SSTRING
+	SGOSTRING
+	SGOSTRINGHDR
+	SGOFUNC
+	SGCBITS
+	SRODATA
+	SFUNCTAB
+	// Types STYPE-SFUNCTAB above are written to the .rodata section by default.
+	// When linking a shared object, some conceptually "read only" types need to
+	// be written to by relocations and putting them in a section called
+	// ".rodata" interacts poorly with the system linkers. The GNU linkers
+	// support this situation by arranging for sections of the name
+	// ".data.rel.ro.XXX" to be mprotected read only by the dynamic linker after
+	// relocations have applied, so when the Go linker is creating a shared
+	// object it checks all objects of the above types and bumps any object that
+	// has a relocation to it to the corresponding type below, which are then
+	// written to sections with appropriate magic names.
+	STYPERELRO
+	SSTRINGRELRO
+	SGOSTRINGRELRO
+	SGOSTRINGHDRRELRO
+	SGOFUNCRELRO
+	SGCBITSRELRO
+	SRODATARELRO
+	SFUNCTABRELRO
+	STYPELINK
+	SITABLINK
+	SSYMTAB
+	SPCLNTAB
+	SELFROSECT
+	SMACHOPLT
+	SELFSECT
+	SMACHO
+	SMACHOGOT
+	SWINDOWS
+	SELFGOT
+	SNOPTRDATA
+	SINITARR
+	SDATA
+	SBSS
+	SNOPTRBSS
+	STLSBSS
+	SXREF
+	SMACHOSYMSTR
+	SMACHOSYMTAB
+	SMACHOINDIRECTPLT
+	SMACHOINDIRECTGOT
+	SFILE
+	SFILEPATH
+	SCONST
+	SDYNIMPORT
+	SHOSTOBJ
+	SDWARFSECT
+	SDWARFINFO
+	SSUB       = 1 << 8
+	SMASK      = SSUB - 1
+	SHIDDEN    = 1 << 9
+	SCONTAINER = 1 << 10 // has a sub-symbol
 
-    STYPE
-    SSTRING
-    SGOSTRING
-    SGOFUNC
-    SGCBITS
-    SRODATA
-    SFUNCTAB
-
-    // Types STYPE-SFUNCTAB above are written to the .rodata section by default.
-    // When linking a shared object, some conceptually "read only" types need to
-    // be written to by relocations and putting them in a section called
-    // ".rodata" interacts poorly with the system linkers. The GNU linkers
-    // support this situation by arranging for sections of the name
-    // ".data.rel.ro.XXX" to be mprotected read only by the dynamic linker after
-    // relocations have applied, so when the Go linker is creating a shared
-    // object it checks all objects of the above types and bumps any object that
-    // has a relocation to it to the corresponding type below, which are then
-    // written to sections with appropriate magic names.
-    STYPERELRO
-    SSTRINGRELRO
-    SGOSTRINGRELRO
-    SGOFUNCRELRO
-    SGCBITSRELRO
-    SRODATARELRO
-    SFUNCTABRELRO
-
-    STYPELINK
-    SSYMTAB
-    SPCLNTAB
-    SELFROSECT
-    SMACHOPLT
-    SELFSECT
-    SMACHO
-    SMACHOGOT
-    SWINDOWS
-    SELFGOT
-    SNOPTRDATA
-    SINITARR
-    SDATA
-    SBSS
-    SNOPTRBSS
-    STLSBSS
-    SXREF
-    SMACHOSYMSTR
-    SMACHOSYMTAB
-    SMACHOINDIRECTPLT
-    SMACHOINDIRECTGOT
-    SFILE
-    SFILEPATH
-    SCONST
-    SDYNIMPORT
-    SHOSTOBJ
-    SSUB       = 1 << 8
-    SMASK      = SSUB - 1
-    SHIDDEN    = 1 << 9
-    SCONTAINER = 1 << 10 // has a sub-symbol
 )
+
+
 
 const (
-    TYPE_BRANCH = 5 + iota
-    TYPE_TEXTSIZE
-    TYPE_MEM
-    TYPE_CONST
-    TYPE_FCONST
-    TYPE_SCONST
-    TYPE_REG
-    TYPE_ADDR
-    TYPE_SHIFT
-    TYPE_REGREG
-    TYPE_REGREG2
-    TYPE_INDIR
-    TYPE_REGLIST
+	TYPE_NONE   AddrType = 0
+	TYPE_BRANCH AddrType = 5 + iota
+	TYPE_TEXTSIZE
+	TYPE_MEM
+	TYPE_CONST
+	TYPE_FCONST
+	TYPE_SCONST
+	TYPE_REG
+	TYPE_ADDR
+	TYPE_SHIFT
+	TYPE_REGREG
+	TYPE_REGREG2
+	TYPE_INDIR
+	TYPE_REGLIST
 )
 
-const (
-    TYPE_NONE = 0
-)
+
 
 var Anames = []string{
-    "XXX",
-    "CALL",
-    "CHECKNIL",
-    "DATA",
-    "DUFFCOPY",
-    "DUFFZERO",
-    "END",
-    "FUNCDATA",
-    "GLOBL",
-    "JMP",
-    "NOP",
-    "PCDATA",
-    "RET",
-    "TEXT",
-    "TYPE",
-    "UNDEF",
-    "USEFIELD",
-    "VARDEF",
-    "VARKILL",
-    "VARLIVE",
+	"XXX",
+	"CALL",
+	"CHECKNIL",
+	"DUFFCOPY",
+	"DUFFZERO",
+	"END",
+	"FUNCDATA",
+	"GLOBL",
+	"JMP",
+	"NOP",
+	"PCDATA",
+	"RET",
+	"TEXT",
+	"TYPE",
+	"UNDEF",
+	"USEFIELD",
+	"VARDEF",
+	"VARKILL",
+	"VARLIVE",
 }
 
+
+
 var (
-    Framepointer_enabled int
-    Fieldtrack_enabled   int
+	Framepointer_enabled int
+	Fieldtrack_enabled   int
 )
+
 
 // An Addr is an argument to an instruction. The general forms and their
 // encodings are:
 //
 //     sym±offset(symkind)(reg)(index*scale)
-//         Memory reference at address &sym(symkind) + offset + reg + index*scale.
-//         Any of sym(symkind), ±offset, (reg), (index*scale), and *scale can be omitted.
-//         If (reg) and *scale are both omitted, the resulting expression (index) is parsed as (reg).
-//         To force a parsing as index*scale, write (index*1).
-//         Encoding:
-//             type = TYPE_MEM
-//             name = symkind (NAME_AUTO, ...) or 0 (NAME_NONE)
-//             sym = sym
-//             offset = ±offset
-//             reg = reg (REG_*)
-//             index = index (REG_*)
-//             scale = scale (1, 2, 4, 8)
+//     	Memory reference at address &sym(symkind) + offset + reg + index*scale.
+//     	Any of sym(symkind), ±offset, (reg), (index*scale), and *scale can be omitted.
+//     	If (reg) and *scale are both omitted, the resulting expression (index) is parsed as (reg).
+//     	To force a parsing as index*scale, write (index*1).
+//     	Encoding:
+//     		type = TYPE_MEM
+//     		name = symkind (NAME_AUTO, ...) or 0 (NAME_NONE)
+//     		sym = sym
+//     		offset = ±offset
+//     		reg = reg (REG_*)
+//     		index = index (REG_*)
+//     		scale = scale (1, 2, 4, 8)
 //
 //     $<mem>
-//         Effective address of memory reference <mem>, defined above.
-//         Encoding: same as memory reference, but type = TYPE_ADDR.
+//     	Effective address of memory reference <mem>, defined above.
+//     	Encoding: same as memory reference, but type = TYPE_ADDR.
 //
 //     $<±integer value>
-//         This is a special case of $<mem>, in which only ±offset is present.
-//         It has a separate type for easy recognition.
-//         Encoding:
-//             type = TYPE_CONST
-//             offset = ±integer value
+//     	This is a special case of $<mem>, in which only ±offset is present.
+//     	It has a separate type for easy recognition.
+//     	Encoding:
+//     		type = TYPE_CONST
+//     		offset = ±integer value
 //
 //     *<mem>
-//         Indirect reference through memory reference <mem>, defined above.
-//         Only used on x86 for CALL/JMP *sym(SB), which calls/jumps to a function
-//         pointer stored in the data word sym(SB), not a function named sym(SB).
-//         Encoding: same as above, but type = TYPE_INDIR.
+//     	Indirect reference through memory reference <mem>, defined above.
+//     	Only used on x86 for CALL/JMP *sym(SB), which calls/jumps to a function
+//     	pointer stored in the data word sym(SB), not a function named sym(SB).
+//     	Encoding: same as above, but type = TYPE_INDIR.
 //
 //     $*$<mem>
-//         No longer used.
-//         On machines with actual SB registers, $*$<mem> forced the
-//         instruction encoding to use a full 32-bit constant, never a
-//         reference relative to SB.
+//     	No longer used.
+//     	On machines with actual SB registers, $*$<mem> forced the
+//     	instruction encoding to use a full 32-bit constant, never a
+//     	reference relative to SB.
 //
 //     $<floating point literal>
-//         Floating point constant value.
-//         Encoding:
-//             type = TYPE_FCONST
-//             val = floating point value
+//     	Floating point constant value.
+//     	Encoding:
+//     		type = TYPE_FCONST
+//     		val = floating point value
 //
 //     $<string literal, up to 8 chars>
-//         String literal value (raw bytes used for DATA instruction).
-//         Encoding:
-//             type = TYPE_SCONST
-//             val = string
+//     	String literal value (raw bytes used for DATA instruction).
+//     	Encoding:
+//     		type = TYPE_SCONST
+//     		val = string
 //
 //     <register name>
-//         Any register: integer, floating point, control, segment, and so on.
-//         If looking for specific register kind, must check type and reg value range.
-//         Encoding:
-//             type = TYPE_REG
-//             reg = reg (REG_*)
+//     	Any register: integer, floating point, control, segment, and so on.
+//     	If looking for specific register kind, must check type and reg value range.
+//     	Encoding:
+//     		type = TYPE_REG
+//     		reg = reg (REG_*)
 //
 //     x(PC)
-//         Encoding:
-//             type = TYPE_BRANCH
-//             val = Prog* reference OR ELSE offset = target pc (branch takes priority)
+//     	Encoding:
+//     		type = TYPE_BRANCH
+//     		val = Prog* reference OR ELSE offset = target pc (branch takes priority)
 //
 //     $±x-±y
-//         Final argument to TEXT, specifying local frame size x and argument size y.
-//         In this form, x and y are integer literals only, not arbitrary expressions.
-//         This avoids parsing ambiguities due to the use of - as a separator.
-//         The ± are optional.
-//         If the final argument to TEXT omits the -±y, the encoding should still
-//         use TYPE_TEXTSIZE (not TYPE_CONST), with u.argsize = ArgsSizeUnknown.
-//         Encoding:
-//             type = TYPE_TEXTSIZE
-//             offset = x
-//             val = int32(y)
+//     	Final argument to TEXT, specifying local frame size x and argument size y.
+//     	In this form, x and y are integer literals only, not arbitrary expressions.
+//     	This avoids parsing ambiguities due to the use of - as a separator.
+//     	The ± are optional.
+//     	If the final argument to TEXT omits the -±y, the encoding should still
+//     	use TYPE_TEXTSIZE (not TYPE_CONST), with u.argsize = ArgsSizeUnknown.
+//     	Encoding:
+//     		type = TYPE_TEXTSIZE
+//     		offset = x
+//     		val = int32(y)
 //
 //     reg<<shift, reg>>shift, reg->shift, reg@>shift
-//         Shifted register value, for ARM.
-//         In this form, reg must be a register and shift can be a register or an integer constant.
-//         Encoding:
-//             type = TYPE_SHIFT
-//             offset = (reg&15) | shifttype<<5 | count
-//             shifttype = 0, 1, 2, 3 for <<, >>, ->, @>
-//             count = (reg&15)<<8 | 1<<4 for a register shift count, (n&31)<<7 for an integer constant.
+//     	Shifted register value, for ARM.
+//     	In this form, reg must be a register and shift can be a register or an integer constant.
+//     	Encoding:
+//     		type = TYPE_SHIFT
+//     		offset = (reg&15) | shifttype<<5 | count
+//     		shifttype = 0, 1, 2, 3 for <<, >>, ->, @>
+//     		count = (reg&15)<<8 | 1<<4 for a register shift count, (n&31)<<7 for an integer constant.
 //
 //     (reg, reg)
-//         A destination register pair. When used as the last argument of an instruction,
-//         this form makes clear that both registers are destinations.
-//         Encoding:
-//             type = TYPE_REGREG
-//             reg = first register
-//             offset = second register
+//     	A destination register pair. When used as the last argument of an instruction,
+//     	this form makes clear that both registers are destinations.
+//     	Encoding:
+//     		type = TYPE_REGREG
+//     		reg = first register
+//     		offset = second register
 //
 //     [reg, reg, reg-reg]
-//         Register list for ARM.
-//         Encoding:
-//             type = TYPE_REGLIST
-//             offset = bit mask of registers in list; R0 is low bit.
+//     	Register list for ARM.
+//     	Encoding:
+//     		type = TYPE_REGLIST
+//     		offset = bit mask of registers in list; R0 is low bit.
 //
 //     reg, reg
-//         Register pair for ARM.
-//         TYPE_REGREG2
+//     	Register pair for ARM.
+//     	TYPE_REGREG2
 //
 //     (reg+reg)
-//         Register pair for PPC64.
-//         Encoding:
-//             type = TYPE_MEM
-//             reg = first register
-//             index = second register
-//             scale = 1
+//     	Register pair for PPC64.
+//     	Encoding:
+//     		type = TYPE_MEM
+//     		reg = first register
+//     		index = second register
+//     		scale = 1
+
+// An Addr is an argument to an instruction. The general forms and their
+// encodings are:
+//
+//     sym±offset(symkind)(reg)(index*scale)
+//     	Memory reference at address &sym(symkind) + offset + reg + index*scale.
+//     	Any of sym(symkind), ±offset, (reg), (index*scale), and *scale can be omitted.
+//     	If (reg) and *scale are both omitted, the resulting expression (index) is parsed as (reg).
+//     	To force a parsing as index*scale, write (index*1).
+//     	Encoding:
+//     		type = TYPE_MEM
+//     		name = symkind (NAME_AUTO, ...) or 0 (NAME_NONE)
+//     		sym = sym
+//     		offset = ±offset
+//     		reg = reg (REG_*)
+//     		index = index (REG_*)
+//     		scale = scale (1, 2, 4, 8)
+//
+//     $<mem>
+//     	Effective address of memory reference <mem>, defined above.
+//     	Encoding: same as memory reference, but type = TYPE_ADDR.
+//
+//     $<±integer value>
+//     	This is a special case of $<mem>, in which only ±offset is present.
+//     	It has a separate type for easy recognition.
+//     	Encoding:
+//     		type = TYPE_CONST
+//     		offset = ±integer value
+//
+//     *<mem>
+//     	Indirect reference through memory reference <mem>, defined above.
+//     	Only used on x86 for CALL/JMP *sym(SB), which calls/jumps to a function
+//     	pointer stored in the data word sym(SB), not a function named sym(SB).
+//     	Encoding: same as above, but type = TYPE_INDIR.
+//
+//     $*$<mem>
+//     	No longer used.
+//     	On machines with actual SB registers, $*$<mem> forced the
+//     	instruction encoding to use a full 32-bit constant, never a
+//     	reference relative to SB.
+//
+//     $<floating point literal>
+//     	Floating point constant value.
+//     	Encoding:
+//     		type = TYPE_FCONST
+//     		val = floating point value
+//
+//     $<string literal, up to 8 chars>
+//     	String literal value (raw bytes used for DATA instruction).
+//     	Encoding:
+//     		type = TYPE_SCONST
+//     		val = string
+//
+//     <register name>
+//     	Any register: integer, floating point, control, segment, and so on.
+//     	If looking for specific register kind, must check type and reg value range.
+//     	Encoding:
+//     		type = TYPE_REG
+//     		reg = reg (REG_*)
+//
+//     x(PC)
+//     	Encoding:
+//     		type = TYPE_BRANCH
+//     		val = Prog* reference OR ELSE offset = target pc (branch takes priority)
+//
+//     $±x-±y
+//     	Final argument to TEXT, specifying local frame size x and argument size y.
+//     	In this form, x and y are integer literals only, not arbitrary expressions.
+//     	This avoids parsing ambiguities due to the use of - as a separator.
+//     	The ± are optional.
+//     	If the final argument to TEXT omits the -±y, the encoding should still
+//     	use TYPE_TEXTSIZE (not TYPE_CONST), with u.argsize = ArgsSizeUnknown.
+//     	Encoding:
+//     		type = TYPE_TEXTSIZE
+//     		offset = x
+//     		val = int32(y)
+//
+//     reg<<shift, reg>>shift, reg->shift, reg@>shift
+//     	Shifted register value, for ARM.
+//     	In this form, reg must be a register and shift can be a register or an integer constant.
+//     	Encoding:
+//     		type = TYPE_SHIFT
+//     		offset = (reg&15) | shifttype<<5 | count
+//     		shifttype = 0, 1, 2, 3 for <<, >>, ->, @>
+//     		count = (reg&15)<<8 | 1<<4 for a register shift count, (n&31)<<7 for an integer constant.
+//
+//     (reg, reg)
+//     	A destination register pair. When used as the last argument of an instruction,
+//     	this form makes clear that both registers are destinations.
+//     	Encoding:
+//     		type = TYPE_REGREG
+//     		reg = first register
+//     		offset = second register
+//
+//     [reg, reg, reg-reg]
+//     	Register list for ARM.
+//     	Encoding:
+//     		type = TYPE_REGLIST
+//     		offset = bit mask of registers in list; R0 is low bit.
+//
+//     reg, reg
+//     	Register pair for ARM.
+//     	TYPE_REGREG2
+//
+//     (reg+reg)
+//     	Register pair for PPC64.
+//     	Encoding:
+//     		type = TYPE_MEM
+//     		reg = first register
+//     		index = second register
+//     		scale = 1
 type Addr struct {
-    Type   int16
-    Reg    int16
-    Index  int16
-    Scale  int16 // Sometimes holds a register.
-    Name   int8
-    Class  int8
-    Etype  uint8
-    Offset int64
-    Width  int64
-    Sym    *LSym
-    Gotype *LSym
+	Reg    int16
+	Index  int16
+	Scale  int16 // Sometimes holds a register.
+	Type   AddrType
+	Name   int8
+	Class  int8
+	Etype  uint8
+	Offset int64
+	Width  int64
+	Sym    *LSym
+	Gotype *LSym
 
-    // argument value:
-    //	for TYPE_SCONST, a string
-    //	for TYPE_FCONST, a float64
-    //	for TYPE_BRANCH, a *Prog (optional)
-    //	for TYPE_TEXTSIZE, an int32 (optional)
-    Val interface{}
+	// argument value:
+	//	for TYPE_SCONST, a string
+	//	for TYPE_FCONST, a float64
+	//	for TYPE_BRANCH, a *Prog (optional)
+	//	for TYPE_TEXTSIZE, an int32 (optional)
+	Val interface{}
 
-    Node interface{} // for use by compiler
+	Node interface{} // for use by compiler
 }
+
+
+
+type AddrType uint8
+
+
+// An As denotes an assembler opcode.
+// There are some portable opcodes, declared here in package obj,
+// that are common to all architectures.
+// However, the majority of opcodes are arch-specific
+// and are declared in their respective architecture's subpackage.
+type As int16
+
+
+// AsmBuf is a simple buffer to assemble variable-length x86 instructions into.
+type AsmBuf struct {
+	buf [100]byte
+	off int
+}
+
+
 
 type Auto struct {
-    Asym    *LSym
-    Link    *Auto
-    Aoffset int32
-    Name    int16
-    Gotype  *LSym
+	Asym    *LSym
+	Link    *Auto
+	Aoffset int32
+	Name    int16
+	Gotype  *LSym
 }
 
-type Biobuf struct {
-    f       *os.File
-    r       *bufio.Reader
-    w       *bufio.Writer
-    linelen int
-}
 
 // An LSym is the sort of symbol that is written to an object file.
 type LSym struct {
-    Name      string
-    Type      int16
-    Version   int16
-    Dupok     uint8
-    Cfunc     uint8
-    Nosplit   uint8
-    Leaf      uint8
-    Seenglobl uint8
-    Onlist    uint8
-    // Local means make the symbol local even when compiling Go code to reference Go
-    // symbols in other shared libraries, as in this mode symbols are global by
-    // default. "local" here means in the sense of the dynamic linker, i.e. not
-    // visible outside of the module (shared library or executable) that contains its
-    // definition. (When not compiling to support Go shared libraries, all symbols are
-    // local in this sense unless there is a cgo_export_* directive).
-    Local  bool
-    Args   int32
-    Locals int32
-    Value  int64
-    Size   int64
-    Next   *LSym
-    Gotype *LSym
-    Autom  *Auto
-    Text   *Prog
-    Etext  *Prog
-    Pcln   *Pcln
-    P      []byte
-    R      []Reloc
+	Name      string
+	Type      int16
+	Version   int16
+	Dupok     bool
+	Cfunc     bool
+	Nosplit   bool
+	Leaf      bool
+	Seenglobl bool
+	Onlist    bool
+
+	// ReflectMethod means the function may call reflect.Type.Method or
+	// reflect.Type.MethodByName. Matching is imprecise (as reflect.Type
+	// can be used through a custom interface), so ReflectMethod may be
+	// set in some cases when the reflect package is not called.
+	//
+	// Used by the linker to determine what methods can be pruned.
+	ReflectMethod bool
+
+	// Local means make the symbol local even when compiling Go code to reference Go
+	// symbols in other shared libraries, as in this mode symbols are global by
+	// default. "local" here means in the sense of the dynamic linker, i.e. not
+	// visible outside of the module (shared library or executable) that contains its
+	// definition. (When not compiling to support Go shared libraries, all symbols are
+	// local in this sense unless there is a cgo_export_* directive).
+	Local bool
+
+	RefIdx int // Index of this symbol in the symbol reference list.
+	Args   int32
+	Locals int32
+	Size   int64
+	Gotype *LSym
+	Autom  *Auto
+	Text   *Prog
+	Pcln   *Pcln
+	P      []byte
+	R      []Reloc
 }
+
 
 // A LineHist records the history of the file input stack, which maps the
 // virtual line number, an incrementing count of lines processed in any input
@@ -678,246 +926,215 @@ type LSym struct {
 //       together, so that given (only) calls Push(10, "x.go", 1) and Pop(15),
 //       virtual line 12 corresponds to x.go line 3.
 type LineHist struct {
-    Top            *LineStack  // current top of stack
-    Ranges         []LineRange // ranges for lookup
-    Dir            string      // directory to qualify relative paths
-    TrimPathPrefix string      // remove leading TrimPath from recorded file names
-    GOROOT         string      // current GOROOT
-    GOROOT_FINAL   string      // target GOROOT
+	Top               *LineStack  // current top of stack
+	Ranges            []LineRange // ranges for lookup
+	Dir               string      // directory to qualify relative paths
+	TrimPathPrefix    string      // remove leading TrimPath from recorded file names
+	PrintFilenameOnly bool        // ignore path when pretty-printing a line; internal use only
+	GOROOT            string      // current GOROOT
+	GOROOT_FINAL      string      // target GOROOT
 }
+
 
 // The span of valid linenos in the recorded line history can be broken
 // into a set of ranges, each with a particular stack.
 // A LineRange records one such range.
 type LineRange struct {
-    Start int        // starting lineno
-    Stack *LineStack // top of stack for this range
+	Start int        // starting lineno
+	Stack *LineStack // top of stack for this range
 }
+
 
 // A LineStack is an entry in the recorded line history.
 // Although the history at any given line number is a stack,
 // the record for all line processed forms a tree, with common
 // stack prefixes acting as parents.
 type LineStack struct {
-    Parent    *LineStack // parent in inclusion stack
-    Lineno    int        // virtual line number where this entry takes effect
-    File      string     // file name used to open source file, for error messages
-    AbsFile   string     // absolute file name, for pcln tables
-    FileLine  int        // line number in file at Lineno
-    Directive bool
-    Sym       *LSym // for linkgetline - TODO(rsc): remove
+	Parent    *LineStack // parent in inclusion stack
+	Lineno    int        // virtual line number where this entry takes effect
+	File      string     // file name used to open source file, for error messages
+	AbsFile   string     // absolute file name, for pcln tables
+	FileLine  int        // line number in file at Lineno
+	Directive bool
+	Sym       *LSym // for linkgetline - TODO(rsc): remove
 }
+
 
 // Link holds the context for writing object code from a compiler
 // to be linker input or for reading that input into the linker.
 type Link struct {
-    Goarm              int32
-    Headtype           int
-    Arch               *LinkArch
-    Debugasm           int32
-    Debugvlog          int32
-    Debugdivmod        int32
-    Debugpcln          int32
-    Flag_shared        int32
-    Flag_dynlink       bool
-    Bso                *Biobuf
-    Pathname           string
-    Windows            int32
-    Goroot             string
-    Goroot_final       string
-    Enforce_data_order int32
-    Hash               map[SymVer]*LSym
-    LineHist           LineHist
-    Imports            []string
-    Plist              *Plist
-    Plast              *Plist
-    Sym_div            *LSym
-    Sym_divu           *LSym
-    Sym_mod            *LSym
-    Sym_modu           *LSym
-    Plan9privates      *LSym
-    Curp               *Prog
-    Printp             *Prog
-    Blitrl             *Prog
-    Elitrl             *Prog
-    Rexflag            int
-    Vexflag            int
-    Rep                int
-    Repn               int
-    Lock               int
-    Asmode             int
-    Andptr             []byte
-    And                [100]uint8
-    Instoffset         int64
-    Autosize           int32
-    Armsize            int32
-    Pc                 int64
-    DiagFunc           func(string, ...interface{})
-    Mode               int
-    Cursym             *LSym
-    Version            int
-    Textp              *LSym
-    Etextp             *LSym
-    Errors             int
+	Goarm         int32
+	Headtype      int
+	Arch          *LinkArch
+	Debugasm      int32
+	Debugvlog     int32
+	Debugdivmod   int32
+	Debugpcln     int32
+	Flag_shared   bool
+	Flag_dynlink  bool
+	Flag_optimize bool
+	Bso           *bufio.Writer
+	Pathname      string
+	Goroot        string
+	Goroot_final  string
+	Hash          map[SymVer]*LSym
+	LineHist      LineHist
+	Imports       []string
+	Plist         *Plist
+	Plast         *Plist
+	Sym_div       *LSym
+	Sym_divu      *LSym
+	Sym_mod       *LSym
+	Sym_modu      *LSym
+	Plan9privates *LSym
+	Curp          *Prog
+	Printp        *Prog
+	Blitrl        *Prog
+	Elitrl        *Prog
+	Rexflag       int
+	Vexflag       int
+	Rep           int
+	Repn          int
+	Lock          int
+	Asmode        int
+	AsmBuf        AsmBuf // instruction buffer for x86
+	Instoffset    int64
+	Autosize      int32
+	Armsize       int32
+	Pc            int64
+	DiagFunc      func(string, ...interface{})
+	Mode          int
+	Cursym        *LSym
+	Version       int
+	Textp         *LSym
+	Etextp        *LSym
+	Errors        int
 
-    // state for writing objects
-    Text  *LSym
-    Data  *LSym
-    Etext *LSym
-    Edata *LSym
+	// state for writing objects
+	Text []*LSym
+	Data []*LSym
+
+	// Cache of Progs
+	allocIdx int
+	progs    [10000]Prog
 }
+
 
 // LinkArch is the definition of a single architecture.
 type LinkArch struct {
-    ByteOrder  binary.ByteOrder
-    Name       string
-    Thechar    int
-    Preprocess func(*Link, *LSym)
-    Assemble   func(*Link, *LSym)
-    Follow     func(*Link, *LSym)
-    Progedit   func(*Link, *Prog)
-    UnaryDst   map[int]bool // Instruction takes one operand, a destination.
-    Minlc      int
-    Ptrsize    int
-    Regsize    int
+	Preprocess func(*Link, *LSym)
+	Assemble   func(*Link, *LSym)
+	Follow     func(*Link, *LSym)
+	Progedit   func(*Link, *Prog)
+	UnaryDst   map[As]bool // Instruction takes one operand, a destination.
 }
+
+
 
 type Pcdata struct {
-    P []byte
+	P []byte
 }
 
-// Pcdata iterator.
-//
-//     for(pciterinit(ctxt, &it, &pcd); !it.done; pciternext(&it)) { it.value holds in [it.pc, it.nextpc) }
 
-// Pcdata iterator.
-//
-//     for(pciterinit(ctxt, &it, &pcd); !it.done; pciternext(&it)) { it.value holds in [it.pc, it.nextpc) }
-type Pciter struct {
-    d       Pcdata
-    p       []byte
-    pc      uint32
-    nextpc  uint32
-    pcscale uint32
-    value   int32
-    start   int
-    done    int
-}
 
 type Pcln struct {
-    Pcsp        Pcdata
-    Pcfile      Pcdata
-    Pcline      Pcdata
-    Pcdata      []Pcdata
-    Funcdata    []*LSym
-    Funcdataoff []int64
-    File        []*LSym
-    Lastfile    *LSym
-    Lastindex   int
+	Pcsp        Pcdata
+	Pcfile      Pcdata
+	Pcline      Pcdata
+	Pcdata      []Pcdata
+	Funcdata    []*LSym
+	Funcdataoff []int64
+	File        []*LSym
+	Lastfile    *LSym
+	Lastindex   int
 }
 
+
+
 type Plist struct {
-    Name    *LSym
-    Firstpc *Prog
-    Recur   int
-    Link    *Plist
+	Name    *LSym
+	Firstpc *Prog
+	Recur   int
+	Link    *Plist
 }
+
 
 // TODO(rsc): Describe prog.
 // TODO(rsc): Describe TEXT/GLOBL flag in from3, DATA width in from3.
-type Prog struct {
-    Ctxt   *Link
-    Link   *Prog
-    From   Addr
-    From3  *Addr // optional
-    To     Addr
-    Opt    interface{}
-    Forwd  *Prog
-    Pcond  *Prog
-    Rel    *Prog // Source of forward jumps on x86; pcrel on arm
-    Pc     int64
-    Lineno int32
-    Spadj  int32
-    As     int16
-    Reg    int16
-    RegTo2 int16 // 2nd register output operand
-    Mark   uint16
-    Optab  uint16
-    Scond  uint8
-    Back   uint8
-    Ft     uint8
-    Tt     uint8
-    Isize  uint8
-    Mode   int8
 
-    Info ProgInfo
+// TODO(rsc): Describe prog.
+// TODO(rsc): Describe TEXT/GLOBL flag in from3
+type Prog struct {
+	Ctxt   *Link
+	Link   *Prog
+	From   Addr
+	From3  *Addr // optional
+	To     Addr
+	Opt    interface{}
+	Forwd  *Prog
+	Pcond  *Prog
+	Rel    *Prog // Source of forward jumps on x86; pcrel on arm
+	Pc     int64
+	Lineno int32
+	Spadj  int32
+	As     As // Assembler opcode.
+	Reg    int16
+	RegTo2 int16  // 2nd register output operand
+	Mark   uint16 // bitmask of arch-specific items
+	Optab  uint16
+	Scond  uint8
+	Back   uint8
+	Ft     uint8
+	Tt     uint8
+	Isize  uint8 // size of the instruction in bytes (x86 only)
+	Mode   int8
+
+	Info ProgInfo
 }
+
+
+// ProgInfo holds information about the instruction for use by clients such as
+// the compiler. The exact meaning of this data is up to the client and is not
+// interpreted by the cmd/internal/obj/... packages.
 
 // ProgInfo holds information about the instruction for use by clients such as
 // the compiler. The exact meaning of this data is up to the client and is not
 // interpreted by the cmd/internal/obj/... packages.
 type ProgInfo struct {
-    _        struct{} // to prevent unkeyed literals. Trailing zero-sized field will take space.
-    Flags    uint32   // flag bits
-    Reguse   uint64   // registers implicitly used by this instruction
-    Regset   uint64   // registers implicitly set by this instruction
-    Regindex uint64   // registers used by addressing mode
+	_        struct{} // to prevent unkeyed literals. Trailing zero-sized field will take space.
+	Flags    uint32   // flag bits
+	Reguse   uint64   // registers implicitly used by this instruction
+	Regset   uint64   // registers implicitly set by this instruction
+	Regindex uint64   // registers used by addressing mode
 }
+
+
 
 type Reloc struct {
-    Off  int32
-    Siz  uint8
-    Type int32
-    Add  int64
-    Sym  *LSym
+	Off  int32
+	Siz  uint8
+	Type int32
+	Add  int64
+	Sym  *LSym
 }
+
+
 
 type SymVer struct {
-    Name    string
-    Version int // TODO: make int16 to match LSym.Version?
+	Name    string
+	Version int // TODO: make int16 to match LSym.Version?
 }
 
-func Aconv(a int) string
+
+func Aconv(a As) string
 
 func Addrel(s *LSym) *Reloc
 
 func Appendp(ctxt *Link, q *Prog) *Prog
 
-func Bgetc(b *Biobuf) int
-
-func Bgetrune(b *Biobuf) int
-
-func Binitr(r io.Reader) *Biobuf
-
-func Binitw(w io.Writer) *Biobuf
-
-func Blinelen(b *Biobuf) int
-
-func Boffset(b *Biobuf) int64
-
 func Bool2int(b bool) int
 
-func Bopenr(name string) (*Biobuf, error)
-
-func Bopenw(name string) (*Biobuf, error)
-
-func Bputc(b *Biobuf, c byte)
-
 func Brchain(ctxt *Link, p *Prog) *Prog
-
-func Brdline(b *Biobuf, delim int) string
-
-func Brdstr(b *Biobuf, delim int, cut int) string
-
-func Bread(b *Biobuf, p []byte) int
-
-func Bseek(b *Biobuf, offset int64, whence int) int64
-
-func Bterm(b *Biobuf) error
-
-func Bungetrune(b *Biobuf)
-
-func Bwritestring(b *Biobuf, p string) (int, error)
 
 // CConv formats ARM condition codes.
 func CConv(s uint8) string
@@ -950,6 +1167,8 @@ func Flagstr(name, usage string, val *string)
 
 func Flushplist(ctxt *Link)
 
+func FlushplistNoFree(ctxt *Link)
+
 func Getcallerpc(interface{}) uintptr
 
 func Getgo386() string
@@ -972,7 +1191,7 @@ func Linklookup(ctxt *Link, name string, v int) *LSym
 
 func Linknew(arch *LinkArch) *Link
 
-// * start a new Prog list.
+//  * start a new Prog list.
 func Linknewplist(ctxt *Link) *Plist
 
 func Linkprfile(ctxt *Link, line int)
@@ -981,41 +1200,111 @@ func Linksymfmt(s *LSym) string
 
 func Mconv(a *Addr) string
 
-func Nocache(p *Prog)
-
 func Nopout(p *Prog)
 
 func Rconv(reg int) string
 
 // RegisterOpcode binds a list of instruction names
 // to a given instruction number range.
-func RegisterOpcode(lo int, Anames []string)
+func RegisterOpcode(lo As, Anames []string)
 
 // RegisterRegister binds a pretty-printer (Rconv) for register
 // numbers to a given register number range.  Lo is inclusive,
+// hi exclusive (valid registers are lo through hi-1).
+
+// RegisterRegister binds a pretty-printer (Rconv) for register
+// numbers to a given register number range. Lo is inclusive,
 // hi exclusive (valid registers are lo through hi-1).
 func RegisterRegister(lo, hi int, Rconv func(int) string)
 
 func Setuintxx(ctxt *Link, s *LSym, off int64, v uint64, wid int64) int64
 
-func Symgrow(ctxt *Link, s *LSym, lsiz int64)
-
-func TestLineHist(t *testing.T)
+func WriteObjFile(ctxt *Link, b *bufio.Writer)
 
 // The Go and C compilers, and the assembler, call writeobj to write
 // out a Go object file.  The linker does not call this; the linker
 // does not write out object files.
-func Writeobjdirect(ctxt *Link, b *Biobuf)
 
-func Writeobjfile(ctxt *Link, b *Biobuf)
+// The Go and C compilers, and the assembler, call writeobj to write
+// out a Go object file. The linker does not call this; the linker
+// does not write out object files.
+func Writeobjdirect(ctxt *Link, b *bufio.Writer)
 
-func (*Biobuf) Flush() error
+// Bytes returns the contents of the buffer.
+func (*AsmBuf) Bytes() []byte
 
-func (*Biobuf) Peek(n int) ([]byte, error)
+// Insert inserts b at offset i.
+func (*AsmBuf) Insert(i int, b byte)
 
-func (*Biobuf) Read(p []byte) (int, error)
+// Last returns the byte at the end of the buffer.
+func (*AsmBuf) Last() byte
 
-func (*Biobuf) Write(p []byte) (int, error)
+// Len returns the length of the buffer.
+func (*AsmBuf) Len() int
+
+// Peek returns the byte at offset i.
+func (*AsmBuf) Peek(i int) byte
+
+// Put copies b into the buffer.
+func (*AsmBuf) Put(b []byte)
+
+// Put1 appends one byte to the end of the buffer.
+func (*AsmBuf) Put1(x byte)
+
+// Put2 appends two bytes to the end of the buffer.
+func (*AsmBuf) Put2(x, y byte)
+
+// Put3 appends three bytes to the end of the buffer.
+func (*AsmBuf) Put3(x, y, z byte)
+
+// Put4 appends four bytes to the end of the buffer.
+func (*AsmBuf) Put4(x, y, z, w byte)
+
+// PutInt16 writes v into the buffer using little-endian encoding.
+func (*AsmBuf) PutInt16(v int16)
+
+// PutInt32 writes v into the buffer using little-endian encoding.
+func (*AsmBuf) PutInt32(v int32)
+
+// PutInt64 writes v into the buffer using little-endian encoding.
+func (*AsmBuf) PutInt64(v int64)
+
+// Reset empties the buffer.
+func (*AsmBuf) Reset()
+
+// Grow increases the length of s.P to lsiz.
+func (*LSym) Grow(lsiz int64)
+
+// GrowCap increases the capacity of s.P to c.
+func (*LSym) GrowCap(c int64)
+
+// The compiler needs LSym to satisfy fmt.Stringer, because it stores
+// an LSym in ssa.ExternSymbol.
+func (*LSym) String() string
+
+// WriteAddr writes an address of size siz into s at offset off.
+// rsym and roff specify the relocation for the address.
+func (*LSym) WriteAddr(ctxt *Link, off int64, siz int, rsym *LSym, roff int64)
+
+// WriteBytes writes a slice of bytes into s at offset off.
+func (*LSym) WriteBytes(ctxt *Link, off int64, b []byte) int64
+
+// WriteFloat32 writes f into s at offset off.
+func (*LSym) WriteFloat32(ctxt *Link, off int64, f float32)
+
+// WriteFloat64 writes f into s at offset off.
+func (*LSym) WriteFloat64(ctxt *Link, off int64, f float64)
+
+// WriteInt writes an integer i of size siz into s at offset off.
+func (*LSym) WriteInt(ctxt *Link, off int64, siz int, i int64)
+
+// WriteOff writes a 4 byte offset to rsym+roff into s at offset off.
+// After linking the 4 bytes stored at s+off will be
+// rsym+roff-(start of section that s is in).
+func (*LSym) WriteOff(ctxt *Link, off int64, rsym *LSym, roff int64)
+
+// WriteString writes a string of size siz into s at offset off.
+func (*LSym) WriteString(ctxt *Link, off int64, siz int, str string)
 
 // AbsFileLine returns the absolute file name and line number
 // at the top of the stack for the given lineno.
@@ -1064,7 +1353,7 @@ func (*Link) NewProg() *Prog
 func (*Prog) From3Offset() int64
 
 // From3Type returns From3.Type, or TYPE_NONE when From3 is nil.
-func (*Prog) From3Type() int16
+func (*Prog) From3Type() AddrType
 
 func (*Prog) Line() string
 

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,16 +7,15 @@
 // Package sort provides primitives for sorting slices and user-defined
 // collections.
 
-// sort
-// 包为切片及用户定义的集合的排序操作提供了原语.
+// sort 包为切片及用户定义的集合的排序操作提供了原语.
 package sort
 
 // Float64Slice attaches the methods of Interface to []float64, sorting in
 // increasing order.
 
-// Float64Slice 针对 []float6
-// 实现接口的方法，以升序排列。
+// Float64Slice 针对 []float6 实现接口的方法，以升序排列。
 type Float64Slice []float64
+
 
 // IntSlice attaches the methods of Interface to []int, sorting in increasing
 // order.
@@ -24,28 +23,34 @@ type Float64Slice []float64
 // IntSlice 针对 []int 实现接口的方法，以升序排列。
 type IntSlice []int
 
+
 // A type, typically a collection, that satisfies sort.Interface can be
 // sorted by the routines in this package.  The methods require that the
 // elements of the collection be enumerated by an integer index.
 
-// 任何实现了 sort.Interface
-// 的类型（一般为集合），均可使用该包中的方法进行排序。
-// 这些方法要求集合内列出元素的索引为整数。
+// 任何实现了 sort.Interface 的类型（一般为集合），均可使用该包中的方法进行排
+// 序。 这些方法要求集合内列出元素的索引为整数。
 type Interface interface {
-    // Len is the number of elements in the collection.
-    Len() int
-    // Less reports whether the element with
-    // index i should sort before the element with index j.
-    Less(i, j int) bool
-    // Swap swaps the elements with indexes i and j.
-    Swap(i, j int)
+	// Len is the number of elements in the collection.
+	// Len 为集合内元素的总数
+	Len() int
+	// Less reports whether the element with
+	// index i should sort before the element with index j.
+	//
+	// Less 返回索引为 i 的元素是否应排在索引为 j 的元素之前。
+	Less(i, j int) bool
+	// Swap swaps the elements with indexes i and j.
+	// Swap 交换索引为 i 和 j 的元素
+	Swap(i, j int)
 }
+
 
 // StringSlice attaches the methods of Interface to []string, sorting in
 // increasing order.
 
-// StringSlice 针对 []string 实现接口的方法，以升序排列。
+// StringSlice 针对  []string 实现接口的方法，以升序排列。
 type StringSlice []string
+
 
 // Float64s sorts a slice of float64s in increasing order.
 
@@ -151,22 +156,22 @@ func Reverse(data Interface) Interface
 //     x := 23
 //     i := sort.Search(len(data), func(i int) bool { return data[i] >= x })
 //     if i < len(data) && data[i] == x {
-//         // x 为 data[i]
+//     	// x 为 data[i]
 //     } else {
-//         // x 不在 data 中，但 i 可作为它的索引插入。
+//     	// x 不在 data 中，但 i 可作为它的索引插入。
 //     }
 //
 // 还有个更有趣的例子，此程序会猜你所想的数字：
 //
 //     func GuessingGame() {
-//         var s string
-//         fmt.Printf("Pick an integer from 0 to 100.\n")
-//         answer := sort.Search(100, func(i int) bool {
-//             fmt.Printf("Is your number <= %d? ", i)
-//             fmt.Scanf("%s", &s)
-//             return s != "" && s[0] == 'y'
-//         })
-//         fmt.Printf("Your number is %d.\n", answer)
+//     	var s string
+//     	fmt.Printf("Pick an integer from 0 to 100.\n")
+//     	answer := sort.Search(100, func(i int) bool {
+//     		fmt.Printf("Is your number <= %d? ", i)
+//     		fmt.Scanf("%s", &s)
+//     		return s != "" && s[0] == 'y'
+//     	})
+//     	fmt.Printf("Your number is %d.\n", answer)
 //     }
 func Search(n int, f func(int) bool) int
 
@@ -175,8 +180,9 @@ func Search(n int, f func(int) bool) int
 // is not present (it could be len(a)). The slice must be sorted in ascending
 // order.
 
-// SearchFloat64s 在float64s切片中搜索x并返回索引 如Search函数所述.
-// 返回可以插入x值的索引位置，如果x 不存在，返回数组a的长度 切片必须以升序排列
+// SearchFloat64s 在已排序的 float64s 切片中搜索 x 并返回 Search 指定的索引。
+// 如果 x 不存在，返回值即为插入 x 时的下标（它会是 len(a)）。
+// 切片必须以升序排列。
 func SearchFloat64s(a []float64, x float64) int
 
 // SearchInts searches for x in a sorted slice of ints and returns the index
@@ -184,8 +190,10 @@ func SearchFloat64s(a []float64, x float64) int
 // not present (it could be len(a)).
 // The slice must be sorted in ascending order.
 
-// SearchInts 在ints切片中搜索x并返回索引 如Search函数所述.
-// 返回可以插入x值的索引位置，如果x 不存在，返回数组a的长度 切片必须以升序排列
+// SearchInts 在ints切片中搜索x并返回索引
+// 如Search函数所述. 返回可以插入x值的索引位置，如果x
+// 不存在，返回数组a的长度
+// 切片必须以升序排列
 func SearchInts(a []int, x int) int
 
 // SearchStrings searches for x in a sorted slice of strings and returns the
@@ -193,22 +201,24 @@ func SearchInts(a []int, x int) int
 // is not present (it could be len(a)). The slice must be sorted in ascending
 // order.
 
-// SearchFloat64s 在strings切片中搜索x并返回索引 如Search函数所述.
-// 返回可以插入x值的索引位置，如果x 不存在，返回数组a的长度 切片必须以升序排列
+// SearchStrings 在已排序的 strings 切片中搜索 x 并返回 Search 指定的索引。
+// 如果 x 不存在，返回值即为插入 x 时的下标（它会是 len(a)）。
+// 切片必须以升序排列。
 func SearchStrings(a []string, x string) int
 
 // Sort sorts data.
 // It makes one call to data.Len to determine n, and O(n*log(n)) calls to
 // data.Less and data.Swap. The sort is not guaranteed to be stable.
 
-// Sort 对 data 进行排序。 它调用一次 data.Len 来决定排序的长度 n，调用
-// data.Less 和 data.Swap 的开销为 O(n*log(n))。此排序为不稳定排序。
+// Sort 对 data 进行排序。
+// 它调用一次 data.Len 来决定排序的长度 n，调用 data.Less 和 data.Swap 的开销为
+// O(n*log(n))。此排序为不稳定排序。
 func Sort(data Interface)
 
 // Stable sorts data while keeping the original order of equal elements.
 //
-// It makes one call to data.Len to determine n, O(n*log(n)) calls to data.Less
-// and O(n*log(n)*log(n)) calls to data.Swap.
+// It makes one call to data.Len to determine n, O(n*log(n)) calls to
+// data.Less and O(n*log(n)*log(n)) calls to data.Swap.
 func Stable(data Interface)
 
 // Strings sorts a slice of strings in increasing order.
@@ -228,8 +238,7 @@ func (Float64Slice) Less(i, j int) bool
 
 // Search returns the result of applying SearchFloat64s to the receiver and x.
 
-// Search
-// 返回以调用者和x为参数调用SearchFloat64s后的结果
+// Search 返回以调用者和x为参数调用SearchFloat64s后的结果
 func (Float64Slice) Search(x float64) int
 
 // Sort is a convenience method.
@@ -245,8 +254,7 @@ func (IntSlice) Less(i, j int) bool
 
 // Search returns the result of applying SearchInts to the receiver and x.
 
-// Search
-// 返回以调用者和x为参数调用SearchInts后的结果
+// Search 返回以调用者和x为参数调用SearchInts后的结果
 func (IntSlice) Search(x int) int
 
 // Sort is a convenience method.
@@ -262,8 +270,7 @@ func (StringSlice) Less(i, j int) bool
 
 // Search returns the result of applying SearchStrings to the receiver and x.
 
-// Search
-// 返回以调用者和x为参数调用SearchStrings后的结果
+// Search 返回以调用者和x为参数调用SearchStrings后的结果
 func (StringSlice) Search(x string) int
 
 // Sort is a convenience method.

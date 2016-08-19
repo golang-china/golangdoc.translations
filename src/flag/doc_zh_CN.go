@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -20,7 +20,7 @@
 //
 //     var flagvar int
 //     func init() {
-//         flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
+//     	flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
 //     }
 //
 // Or you can create custom flags that satisfy the Value interface (with pointer
@@ -91,7 +91,7 @@
 //
 //     var flagvar int
 //     func init() {
-//         flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
+//     	flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
 //     }
 //
 // 你也可以传入自定义类型的标签，只要标签满足对应的值接口（接收指针指向的接收者
@@ -153,11 +153,15 @@ import (
 
 // These constants cause FlagSet.Parse to behave as described if the parse
 // fails.
+
+// 这些常量描述了 FlagSet.Parse 在解析失败时的行为。
 const (
-    ContinueOnError ErrorHandling = iota
-    ExitOnError
-    PanicOnError
+	ContinueOnError ErrorHandling = iota // Return a descriptive error.
+	ExitOnError                          // Call os.Exit(2).
+	PanicOnError                         // Call panic with a descriptive error.
+
 )
+
 
 // CommandLine is the default set of command-line flags, parsed from os.Args.
 // The top-level functions such as BoolVar, Arg, and so on are wrappers for the
@@ -167,12 +171,13 @@ const (
 // 等这样的顶级函数为 CommandLine 方法的包装。
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
+
 // ErrHelp is the error returned if the -help or -h flag is invoked
 // but no such flag is defined.
 
-// ErrHelp 在 -help 或 -h
-// 标志未定义却调用了它时返回一个错误。
+// ErrHelp 在 -help 或 -h 标志未定义却调用了它时返回一个错误。
 var ErrHelp = errors.New("flag: help requested")
+
 
 // Usage prints to standard error a usage message documenting all defined
 // command-line flags. It is called when an error occurs while parsing flags.
@@ -181,27 +186,32 @@ var ErrHelp = errors.New("flag: help requested")
 // about the format of the output and how to control it, see the documentation
 // for PrintDefaults.
 
-// Usage打印出标准的错误信息，包含所有定义过的命令行标签说明。
-// 这个函数赋值到一个变量上去，当然也可以将这个变量指向到自定义的函数。
+// Usage 将所有已定义命令行标记的用法信息文档打印到标准错误输出。它会在解析标记
+// 遇到错误时调用。 该函数是个变量，因此可指向自定义的函数。它默认打印一个简单的
+// 开头并调用 PrintDefaults； 关于输出格式的控制及详情，参见 PrintDefaults 的文
+// 档。
 var Usage = func() {
-    fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-    PrintDefaults()
+	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+	PrintDefaults()
 }
+
 
 // ErrorHandling defines how FlagSet.Parse behaves if the parse fails.
 
-// ErrorHandling定义了如何处理标签解析的错误
+// ErrorHandling 定义了 FlagSet.Parse 在解析失败时的行为。
 type ErrorHandling int
+
 
 // A Flag represents the state of a flag.
 
 // Flag表示标签的状态
 type Flag struct {
-    Name     string // name as it appears on command line
-    Usage    string // help message
-    Value    Value  // value as set
-    DefValue string // default value (as text); for usage message
+	Name     string // name as it appears on command line  // 标签在命令行显示的名字
+	Usage    string // help message  // 帮助信息
+	Value    Value  // value as set  // 标签的值
+	DefValue string // default value (as text); for usage message  // 默认值（文本格式）；这也是一个用法的信息说明
 }
+
 
 // A FlagSet represents a set of defined flags.  The zero value of a FlagSet
 // has no name and has ContinueOnError error handling.
@@ -209,20 +219,30 @@ type Flag struct {
 // FlagSet 是已经定义好的标签的集合。FlagSet 的零值没有名字且拥有
 // ContinueOnError 错误处理。
 type FlagSet struct {
-    // Usage is the function called when an error occurs while parsing flags.
-    // The field is a function (not a method) that may be changed to point to
-    // a custom error handler.
-    Usage func()
+
+	// 当解析标签出现错误的时候，Usage就会被调用。这个字段是一个函数（不是一个方法），它可以指向
+	// 用户自己定义的错误处理函数。
+	Usage func()
+
+	name          string
+	parsed        bool
+	actual        map[string]*Flag
+	formal        map[string]*Flag
+	args          []string // arguments after flags  // flags后面的参数
+	errorHandling ErrorHandling
+	output        io.Writer // nil means stderr; use out() accessor  // nil代表控制台输出，使用out()来访问这个字段
 }
+
 
 // Getter is an interface that allows the contents of a Value to be retrieved.
 // It wraps the Value interface, rather than being part of it, because it
-// appeared after Go 1 and its compatibility rules. All Value types provided by
-// this package satisfy the Getter interface.
+// appeared after Go 1 and its compatibility rules. All Value types provided
+// by this package satisfy the Getter interface.
 type Getter interface {
-    Value
-    Get() interface{}
+	Value
+	Get() interface{}
 }
+
 
 // Value is the interface to the dynamic value stored in a flag.
 // (The default value is represented as a string.)
@@ -233,20 +253,25 @@ type Getter interface {
 //
 // Set is called once, in command line order, for each flag present.
 
-// Value接口是定义了标签对应的具体的参数值。 （默认值是string类型）
+// Value接口是定义了标签对应的具体的参数值。
+// （默认值是string类型）
 //
-// 若 Value 拥有的 IsBoolFlag() bool 方法返回 ture，则命令行解析器会使 -name 等
-// 价于 -name=true，而非使用下一个命令行实参。
+// 若 Value 拥有的 IsBoolFlag() bool 方法返回 ture，则命令行解析器会使 -name
+// 等价于 -name=true，而非使用下一个命令行实参。
+//
+// Set 按命令行顺序为每一个标记调用一次。
 type Value interface {
-    String() string
-    Set(string) error
+	String() string
+	Set(string) error
 }
+
 
 // Arg returns the i'th command-line argument. Arg(0) is the first remaining
 // argument after flags have been processed. Arg returns an empty string if the
 // requested element does not exist.
 
-// Arg返回第i个命令行参数。当有标签被解析之后，Arg(0)就成为了保留参数。
+// Arg 返回第 i 个命令行参数。当标记解析完毕后，Arg(0) 就成为第一个保留参数。
+// 若请求的元素不存在，Arg 则返回一个空字符串。
 func Arg(i int) string
 
 // Args returns the non-flag command-line arguments.
@@ -275,9 +300,9 @@ func BoolVar(p *bool, name string, value bool, usage string)
 // that stores the value of the flag. The flag accepts a value acceptable to
 // time.ParseDuration.
 
-// Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。 返回值
-// 是一个存储标签解析值的time.Duration变量地址。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
+// 返回值是一个存储标签解析值的time.Duration变量地址。
+// 此标记接受一个 time.ParseDuration 可接受的值。
 func Duration(name string, value time.Duration, usage string) *time.Duration
 
 // DurationVar defines a time.Duration flag with specified name, default value,
@@ -285,9 +310,9 @@ func Duration(name string, value time.Duration, usage string) *time.Duration
 // to store the value of the flag. The flag accepts a value acceptable to
 // time.ParseDuration.
 
-// DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。 参数
-// p指向一个存储标签解析值的time.Duration变量。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
+// 参数p指向一个存储标签解析值的time.Duration变量。
+// 此标记接受一个 time.ParseDuration 可接受的值。
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string)
 
 // Float64 defines a float64 flag with specified name, default value, and usage
@@ -357,8 +382,7 @@ func NFlag() int
 // NewFlagSet returns a new, empty flag set with the specified name and
 // error handling property.
 
-// NewFlagSet
-// 通过设置一个特定的名字和错误处理属性，返回一个新的，空的FlagSet。
+// NewFlagSet 通过设置一个特定的名字和错误处理属性，返回一个新的，空的FlagSet。
 func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet
 
 // Parse parses the command-line flags from os.Args[1:].  Must be called
@@ -370,7 +394,7 @@ func Parse()
 
 // Parsed reports whether the command-line flags have been parsed.
 
-// Parsed 返回是否命令行标签已经被解析过。
+// Parsed 判断命令行标签是否已被解析。
 func Parsed() bool
 
 // PrintDefaults prints, to standard error unless configured otherwise,
@@ -393,7 +417,24 @@ func Parsed() bool
 //     -I directory
 //         search directory for include files.
 
-// PrintDefaults打印出标准错误，就是所有命令行中定义好的标签的默认信息。
+// PrintDefaults 在没有另行设置时会将用法信息打印到标准错误输出， 该信息显示了所
+// 有已定义的命令行参数。 对于接受整数值的参数 x，默认的输出格式为：
+//
+//     -x int
+//     	usage-message-for-x (default 7)
+//
+// 除了单字节名的布尔参数外，一般的用法信息会独占一行。对于布尔参数，其类型会被
+// 忽略； 若参数名为单个字节，则用法信息会在同一行。若默认值为该参数类型的零值，
+// 那么括号中的默认值会被省略。已列出的类型，例如这里的 int， 可替换为参数用法信
+// 息中被反引号括住的字符串；第一个这样的条目会作为形参名出现在该用法信息中， 而
+// 反引号则会在显示信息时去掉。例如，给定
+//
+//     flag.String("I", "", "search `directory` for include files")
+//
+// 那么输出会是
+//
+//     -I directory
+//     	search directory for include files.
 func PrintDefaults()
 
 // Set sets the value of the named command-line flag.
@@ -449,6 +490,18 @@ func Uint64Var(p *uint64, name string, value uint64, usage string)
 // 参数p指向一个存储标签解析值的uint变量。
 func UintVar(p *uint, name string, value uint, usage string)
 
+// UnquoteUsage extracts a back-quoted name from the usage
+// string for a flag and returns it and the un-quoted usage.
+// Given "a `name` to show" it returns ("name", "a name to show").
+// If there are no back quotes, the name is an educated guess of the
+// type of the flag's value, or the empty string if the flag is boolean.
+
+// UnquoteUsage 从 usage 字符串中提取反引号括起的名字 name 用作命令参数， 并返回
+// 该 name 以及不带引号的 usage。例如传入 "a `name` to show"，时它会返回
+// ("name", "a name to show")。若其中没有反引号，name 即为该命令参数值类型的最佳
+// 猜测， 若命令参数为布尔值，则返回空字符串。
+func UnquoteUsage(flag *Flag) (name string, usage string)
+
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
@@ -480,7 +533,8 @@ func VisitAll(fn func(*Flag))
 // after flags have been processed. Arg returns an empty string if the
 // requested element does not exist.
 
-// Arg返回第i个参数。当有标签被解析之后，Arg(0)就成为了保留参数。
+// Arg 返回第 i 个参数。当标记解析完毕后，Arg(0) 就成为第一个保留参数。
+// 若请求的元素不存在，Arg 则返回一个空字符串。
 func (*FlagSet) Arg(i int) string
 
 // Args returns the non-flag arguments.
@@ -509,9 +563,9 @@ func (*FlagSet) BoolVar(p *bool, name string, value bool, usage string)
 // that stores the value of the flag. The flag accepts a value acceptable to
 // time.ParseDuration.
 
-// Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。 返回值
-// 是一个存储标签解析值的time.Duration变量地址。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// Duration定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
+// 返回值是一个存储标签解析值的time.Duration变量地址。
+// 此标记接受一个 time.ParseDuration 可接受的值。
 func (*FlagSet) Duration(name string, value time.Duration, usage string) *time.Duration
 
 // DurationVar defines a time.Duration flag with specified name, default value,
@@ -519,9 +573,9 @@ func (*FlagSet) Duration(name string, value time.Duration, usage string) *time.D
 // to store the value of the flag. The flag accepts a value acceptable to
 // time.ParseDuration.
 
-// DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。 参数
-// p指向一个存储标签解析值的time.Duration变量。 此标记接受一个
-// time.ParseDuration 可接受的值。
+// DurationVar定义了一个有指定名字，默认值，和用法说明的time.Duration标签。
+// 参数p指向一个存储标签解析值的time.Duration变量。
+// 此标记接受一个 time.ParseDuration 可接受的值。
 func (*FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string)
 
 // Float64 defines a float64 flag with specified name, default value, and usage
@@ -601,9 +655,9 @@ func (*FlagSet) NFlag() int
 // are defined and before flags are accessed by the program.
 // The return value will be ErrHelp if -help or -h were set but not defined.
 
-// Parse从参数列表中解析定义的标签，这个参数列表并不包含执行的命令名字。 这个方
-// 法调用时间点必须在FlagSet的所有标签都定义之后，程序访问这些标签之前。 当
-// -help 或 -h 标签没有定义却被调用了的时候，这个方法返回 ErrHelp。
+// Parse从参数列表中解析定义的标签，这个参数列表并不包含执行的命令名字。
+// 这个方法调用时间点必须在FlagSet的所有标签都定义之后，程序访问这些标签之前。
+// 当 -help 或 -h 标签没有定义却被调用了的时候，这个方法返回 ErrHelp。
 func (*FlagSet) Parse(arguments []string) error
 
 // Parsed reports whether f.Parse has been called.
@@ -615,8 +669,8 @@ func (*FlagSet) Parsed() bool
 // defined command-line flags in the set. See the documentation for
 // the global function PrintDefaults for more information.
 
-// 除非有特别配置，否则PrintDefault会将内容输出到标准输出控制台中。
-// PrintDefault会输出集合中所有定义好的标签的默认信息
+// PrintDefaults 将设置中所有已定义的命令行标记的默认值打印到标准错误输出。有关
+// 全局函数 PrintDefaults 的更多信息见文档。
 func (*FlagSet) PrintDefaults()
 
 // Set sets the value of the named flag.

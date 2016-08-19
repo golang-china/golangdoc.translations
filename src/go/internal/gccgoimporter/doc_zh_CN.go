@@ -18,30 +18,27 @@ import (
     "go/constant"
     "go/token"
     "go/types"
-    "internal/testenv"
     "io"
-    "io/ioutil"
     "os"
     "os/exec"
     "path/filepath"
-    "runtime"
     "strconv"
     "strings"
-    "testing"
     "text/scanner"
 )
 
 // Information about a specific installation of gccgo.
 type GccgoInstallation struct {
-    // Version of gcc (e.g. 4.8.0).
-    GccVersion string
+	// Version of gcc (e.g. 4.8.0).
+	GccVersion string
 
-    // Target triple (e.g. x86_64-unknown-linux-gnu).
-    TargetTriple string
+	// Target triple (e.g. x86_64-unknown-linux-gnu).
+	TargetTriple string
 
-    // Built-in library paths used by this installation.
-    LibPaths []string
+	// Built-in library paths used by this installation.
+	LibPaths []string
 }
+
 
 // An Importer resolves import paths to Packages. The imports map records
 // packages already known, indexed by package path.
@@ -52,35 +49,30 @@ type GccgoInstallation struct {
 // package.
 type Importer func(imports map[string]*types.Package, path string) (*types.Package, error)
 
+
 // The gccgo-specific init data for a package.
 type InitData struct {
-    // Initialization priority of this package relative to other packages.
-    // This is based on the maximum depth of the package's dependency graph;
-    // it is guaranteed to be greater than that of its dependencies.
-    Priority int
+	// Initialization priority of this package relative to other packages.
+	// This is based on the maximum depth of the package's dependency graph;
+	// it is guaranteed to be greater than that of its dependencies.
+	Priority int
 
-    // The list of packages which this package depends on to be initialized,
-    // including itself if needed. This is the subset of the transitive closure of
-    // the package's dependencies that need initialization.
-    Inits []PackageInit
+	// The list of packages which this package depends on to be initialized,
+	// including itself if needed. This is the subset of the transitive closure of
+	// the package's dependencies that need initialization.
+	Inits []PackageInit
 }
+
 
 // A PackageInit describes an imported package that needs initialization.
 type PackageInit struct {
-    Name     string // short package name
-    InitFunc string // name of init function
-    Priority int    // priority of init function, see InitData.Priority
+	Name     string // short package name
+	InitFunc string // name of init function
+	Priority int    // priority of init function, see InitData.Priority
 }
 
+
 func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Importer
-
-func TestGoxImporter(t *testing.T)
-
-func TestInstallationImporter(t *testing.T)
-
-func TestObjImporter(t *testing.T)
-
-func TestTypeParser(t *testing.T)
 
 // Return an importer that searches incpaths followed by the gcc installation's
 // built-in search paths and the current directory.

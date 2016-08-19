@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2016 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,20 +6,24 @@
 
 // Package httptest provides utilities for HTTP testing.
 
-// httptest 包提供HTTP测试的单元工具.
+// Package httptest provides utilities for HTTP testing.
 package httptest
 
 import (
+    "bufio"
     "bytes"
     "crypto/tls"
     "flag"
     "fmt"
+    "io"
+    "io/ioutil"
     "log"
     "net"
     "net/http"
     "net/http/internal"
     "os"
     "runtime"
+    "strings"
     "sync"
     "time"
 )
@@ -31,42 +35,85 @@ import (
 // 地址设置的话， DefaultRemoteAddr就作为默认值。
 const DefaultRemoteAddr = "1.2.3.4"
 
+
 // ResponseRecorder is an implementation of http.ResponseWriter that
 // records its mutations for later inspection in tests.
 
 // ResponseRecorder是http.ResponseWriter的具体实现，它为进一步的观察记录下了任何
 // 变化。
 type ResponseRecorder struct {
-    Code      int           // the HTTP response code from WriteHeader
-    HeaderMap http.Header   // the HTTP response headers
-    Body      *bytes.Buffer // if non-nil, the bytes.Buffer to append written data to
-    Flushed   bool
+	Code      int           // the HTTP response code from WriteHeader  // 为WriteHeader回复的code
+	HeaderMap http.Header   // the HTTP response headers  // HTTP回复的头
+	Body      *bytes.Buffer // if non-nil, the bytes.Buffer to append written data to  // 如果是非空，bytes.Buffer要将数据写到这里面
+	Flushed   bool
+
+	result      *http.Response // cache of Result's return value
+	snapHeader  http.Header    // snapshot of HeaderMap at first Write
+	wroteHeader bool
 }
+
 
 // A Server is an HTTP server listening on a system-chosen port on the
 // local loopback interface, for use in end-to-end HTTP tests.
 
-// Server
-// 是一个HTTP服务，它在系统选择的端口上监听请求，并且是在本地的接口监听，
+// Server 是一个HTTP服务，它在系统选择的端口上监听请求，并且是在本地的接口监听，
 // 它完全是为了点到点的HTTP测试而出现。
 type Server struct {
-    URL      string // base URL of form http://ipaddr:port with no trailing slash
-    Listener net.Listener
+	URL      string // base URL of form http://ipaddr:port with no trailing slash  // 基本的http://ipaddr:port的URL样式。没有进行尾部删减。
+	Listener net.Listener
 
-    // TLS is the optional TLS configuration, populated with a new config
-    // after TLS is started. If set on an unstarted server before StartTLS
-    // is called, existing fields are copied into the new config.
-    TLS *tls.Config
+	// TLS is the optional TLS configuration, populated with a new config
+	// after TLS is started. If set on an unstarted server before StartTLS
+	// is called, existing fields are copied into the new config.
+	//
+	// TLS 为可选的 TLS 配置，它在 TLS 启动后，与新的配置一起构成。若在 StartTLS
+	// 被调用前设置了一个未启动的服务，既有的字段就会被复制为新的配置。
+	TLS *tls.Config
 
-    // Config may be changed after calling NewUnstartedServer and
-    // before Start or StartTLS.
-    Config *http.Server
+	// Config may be changed after calling NewUnstartedServer and
+	// before Start or StartTLS.
+	//
+	// Config可能在调用NewUnstartedServer之后或者在Start和StartTLS之前被改变。
+	Config *http.Server
+
+	// wg counts the number of outstanding HTTP requests on this server.
+	// Close blocks until all requests are finished.
+	//
+	// wg 计算服务上的HTTP请求数。只有当全部请求都结束之后才关闭阻塞。
+	wg sync.WaitGroup
+
+	mu     sync.Mutex // guards closed and conns
+	closed bool
+	conns  map[net.Conn]http.ConnState // except terminal states
 }
+
 
 // NewRecorder returns an initialized ResponseRecorder.
 
 // NewRecorder返回一个初始化的ResponseRecorder。
 func NewRecorder() *ResponseRecorder
+
+// NewRequest returns a new incoming server Request, suitable
+// for passing to an http.Handler for testing.
+//
+// The target is the RFC 7230 "request-target": it may be either a
+// path or an absolute URL. If target is an absolute URL, the host name
+// from the URL is used. Otherwise, "example.com" is used.
+//
+// The TLS field is set to a non-nil dummy value if target has scheme
+// "https".
+//
+// The Request.Proto is always HTTP/1.1.
+//
+// An empty method means "GET".
+//
+// The provided body may be nil. If the body is of type *bytes.Reader,
+// *strings.Reader, or *bytes.Buffer, the Request.ContentLength is
+// set.
+//
+// NewRequest panics on error for ease of use in testing, where a
+// panic is acceptable.
+func NewRequest(method, target string, body io.Reader) *http.Request
 
 // NewServer starts and returns a new Server.
 // The caller should call Close when finished, to shut it down.
@@ -78,8 +125,7 @@ func NewServer(handler http.Handler) *Server
 // NewTLSServer starts and returns a new Server using TLS.
 // The caller should call Close when finished, to shut it down.
 
-// NewTLSServer
-// 开启并且返回了一个使用TLS的新的Server。
+// NewTLSServer 开启并且返回了一个使用TLS的新的Server。
 // 调用者应该在结束的时候调用Close来关闭它。
 func NewTLSServer(handler http.Handler) *Server
 
@@ -107,6 +153,20 @@ func (*ResponseRecorder) Flush()
 // Header返回回复的header。
 func (*ResponseRecorder) Header() http.Header
 
+// Result returns the response generated by the handler.
+//
+// The returned Response will have at least its StatusCode,
+// Header, Body, and optionally Trailer populated.
+// More fields may be populated in the future, so callers should
+// not DeepEqual the result in tests.
+//
+// The Response.Header is a snapshot of the headers at the time of the
+// first write call, or at the time of this call, if the handler never
+// did a write.
+//
+// Result must only be called after the handler has finished running.
+func (*ResponseRecorder) Result() *http.Response
+
 // Write always succeeds and writes to rw.Body, if not nil.
 
 // Write总是返回成功，并且如果buf非空的话，它会写数据到rw.Body。
@@ -114,8 +174,12 @@ func (*ResponseRecorder) Write(buf []byte) (int, error)
 
 // WriteHeader sets rw.Code.
 
-// WriteHeader设置rw.Code
+// WriteHeader sets rw.Code. After it is called, changing rw.Header
+// will not affect rw.HeaderMap.
 func (*ResponseRecorder) WriteHeader(code int)
+
+// WriteString always succeeds and writes to rw.Body, if not nil.
+func (*ResponseRecorder) WriteString(str string) (int, error)
 
 // Close shuts down the server and blocks until all outstanding
 // requests on this server have completed.
@@ -124,8 +188,6 @@ func (*ResponseRecorder) WriteHeader(code int)
 func (*Server) Close()
 
 // CloseClientConnections closes any open HTTP connections to the test Server.
-
-// CloseClientConnections关闭任何现有打开的HTTP连接到测试服务器上。
 func (*Server) CloseClientConnections()
 
 // Start starts a server from NewUnstartedServer.

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 // Package ascii85 implements the ascii85 data encoding
 // as used in the btoa tool and Adobe's PostScript and PDF document formats.
 
-// ascii85 包是对 ascii85 的数据编码的实现. 被用于 btoa ( binary to ascii )工具
-// ， Adobe 的 PostScript 和PDF文档格式。
+// ascii85 包是对 ascii85 的数据编码的实现.
+// 被用于 btoa ( binary to ascii )工具， Adobe 的 PostScript 和PDF文档格式。
 package ascii85
 
 import (
@@ -16,7 +16,9 @@ import (
     "strconv"
 )
 
+
 type CorruptInputError int64
+
 
 // Decode decodes src into dst, returning both the number
 // of bytes written to dst and the number consumed from src.
@@ -56,10 +58,11 @@ func Decode(dst, src []byte, flush bool) (ndst, nsrc int, err error)
 // Encode 编码源的最多 MaxEncodedLen(len(src)) 字节的到目标，
 // 返回实际的写入字节数。
 //
-// 通过对最后分段使用特殊的编码来操作4字节的数据块，所以 Encode
-// 用在大型数据流的私有块上是不合适的。用 NewEncoder() 替代。
+// Encode 通过对最后分段使用特殊的编码来操作4字节的数据块，
+// 所以将它用在大型数据流的私有块上是不合适的。请用 NewEncoder() 替代。
 //
-// 通常， ascii85 编码的数据用符号 <~ 和 ~> 括起来。 Encode 不加这些。
+// 通常， ascii85 编码的数据用符号 <~ 和 ~> 括起来。
+// Encode 不加这些。
 func Encode(dst, src []byte) int
 
 // MaxEncodedLen returns the maximum length of an encoding of n source bytes.
@@ -78,9 +81,9 @@ func NewDecoder(r io.Reader) io.Reader
 // writing, the caller must Close the returned encoder to flush any
 // trailing partial block.
 
-// NewEncoder 返回一个新的 ascii85 流编码器. 写入到返回的写入器中的数据将被编码
-// ，然后写入到 w 中。 Ascii85 编码在32位块中操作；当完成写入时，调用者必须关闭
-// 返回的编码器，去除所有尾部块。
+// NewEncoder 返回一个新的 ascii85 流编码器. 写入到返回的写入器中的数据将被编
+// 码，然后写入到 w 中。 Ascii85 编码在32位块中操作；当完成写入时，调用者必须关
+// 闭返回的编码器，去除所有尾部块。
 func NewEncoder(w io.Writer) io.WriteCloser
 
 func (CorruptInputError) Error() string

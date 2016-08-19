@@ -4,7 +4,8 @@
 
 // +build ingore
 
-package PACKAGE // import "cmd/compile/internal/gc/builtin"
+package runtime
+
 
 type Pointer uintptr // not really; filled in by compiler
 

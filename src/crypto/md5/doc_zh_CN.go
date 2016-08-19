@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -21,10 +21,12 @@ import (
 // MD5 块大小，以字节为单位.
 const BlockSize = 64
 
+
 // The size of an MD5 checksum in bytes.
 
 // MD5 校验和的大小，以字节为单位.
 const Size = 16
+
 
 // New returns a new hash.Hash computing the MD5 checksum.
 

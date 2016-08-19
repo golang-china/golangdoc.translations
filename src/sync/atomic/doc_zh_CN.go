@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -62,20 +62,29 @@
 // “载入并存储”操作由 LoadT 函数和 StoreT 函数实现，它们在原子性上分别等价于：
 //
 //     "return *addr"
-//
 // 和
-//
 //     "*addr = val".
 package atomic
 
 import "unsafe"
 
 // A Value provides an atomic load and store of a consistently typed value.
-// Values can be created as part of other data structures. The zero value for a
-// Value returns nil from Load. Once Store has been called, a Value must not be
-// copied.
+// Values can be created as part of other data structures.
+// The zero value for a Value returns nil from Load.
+// Once Store has been called, a Value must not be copied.
+
+// A Value provides an atomic load and store of a consistently typed value.
+// Values can be created as part of other data structures.
+// The zero value for a Value returns nil from Load.
+// Once Store has been called, a Value must not be copied.
+//
+// A Value must not be copied after first use.
 type Value struct {
+	noCopy noCopy
+
+	v interface{}
 }
+
 
 // AddInt32 atomically adds delta to *addr and returns the new value.
 
@@ -91,18 +100,18 @@ func AddInt64(addr *int64, delta int64) (new int64)
 // subtract a signed positive constant value c from x, do AddUint32(&x,
 // ^uint32(c-1)). In particular, to decrement x, do AddUint32(&x, ^uint32(0)).
 
-// AddUint32 自动将 delta 加上 *addr 并返回新值。 要从 x 中减去一个带符号正整数
-// 常量 c，需执行 AddUint32(&x, ^uint32(c-1))。 特别地，要减量 x，需执行
-// AddUint32(&x, ^uint32(0))。
+// AddUint32 自动将 delta 加上 *addr 并返回新值。
+// 要从 x 中减去一个带符号正整数常量 c，需执行 AddUint32(&x, ^uint32(c-1))。
+// 特别地，要减量 x，需执行 AddUint32(&x, ^uint32(0))。
 func AddUint32(addr *uint32, delta uint32) (new uint32)
 
 // AddUint64 atomically adds delta to *addr and returns the new value. To
 // subtract a signed positive constant value c from x, do AddUint64(&x,
 // ^uint64(c-1)). In particular, to decrement x, do AddUint64(&x, ^uint64(0)).
 
-// AddUint64 自动将 delta 加上 *addr 并返回新值。 要从 x 中减去一个带符号正整数
-// 常量 c，需执行 AddUint64(&x, ^uint64(c-1))。 特别地，要减量 x，需执行
-// AddUint64(&x, ^uint64(0))。
+// AddUint64 自动将 delta 加上 *addr 并返回新值。
+// 要从 x 中减去一个带符号正整数常量 c，需执行 AddUint64(&x, ^uint64(c-1))。
+// 特别地，要减量 x，需执行 AddUint64(&x, ^uint64(0))。
 func AddUint64(addr *uint64, delta uint64) (new uint64)
 
 // AddUintptr atomically adds delta to *addr and returns the new value.
@@ -113,43 +122,37 @@ func AddUintptr(addr *uintptr, delta uintptr) (new uintptr)
 // CompareAndSwapInt32 executes the compare-and-swap operation for an int32
 // value.
 
-// CompareAndSwapInt32 为一个 int32
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapInt32 为一个 int32 类型的值执行“比较并交换”操作。
 func CompareAndSwapInt32(addr *int32, old, new int32) (swapped bool)
 
 // CompareAndSwapInt64 executes the compare-and-swap operation for an int64
 // value.
 
-// CompareAndSwapInt64 为一个 int64
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapInt64 为一个 int64 类型的值执行“比较并交换”操作。
 func CompareAndSwapInt64(addr *int64, old, new int64) (swapped bool)
 
 // CompareAndSwapPointer executes the compare-and-swap operation for a
 // unsafe.Pointer value.
 
-// CompareAndSwapPointer 为一个 unsafe.Pointer
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapPointer 为一个 unsafe.Pointer 类型的值执行“比较并交换”操作。
 func CompareAndSwapPointer(addr *unsafe.Pointer, old, new unsafe.Pointer) (swapped bool)
 
 // CompareAndSwapUint32 executes the compare-and-swap operation for a uint32
 // value.
 
-// CompareAndSwapUint32 为一个 uint32
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapUint32 为一个 uint32 类型的值执行“比较并交换”操作。
 func CompareAndSwapUint32(addr *uint32, old, new uint32) (swapped bool)
 
 // CompareAndSwapUint64 executes the compare-and-swap operation for a uint64
 // value.
 
-// CompareAndSwapUint64 为一个 uint64
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapUint64 为一个 uint64 类型的值执行“比较并交换”操作。
 func CompareAndSwapUint64(addr *uint64, old, new uint64) (swapped bool)
 
 // CompareAndSwapUintptr executes the compare-and-swap operation for a uintptr
 // value.
 
-// CompareAndSwapUintptr 为一个 uintptr
-// 类型的值执行“比较并交换”操作。
+// CompareAndSwapUintptr 为一个 uintptr 类型的值执行“比较并交换”操作。
 func CompareAndSwapUintptr(addr *uintptr, old, new uintptr) (swapped bool)
 
 // LoadInt32 atomically loads *addr.
@@ -248,8 +251,8 @@ func SwapUint64(addr *uint64, new uint64) (old uint64)
 // SwapUintptr 自动将 new 存储到 *addr 中并返回上一个 *addr 值。
 func SwapUintptr(addr *uintptr, new uintptr) (old uintptr)
 
-// Load returns the value set by the most recent Store. It returns nil if there
-// has been no call to Store for this Value.
+// Load returns the value set by the most recent Store.
+// It returns nil if there has been no call to Store for this Value.
 func (*Value) Load() (x interface{})
 
 // Store sets the value of the Value to x. All calls to Store for a given Value

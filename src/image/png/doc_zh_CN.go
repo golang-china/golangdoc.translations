@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -26,24 +26,30 @@ import (
     "strconv"
 )
 
+
 const (
-    DefaultCompression CompressionLevel = 0
-    NoCompression      CompressionLevel = -1
-    BestSpeed          CompressionLevel = -2
-    BestCompression    CompressionLevel = -3
+	DefaultCompression CompressionLevel = 0
+	NoCompression      CompressionLevel = -1
+	BestSpeed          CompressionLevel = -2
+	BestCompression    CompressionLevel = -3
 )
+
+
 
 type CompressionLevel int
 
+
 // Encoder configures encoding PNG images.
 type Encoder struct {
-    CompressionLevel CompressionLevel
+	CompressionLevel CompressionLevel
 }
+
 
 // A FormatError reports that the input is not a valid PNG.
 
 // FormatError会提示输入并不是一个合法的PNG。
 type FormatError string
+
 
 // An UnsupportedError reports that the input uses a valid but unimplemented PNG
 // feature.
@@ -51,8 +57,9 @@ type FormatError string
 // UnsupportedError会提示输入使用一个合法的，但是未实现的PNG特性。
 type UnsupportedError string
 
-// Decode reads a PNG image from r and returns it as an image.Image. The type of
-// Image returned depends on the PNG contents.
+
+// Decode reads a PNG image from r and returns it as an image.Image.
+// The type of Image returned depends on the PNG contents.
 func Decode(r io.Reader) (image.Image, error)
 
 // DecodeConfig returns the color model and dimensions of a PNG image without

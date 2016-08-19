@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,54 +13,56 @@ import "unsafe"
 
 // Mathematical constants.
 
-// 数学常数。 参考：http://oeis.org/Axxxxxx
+// 数学常数。
 const (
-    E   = 2.71828182845904523536028747135266249775724709369995957496696763 // A001113
-    Pi  = 3.14159265358979323846264338327950288419716939937510582097494459 // A000796
-    Phi = 1.61803398874989484820458683436563811772030917980576286213544862 // A001622
-
-    Sqrt2   = 1.41421356237309504880168872420969807856967187537694807317667974 // A002193
-    SqrtE   = 1.64872127070012814684865078781416357165377610071014801157507931 // A019774
-    SqrtPi  = 1.77245385090551602729816748334114518279754945612238712821380779 // A002161
-    SqrtPhi = 1.27201964951406896425242246173749149171560804184009624861664038 // A139339
-
-    Ln2    = 0.693147180559945309417232121458176568075500134360255254120680009 // A002162
-    Log2E  = 1 / Ln2
-    Ln10   = 2.30258509299404568401799145468436420760110148862877297603332790 // A002392
-    Log10E = 1 / Ln10
+	E       = 2.71828182845904523536028747135266249775724709369995957496696763  // http://oeis.org/A001113
+	Pi      = 3.14159265358979323846264338327950288419716939937510582097494459  // http://oeis.org/A000796
+	Phi     = 1.61803398874989484820458683436563811772030917980576286213544862  // http://oeis.org/A001622
+	Sqrt2   = 1.41421356237309504880168872420969807856967187537694807317667974  // http://oeis.org/A002193
+	SqrtE   = 1.64872127070012814684865078781416357165377610071014801157507931  // http://oeis.org/A019774
+	SqrtPi  = 1.77245385090551602729816748334114518279754945612238712821380779  // http://oeis.org/A002161
+	SqrtPhi = 1.27201964951406896425242246173749149171560804184009624861664038  // http://oeis.org/A139339
+	Ln2     = 0.693147180559945309417232121458176568075500134360255254120680009 // http://oeis.org/A002162
+	Log2E   = 1 / Ln2
+	Ln10    = 2.30258509299404568401799145468436420760110148862877297603332790 // http://oeis.org/A002392
+	Log10E  = 1 / Ln10
 )
+
 
 // Floating-point limit values. Max is the largest finite value representable by
 // the type. SmallestNonzero is the smallest positive, non-zero value
 // representable by the type.
 
-// 浮点数极限值。 Max 为该类型可表示的最大有限值。 SmallestNonzero
-// 为该类型可表示的最小（非零）正值。
+// 浮点数极限值。
+// Max 为该类型可表示的最大有限值。
+// SmallestNonzero 为该类型可表示的最小（非零）正值。
 const (
-    MaxFloat32             = 3.40282346638528859811704183484516925440e+38  // 2**127 * (2**24 - 1) / 2**23
-    SmallestNonzeroFloat32 = 1.401298464324817070923729583289916131280e-45 // 1 / 2**(127 - 1 + 23)
+	MaxFloat32             = 3.40282346638528859811704183484516925440e+38   // 2**127 * (2**24 - 1) / 2**23
+	SmallestNonzeroFloat32 = 1.401298464324817070923729583289916131280e-45  // 1 / 2**(127 - 1 + 23)
+	MaxFloat64             = 1.797693134862315708145274237317043567981e+308 // 2**1023 * (2**53 - 1) / 2**52
+	SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324 // 1 / 2**(1023 - 1 + 52)
 
-    MaxFloat64             = 1.797693134862315708145274237317043567981e+308 // 2**1023 * (2**53 - 1) / 2**52
-    SmallestNonzeroFloat64 = 4.940656458412465441765687928682213723651e-324 // 1 / 2**(1023 - 1 + 52)
 )
+
 
 // Integer limit values.
 
 // 整数极限值。
 const (
-    MaxInt8   = 1<<7 - 1
-    MinInt8   = -1 << 7
-    MaxInt16  = 1<<15 - 1
-    MinInt16  = -1 << 15
-    MaxInt32  = 1<<31 - 1
-    MinInt32  = -1 << 31
-    MaxInt64  = 1<<63 - 1
-    MinInt64  = -1 << 63
-    MaxUint8  = 1<<8 - 1
-    MaxUint16 = 1<<16 - 1
-    MaxUint32 = 1<<32 - 1
-    MaxUint64 = 1<<64 - 1
+	MaxInt8   = 1<<7 - 1
+	MinInt8   = -1 << 7
+	MaxInt16  = 1<<15 - 1
+	MinInt16  = -1 << 15
+	MaxInt32  = 1<<31 - 1
+	MinInt32  = -1 << 31
+	MaxInt64  = 1<<63 - 1
+	MinInt64  = -1 << 63
+	MaxUint8  = 1<<8 - 1
+	MaxUint16 = 1<<16 - 1
+	MaxUint32 = 1<<32 - 1
+	MaxUint64 = 1<<64 - 1
 )
+
 
 // Abs returns the absolute value of x.
 //
@@ -68,10 +70,10 @@ const (
 //     Abs(±Inf) = +Inf
 //     Abs(NaN) = NaN
 
-// Abs 返回 x 的绝对值。 特殊情况为：
-//
+// Abs 返回 x 的绝对值。
+// 特殊情况为：
 //     Abs(±Inf) = +Inf
-//     Abs(NaN)  = NaN
+//     Abs(NaN) = NaN
 func Abs(x float64) float64
 
 // Acos returns the arccosine, in radians, of x.
@@ -82,7 +84,6 @@ func Abs(x float64) float64
 // Acos 返回 x 的反余弦值。
 //
 // 特殊情况为：
-//
 //     Acos(x) = NaN（若 x < -1 或 x > 1）
 func Acos(x float64) float64
 
@@ -96,7 +97,6 @@ func Acos(x float64) float64
 // Acosh 返回 x 的反双曲余弦值。
 //
 // 特殊情况为：
-//
 //     Acosh(+Inf) = +Inf
 //     Acosh(x)    = NaN（若 x < 1）
 //     Acosh(NaN)  = NaN
@@ -111,7 +111,6 @@ func Acosh(x float64) float64
 // Asin 返回 x 的反正弦值。
 //
 // 特殊情况为：
-//
 //     Asin(±0) = ±0
 //     Asin(x)  = NaN（若 x < -1 或 x > 1）
 func Asin(x float64) float64
@@ -126,7 +125,6 @@ func Asin(x float64) float64
 // Asinh 返回 x 的反双曲正弦值。
 //
 // 特殊情况为：
-//
 //     Asinh(±0)   = ±0
 //     Asinh(±Inf) = ±Inf
 //     Asinh(NaN)  = NaN
@@ -141,7 +139,6 @@ func Asinh(x float64) float64
 // Atan 返回 x 的反正切值。
 //
 // 特殊情况为：
-//
 //     Atan(±0)   = ±0
 //     Atan(±Inf) = ±Pi/2
 func Atan(x float64) float64
@@ -169,11 +166,9 @@ func Atan(x float64) float64
 //     Atan2(+Inf, x) = +Pi/2
 //     Atan2(-Inf, x) = -Pi/2
 
-// Atan2 返回 y/x
-// 的反正切值，通过二者的符号决定其返回值的象限。
+// Atan2 返回 y/x 的反正切值，通过二者的符号决定其返回值的象限。
 //
 // 特殊情况为（按顺序）：
-//
 //     Atan2(y, NaN)     = NaN
 //     Atan2(NaN, x)     = NaN
 //     Atan2(+0, x>=0)   = +0
@@ -205,7 +200,6 @@ func Atan2(y, x float64) float64
 // Atanh 返回 x 的反双曲正切值。
 //
 // 特殊情况为：
-//
 //     Atanh(1)   = +Inf
 //     Atanh(±0)  = ±0
 //     Atanh(-1)  = -Inf
@@ -223,7 +217,6 @@ func Atanh(x float64) float64
 // Cbrt 返回 x 的立方根。
 //
 // 特殊情况为：
-//
 //     Cbrt(±0)   = ±0
 //     Cbrt(±Inf) = ±Inf
 //     Cbrt(NaN)  = NaN
@@ -239,7 +232,6 @@ func Cbrt(x float64) float64
 // Ceil 返回大于或等于 x 的最小整数。
 //
 // 特殊情况为：
-//
 //     Ceil(±0)   = ±0
 //     Ceil(±Inf) = ±Inf
 //     Ceil(NaN)  = NaN
@@ -260,7 +252,6 @@ func Copysign(x, y float64) float64
 // Cos 返回 x 的余弦值。
 //
 // 特殊情况为：
-//
 //     Cos(±Inf) = NaN
 //     Cos(NaN)  = NaN
 func Cos(x float64) float64
@@ -275,7 +266,6 @@ func Cos(x float64) float64
 // Cosh 返回 x 的双曲余弦值。
 //
 // 特殊情况为：
-//
 //     Cosh(±0)   = 1
 //     Cosh(±Inf) = +Inf
 //     Cosh(NaN)  = NaN
@@ -291,7 +281,6 @@ func Cosh(x float64) float64
 // Dim 返回 x-y 和 0 中较大的数。
 //
 // 特殊情况为：
-//
 //     Dim(+Inf, +Inf)           = NaN
 //     Dim(-Inf, -Inf)           = NaN
 //     Dim(x, NaN) = Dim(NaN, x) = NaN
@@ -307,7 +296,6 @@ func Dim(x, y float64) float64
 // Erf 返回 x 的误差函数。
 //
 // 特殊情况为：
-//
 //     Erf(+Inf) = 1
 //     Erf(-Inf) = -1
 //     Erf(NaN)  = NaN
@@ -323,7 +311,6 @@ func Erf(x float64) float64
 // Erfc 返回 x 的余误差函数。
 //
 // 特殊情况为：
-//
 //     Erfc(+Inf) = 0
 //     Erfc(-Inf) = 2
 //     Erfc(NaN)  = NaN
@@ -340,11 +327,10 @@ func Erfc(x float64) float64
 // Exp 返回 e**x，即以 e 为底的 x 次幂。
 //
 // 特殊情况为：
-//
 //     Exp(+Inf) = +Inf
 //     Exp(NaN)  = NaN
-//
-// 非常大的数会向上溢出为 0 或 +Inf。 非常小的数会向下溢出为 1。
+// 非常大的数会向上溢出为 0 或 +Inf。
+// 非常小的数会向下溢出为 1。
 func Exp(x float64) float64
 
 // Exp2 returns 2**x, the base-2 exponential of x.
@@ -365,15 +351,13 @@ func Exp2(x float64) float64
 //     Expm1(NaN) = NaN
 // Very large values overflow to -1 or +Inf.
 
-// Expm1 返回 e**x - 1，即以 e 为底的 x 次幂减一。 当 x 接近 0 时，该函数比
-// Exp(x) - 1 更精确。
+// Expm1 返回 e**x - 1，即以 e 为底的 x 次幂减一。
+// 当 x 接近 0 时，该函数比 Exp(x) - 1 更精确。
 //
 // 特殊情况为：
-//
 //     Expm1(+Inf) = +Inf
 //     Expm1(-Inf) = -1
 //     Expm1(NaN)  = NaN
-//
 // 非常大的值会溢出为 -1 或 +Inf。
 func Expm1(x float64) float64
 
@@ -409,7 +393,6 @@ func Float64frombits(b uint64) float64
 // Floor 返回小于或等于 x 的最大整数。
 //
 // 特殊情况为：
-//
 //     Floor(±0)   = ±0
 //     Floor(±Inf) = ±Inf
 //     Floor(NaN)  = NaN
@@ -448,7 +431,6 @@ func Frexp(f float64) (frac float64, exp int)
 // Gamma 返回 x 的伽马函数。
 //
 // 特殊情况为：
-//
 //     Gamma(+Inf) = +Inf
 //     Gamma(+0)   = +Inf
 //     Gamma(-0)   = -Inf
@@ -466,11 +448,9 @@ func Gamma(x float64) float64
 //     Hypot(NaN, q) = NaN
 //     Hypot(p, NaN) = NaN
 
-// Hypot 返回 Sqrt(p*p +
-// q*q)，小心避免不必要的向上溢出和向下溢出。
+// Hypot 返回 Sqrt(p*p + q*q)，小心避免不必要的向上溢出和向下溢出。
 //
 // 特殊情况为：
-//
 //     Hypot(±Inf, q) = +Inf
 //     Hypot(p, ±Inf) = +Inf
 //     Hypot(NaN, q)  = NaN
@@ -487,7 +467,6 @@ func Hypot(p, q float64) float64
 // Ilogb 将以 2 为底 x 的指数作为整数返回。
 //
 // 特殊情况为：
-//
 //     Ilogb(±Inf) = MaxInt32
 //     Ilogb(0)    = MinInt32
 //     Ilogb(NaN)  = MaxInt32
@@ -504,9 +483,10 @@ func Inf(sign int) float64
 // If sign < 0, IsInf reports whether f is negative infinity.
 // If sign == 0, IsInf reports whether f is either infinity.
 
-// IsInf 判断 f 是否为无穷大值，视 sign 而定。 若 sign > 0，IsInf 就判断 f 是否
-// 为正无穷大。 若 sign < 0，IsInf 就判断 f 是否为负无穷大。 若 sign == 0，IsInf
-// 就判断 f 是否为无穷大。
+// IsInf 判断 f 是否为无穷大值，视 sign 而定。
+// 若 sign > 0，IsInf 就判断 f 是否为正无穷大。
+// 若 sign < 0，IsInf 就判断 f 是否为负无穷大。
+// 若 sign == 0，IsInf 就判断 f 是否为无穷大。
 func IsInf(f float64, sign int) bool
 
 // IsNaN reports whether f is an IEEE 754 ``not-a-number'' value.
@@ -524,7 +504,6 @@ func IsNaN(f float64) (is bool)
 // J0 返回第一类零阶贝塞尔函数。
 //
 // 特殊情况为：
-//
 //     J0(±Inf) = 0
 //     J0(0)    = 1
 //     J0(NaN)  = NaN
@@ -539,7 +518,6 @@ func J0(x float64) float64
 // J1 返回一阶第一类贝塞尔函数。
 //
 // 特殊情况为
-//
 //     J1(±Inf) = 0
 //     J1(NaN)  = NaN
 func J1(x float64) float64
@@ -553,7 +531,6 @@ func J1(x float64) float64
 // Jn 返回 n 阶第一类贝塞尔函数。
 //
 // 特殊情况为：
-//
 //     Jn(n, ±Inf) = 0
 //     Jn(n, NaN)  = NaN
 func Jn(n int, x float64) float64
@@ -566,10 +543,10 @@ func Jn(n int, x float64) float64
 //     Ldexp(±Inf, exp) = ±Inf
 //     Ldexp(NaN, exp) = NaN
 
-// Ldexp 为 Frexp 的反函数。 它返回 frac × 2**exp。
+// Ldexp 为 Frexp 的反函数。
+// 它返回 frac × 2**exp。
 //
 // 特殊情况为：
-//
 //     Ldexp(±0, exp)   = ±0
 //     Ldexp(±Inf, exp) = ±Inf
 //     Ldexp(NaN, exp)  = NaN
@@ -587,7 +564,6 @@ func Ldexp(frac float64, exp int) float64
 // Lgamma 返回 Gamma(x) 的自然对数和符号（-1 或 +1）。
 //
 // 特殊情况为：
-//
 //     Lgamma(+Inf)     = +Inf
 //     Lgamma(0)        = +Inf
 //     Lgamma(-integer) = +Inf
@@ -606,7 +582,6 @@ func Lgamma(x float64) (lgamma float64, sign int)
 // Log 返回 x 的自然对数。
 //
 // 特殊情况为
-//
 //     Log(+Inf)  = +Inf
 //     Log(0)     = -Inf
 //     Log(x < 0) = NaN
@@ -616,7 +591,8 @@ func Log(x float64) float64
 // Log10 returns the decimal logarithm of x.
 // The special cases are the same as for Log.
 
-// Log10 返回以 10 为底 x 的对数。 特殊情况与 Log 相同。
+// Log10 返回以 10 为底 x 的对数。
+// 特殊情况与 Log 相同。
 func Log10(x float64) float64
 
 // Log1p returns the natural logarithm of 1 plus its argument x.
@@ -629,11 +605,10 @@ func Log10(x float64) float64
 //     Log1p(x < -1) = NaN
 //     Log1p(NaN) = NaN
 
-// Log1p 返回 1 加其实参 x 的自然对数。 当 x 接近 0 时，该函数比 Log(1 + x) 精确
-// 。
+// Log1p 返回 1 加其实参 x 的自然对数。
+// 当 x 接近 0 时，该函数比 Log(1 + x) 精确。
 //
 // 特殊情况为：
-//
 //     Log1p(+Inf)   = +Inf
 //     Log1p(±0)     = ±0
 //     Log1p(-1)     = -Inf
@@ -644,7 +619,8 @@ func Log1p(x float64) float64
 // Log2 returns the binary logarithm of x.
 // The special cases are the same as for Log.
 
-// Log2 返回以 2 为底 x 的对数。 特殊情况与 Log 相同。
+// Log2 返回以 2 为底 x 的对数。
+// 特殊情况与 Log 相同。
 func Log2(x float64) float64
 
 // Logb returns the binary exponent of x.
@@ -657,7 +633,6 @@ func Log2(x float64) float64
 // Logb 返回以 2 为底 x 的指数。
 //
 // 特殊情况为：
-//
 //     Logb(±Inf) = +Inf
 //     Logb(0)    = -Inf
 //     Logb(NaN)  = NaN
@@ -674,7 +649,6 @@ func Logb(x float64) float64
 // Max 返回 x 和 y 中较大的数。
 //
 // 特殊情况为：
-//
 //     Max(x, +Inf) = Max(+Inf, x) = +Inf
 //     Max(x, NaN)  = Max(NaN, x)  = NaN
 //     Max(+0, ±0)  = Max(±0, +0)  = +0
@@ -691,7 +665,6 @@ func Max(x, y float64) float64
 // Min 返回 x 和 y 中较小的数。
 //
 // 特殊情况为：
-//
 //     Min(x, -Inf) = Min(-Inf, x) = -Inf
 //     Min(x, NaN)  = Min(NaN, x)  = NaN
 //     Min(-0, ±0)  = Min(±0, -0)  = -0
@@ -708,10 +681,10 @@ func Min(x, y float64) float64
 //     Mod(x, ±Inf) = x
 //     Mod(x, NaN) = NaN
 
-// Mod 返回 x/y 的浮点余数。 其结果的大小小于 y 且其符号与 x 一致。
+// Mod 返回 x/y 的浮点余数。
+// 其结果的大小小于 y 且其符号与 x 一致。
 //
 // 特殊情况为：
-//
 //     Mod(±Inf, y) = NaN
 //     Mod(NaN, y)  = NaN
 //     Mod(x, 0)    = NaN
@@ -726,11 +699,9 @@ func Mod(x, y float64) float64
 //     Modf(±Inf) = ±Inf, NaN
 //     Modf(NaN) = NaN, NaN
 
-// Modf 将 f
-// 的整数部分和小数部分分别作为浮点数返回。两值的符号与 f 一致。
+// Modf 将 f 的整数部分和小数部分分别作为浮点数返回。两值的符号与 f 一致。
 //
 // 特殊情况为：
-//
 //     Modf(±Inf) = ±Inf, NaN
 //     Modf(NaN)  = NaN, NaN
 func Modf(f float64) (int float64, frac float64)
@@ -750,8 +721,7 @@ func NaN() float64
 // Nextafter 返回从 x 到 y 的下一个可表示的 float64 值。
 //
 // 特殊情况为：
-//
-//     Nextafter64(x, x)   = x
+//     Nextafter(x, x)   = x
 //     Nextafter(NaN, y) = NaN
 //     Nextafter(x, NaN) = NaN
 func Nextafter(x, y float64) (r float64)
@@ -766,7 +736,6 @@ func Nextafter(x, y float64) (r float64)
 // Nextafter32 返回从 x 到 y 的下一个可表示的 float32 值。
 //
 // 特殊情况为：
-//
 //     Nextafter32(x, x)   = x
 //     Nextafter32(NaN, y) = NaN
 //     Nextafter32(x, NaN) = NaN
@@ -799,7 +768,6 @@ func Nextafter32(x, y float32) (r float32)
 // Pow 返回 x**y，即以 x 为底的 y 次幂。
 //
 // 特殊情况为（按顺序）：
-//
 //     Pow(x, ±0)    = 1   （对于任何 x）
 //     Pow(1, y)     = 1   （对于任何 y）
 //     Pow(x, 1)     = x   （对于任何 x）
@@ -831,7 +799,6 @@ func Pow(x, y float64) float64
 // Pow10 返回 10**e，即以 10 为底的 e 次幂。
 //
 // 特殊情况为：
-//
 //     对于 e >  309，有 Pow10(e) = +Inf
 //     对于 e < -324，有 Pow10(e) = 0
 func Pow10(e int) float64
@@ -848,7 +815,6 @@ func Pow10(e int) float64
 // Remainder 返回IEEE 754标准 x/y 的余数。
 //
 // 特殊情况为：
-//
 //     Remainder(±Inf, y) = NaN
 //     Remainder(NaN, y)  = NaN
 //     Remainder(x, 0)    = NaN
@@ -871,7 +837,6 @@ func Signbit(x float64) bool
 // Sin 返回 x 的正弦值。
 //
 // 特殊情况为：
-//
 //     Sin(±0)   = ±0
 //     Sin(±Inf) = NaN
 //     Sin(NaN)  = NaN
@@ -887,7 +852,6 @@ func Sin(x float64) float64
 // Sincos 返回 Sin(x)，Cos(x)。
 //
 // 特殊情况为：
-//
 //     Sincos(±0)   = ±0, 1
 //     Sincos(±Inf) = NaN, NaN
 //     Sincos(NaN)  = NaN, NaN
@@ -903,7 +867,6 @@ func Sincos(x float64) (sin, cos float64)
 // Sinh 返回 x 的双曲正弦值。
 //
 // 特殊情况为：
-//
 //     Sinh(±0)   = ±0
 //     Sinh(±Inf) = ±Inf
 //     Sinh(NaN)  = NaN
@@ -920,7 +883,6 @@ func Sinh(x float64) float64
 // Sqrt 返回 x 的平方根。
 //
 // 特殊情况为：
-//
 //     Sqrt(+Inf)  = +Inf
 //     Sqrt(±0)    = ±0
 //     Sqrt(x < 0) = NaN
@@ -937,7 +899,6 @@ func Sqrt(x float64) float64
 // Tan 返回 x 的正切值。
 //
 // 特殊情况为：
-//
 //     Tan(±0)   = ±0
 //     Tan(±Inf) = NaN
 //     Tan(NaN)  = NaN
@@ -953,7 +914,6 @@ func Tan(x float64) float64
 // Tanh 返回 x 的双曲正切。
 //
 // 特殊情况为：
-//
 //     Tanh(±0)   = ±0
 //     Tanh(±Inf) = ±1
 //     Tanh(NaN)  = NaN
@@ -969,7 +929,6 @@ func Tanh(x float64) float64
 // Trunc 返回 x 的整数部分
 //
 // 特殊情况为：
-//
 //     Trunc(±0)   = ±0
 //     Trunc(±Inf) = ±Inf
 //     Trunc(NaN)  = NaN
@@ -986,7 +945,6 @@ func Trunc(x float64) float64
 // Y0 返回第二类零阶贝塞尔函数。
 //
 // 特殊情况为：
-//
 //     Y0(+Inf) = 0
 //     Y0(0)    = -Inf
 //     Y0(x<0)  = NaN
@@ -1004,7 +962,6 @@ func Y0(x float64) float64
 // Y1 返回一阶第二类贝塞尔函数。
 //
 // 特殊情况为：
-//
 //     Y1(+Inf) = 0
 //     Y1(0)    = -Inf
 //     Y1(x<0)  = NaN
@@ -1023,7 +980,6 @@ func Y1(x float64) float64
 // Yn 返回 n 阶第二类贝塞尔函数。
 //
 // 特殊情况为：
-//
 //     Yn(n, +Inf)  = 0
 //     Yn(n > 0, 0) = -Inf
 //     Yn(n < 0, 0) = 若 n 为奇数则为 +Inf，若 n 为偶数则为 -Inf

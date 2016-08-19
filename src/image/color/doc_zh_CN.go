@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,87 +11,125 @@ package color
 
 // Standard colors.
 
-// 标准的颜色。
+// 标准颜色。
 var (
-    Black       = Gray16{0}
-    White       = Gray16{0xffff}
-    Transparent = Alpha16{0}
-    Opaque      = Alpha16{0xffff}
+	Black       = Gray16{0}
+	White       = Gray16{0xffff}
+	Transparent = Alpha16{0}
+	Opaque      = Alpha16{0xffff}
 )
+
+
+// CMYKModel is the Model for CMYK colors.
+var CMYKModel Model = ModelFunc(cmykModel)
+
+
+// NYCbCrAModel is the Model for non-alpha-premultiplied Y'CbCr-with-alpha
+// colors.
+var NYCbCrAModel Model = ModelFunc(nYCbCrAModel)
+
 
 // Models for the standard color types.
 
 // 基本的颜色模型。
 var (
-    RGBAModel    Model = ModelFunc(rgbaModel)
-    RGBA64Model  Model = ModelFunc(rgba64Model)
-    NRGBAModel   Model = ModelFunc(nrgbaModel)
-    NRGBA64Model Model = ModelFunc(nrgba64Model)
-    AlphaModel   Model = ModelFunc(alphaModel)
-    Alpha16Model Model = ModelFunc(alpha16Model)
-    GrayModel    Model = ModelFunc(grayModel)
-    Gray16Model  Model = ModelFunc(gray16Model)
+	RGBAModel    Model = ModelFunc(rgbaModel)
+	RGBA64Model  Model = ModelFunc(rgba64Model)
+	NRGBAModel   Model = ModelFunc(nrgbaModel)
+	NRGBA64Model Model = ModelFunc(nrgba64Model)
+	AlphaModel   Model = ModelFunc(alphaModel)
+	Alpha16Model Model = ModelFunc(alpha16Model)
+	GrayModel    Model = ModelFunc(grayModel)
+	Gray16Model  Model = ModelFunc(gray16Model)
 )
+
 
 // YCbCrModel is the Model for Y'CbCr colors.
 
 // YCbCrModel是Y'CbCr颜色的模型。
 var YCbCrModel Model = ModelFunc(yCbCrModel)
 
+
 // Alpha represents an 8-bit alpha color.
 
 // Alpha代表一个8-bit的透明度。
 type Alpha struct {
-    A uint8
+	A uint8
 }
+
 
 // Alpha16 represents a 16-bit alpha color.
 
 // Alpha16代表一个16位的透明度。
 type Alpha16 struct {
-    A uint16
+	A uint16
 }
+
+
+// CMYK represents a fully opaque CMYK color, having 8 bits for each of cyan,
+// magenta, yellow and black.
+//
+// It is not associated with any particular color profile.
+type CMYK struct {
+	C, M, Y, K uint8
+}
+
 
 // Color can convert itself to alpha-premultiplied 16-bits per channel RGBA.
 // The conversion may be lossy.
 
-// Color可以将它自己转化成每个RGBA通道都预乘透明度。 这种转化可能是有损的。
+// Color可以将它自己转化成每个RGBA通道都预乘透明度。
+// 这种转化可能是有损的。
 type Color interface {
-    // RGBA returns the alpha-premultiplied red, green, blue and alpha values
-    // for the color. Each value ranges within [0, 0xFFFF], but is represented
-    // by a uint32 so that multiplying by a blend factor up to 0xFFFF will not
-    // overflow.
-    RGBA() (r, g, b, a uint32)
+	// RGBA returns the alpha-premultiplied red, green, blue and alpha values
+	// for the color. Each value ranges within [0, 0xffff], but is represented
+	// by a uint32 so that multiplying by a blend factor up to 0xffff will not
+	// overflow.
+	//
+	// An alpha-premultiplied color component c has been scaled by alpha (a),
+	// so has valid values 0 <= c <= a.
+	//
+	// RGBA返回预乘透明度的红，绿，蓝和颜色的透明度。每个值都在[0, 0xFFFF]范围内，
+	// 但是每个值都被uint32代表，这样可以乘以一个综合值来保证不会达到0xFFFF而溢出。
+	//
+	// 一个预乘透明度的颜色成分 c 由透明度 alpha (a) 所调整，因此有效值为 0 <= c <= a。
+	RGBA() (r, g, b, a uint32)
 }
+
 
 // Gray represents an 8-bit grayscale color.
 
 // Gray代表一个8-bit的灰度。
 type Gray struct {
-    Y uint8
+	Y uint8
 }
+
 
 // Gray16 represents a 16-bit grayscale color.
 
 // Gray16代表了一个16-bit的灰度。
 type Gray16 struct {
-    Y uint16
+	Y uint16
 }
+
 
 // Model can convert any Color to one from its own color model. The conversion
 // may be lossy.
 
-// Model可以在它自己的颜色模型中将一种颜色转化到另一种。 这种转换可能是有损的。
+// Model可以在它自己的颜色模型中将一种颜色转化到另一种。
+// 这种转换可能是有损的。
 type Model interface {
-    Convert(c Color) Color
+	Convert(c Color) Color
 }
+
 
 // NRGBA represents a non-alpha-premultiplied 32-bit color.
 
 // NRGBA代表一个没有32位透明度加乘的颜色。
 type NRGBA struct {
-    R, G, B, A uint8
+	R, G, B, A uint8
 }
+
 
 // NRGBA64 represents a non-alpha-premultiplied 64-bit color,
 // having 16 bits for each of red, green, blue and alpha.
@@ -99,13 +137,22 @@ type NRGBA struct {
 // NRGBA64代表无透明度加乘的64-bit的颜色，
 // 它的每个红，绿，蓝，和透明度都是个16bit的数值。
 type NRGBA64 struct {
-    R, G, B, A uint16
+	R, G, B, A uint16
 }
+
+
+// NYCbCrA represents a non-alpha-premultiplied Y'CbCr-with-alpha color, having
+// 8 bits each for one luma, two chroma and one alpha component.
+type NYCbCrA struct {
+	A uint8
+}
+
 
 // Palette is a palette of colors.
 
 // Palette是颜色的调色板。
 type Palette []Color
+
 
 // RGBA represents a traditional 32-bit alpha-premultiplied color, having 8
 // bits for each of red, green, blue and alpha.
@@ -113,11 +160,14 @@ type Palette []Color
 // An alpha-premultiplied color component C has been scaled by alpha (A), so
 // has valid values 0 <= C <= A.
 
-// RGBA代表一个传统的32位的预乘透明度的颜色，
-// 它的每个红，绿，蓝，和透明度都是个8bit的数值。
+// RGBA 表示一般的 32 位预乘透明度的颜色，其中红，绿，蓝和透明度各占 8 位数值。
+//
+// 一个预乘透明度的颜色成分 C 由透明度 alpha (A) 所调整，因此有效值为 0 <= C <=
+// A。
 type RGBA struct {
-    R, G, B, A uint8
+	R, G, B, A uint8
 }
+
 
 // RGBA64 represents a 64-bit alpha-premultiplied color, having 16 bits for
 // each of red, green, blue and alpha.
@@ -125,11 +175,15 @@ type RGBA struct {
 // An alpha-premultiplied color component C has been scaled by alpha (A), so
 // has valid values 0 <= C <= A.
 
-// RGBA64代表一个64位的预乘透明度的颜色，
-// 它的每个红，绿，蓝，和透明度都是个8bit的数值。
+// RGBA64 表示一般的 64 位预乘透明度的颜色，其中红，绿，蓝和透明度各占 16 位数
+// 值。
+//
+// 一个预乘透明度的颜色成分 C 由透明度 alpha (A) 所调整，因此有效值为 0 <= C <=
+// A。
 type RGBA64 struct {
-    R, G, B, A uint16
+	R, G, B, A uint16
 }
+
 
 // YCbCr represents a fully opaque 24-bit Y'CbCr color, having 8 bits each for
 // one luma and two chroma components.
@@ -153,13 +207,20 @@ type RGBA64 struct {
 // RGB和Y'CbCr之间的转换是有损的，并且转换的时候有许多细微的不同。这个包是遵循
 // JFIF的说明： http://www.w3.org/Graphics/JPEG/jfif3.pdf。
 type YCbCr struct {
-    Y, Cb, Cr uint8
+	Y, Cb, Cr uint8
 }
+
+
+// CMYKToRGB converts a CMYK quadruple to an RGB triple.
+func CMYKToRGB(c, m, y, k uint8) (uint8, uint8, uint8)
 
 // ModelFunc returns a Model that invokes f to implement the conversion.
 
 // ModelFunc返回一个Model，它可以调用f来实现转换。
 func ModelFunc(f func(Color) Color) Model
+
+// RGBToCMYK converts an RGB triple to a CMYK quadruple.
+func RGBToCMYK(r, g, b uint8) (uint8, uint8, uint8, uint8)
 
 // RGBToYCbCr converts an RGB triple to a Y'CbCr triple.
 
@@ -175,6 +236,8 @@ func (Alpha) RGBA() (r, g, b, a uint32)
 
 func (Alpha16) RGBA() (r, g, b, a uint32)
 
+func (CMYK) RGBA() (uint32, uint32, uint32, uint32)
+
 func (Gray) RGBA() (r, g, b, a uint32)
 
 func (Gray16) RGBA() (r, g, b, a uint32)
@@ -182,6 +245,8 @@ func (Gray16) RGBA() (r, g, b, a uint32)
 func (NRGBA) RGBA() (r, g, b, a uint32)
 
 func (NRGBA64) RGBA() (r, g, b, a uint32)
+
+func (NYCbCrA) RGBA() (uint32, uint32, uint32, uint32)
 
 // Convert returns the palette color closest to c in Euclidean R,G,B space.
 
@@ -191,8 +256,7 @@ func (Palette) Convert(c Color) Color
 // Index returns the index of the palette color closest to c in Euclidean
 // R,G,B,A space.
 
-// Index在Euclidean
-// R,G,B空间中找到最接近c的调色板对应的索引。
+// Index 在欧几里得 R,G,B,A 色彩空间中找到最接近 c 的调色板对应的索引。
 func (Palette) Index(c Color) int
 
 func (RGBA) RGBA() (r, g, b, a uint32)

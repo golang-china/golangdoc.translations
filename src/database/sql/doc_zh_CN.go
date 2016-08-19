@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 
 // sql 包提供了通用的SQL（或类SQL）数据库接口.
 //
-// sql 包必须与数据库驱动结合使用。驱动列表见 http://golang.org/s/sqldrivers。
+// sql 包必须与数据库驱动结合使用。驱动列表见 https://golang.org/s/sqldrivers。
 //
-// 更多使用范例见 http://golang.org/s/sqlwiki 的维基页面。
+// 更多使用范例见 https://golang.org/s/sqlwiki 的维基页面。
 package sql
 
 import (
@@ -42,7 +42,10 @@ import (
 // 下，QueryRow会返回一个*Row的标示符，直到调用Scan的时候才返回这个error。
 var ErrNoRows = errors.New("sql: no rows in result set")
 
+
+
 var ErrTxDone = errors.New("sql: Transaction has already been committed or rolled back")
+
 
 // DB is a database handle representing a pool of zero or more
 // underlying connections. It's safe for concurrent use by multiple
@@ -57,18 +60,53 @@ var ErrTxDone = errors.New("sql: Transaction has already been committed or rolle
 // connection is returned to DB's idle connection pool. The pool size
 // can be controlled with SetMaxIdleConns.
 
-// DB is a database handle representing a pool of zero or more underlying
-// connections. It's safe for concurrent use by multiple goroutines.
+// DB is a database handle representing a pool of zero or more
+// underlying connections. It's safe for concurrent use by multiple
+// goroutines.
 //
-// The sql package creates and frees connections automatically; it also
-// maintains a free pool of idle connections. If the database has a concept of
-// per-connection state, such state can only be reliably observed within a
-// transaction. Once DB.Begin is called, the returned Tx is bound to a single
-// connection. Once Commit or Rollback is called on the transaction, that
-// transaction's connection is returned to DB's idle connection pool. The pool
-// size can be controlled with SetMaxIdleConns. TODO：待译
+// The sql package creates and frees connections automatically; it
+// also maintains a free pool of idle connections. If the database has
+// a concept of per-connection state, such state can only be reliably
+// observed within a transaction. Once DB.Begin is called, the
+// returned Tx is bound to a single connection. Once Commit or
+// Rollback is called on the transaction, that transaction's
+// connection is returned to DB's idle connection pool. The pool size
+// can be controlled with SetMaxIdleConns.
+// TODO：待译
 type DB struct {
+	driver driver.Driver
+	dsn    string
+	// numClosed is an atomic counter which represents a total number of
+	// closed connections. Stmt.openStmt checks it before cleaning closed
+	// connections in Stmt.css.
+	numClosed uint64
+
+	mu           sync.Mutex // protects following fields // 用于保护以下字段
+	freeConn     []*driverConn
+	connRequests []chan connRequest
+	numOpen      int // number of opened and pending open connections
+	// Used to signal the need for new connections
+	// a goroutine running connectionOpener() reads on this chan and
+	// maybeOpenNewConnections sends on the chan (one send per needed connection)
+	// It is closed during db.Close(). The close tells the connectionOpener
+	// goroutine to exit.
+	openerCh    chan struct{}
+	closed      bool
+	dep         map[finalCloser]depSet
+	lastPut     map[*driverConn]string // stacktrace of last conn's put; debug only
+	maxIdle     int                    // zero means defaultMaxIdleConns; negative means 0
+	maxOpen     int                    // <= 0 means unlimited
+	maxLifetime time.Duration          // maximum amount of time a connection may be reused
+	cleanerCh   chan struct{}
 }
+
+
+// DBStats contains database statistics.
+type DBStats struct {
+	// OpenConnections is the number of open connections to the database.
+	OpenConnections int
+}
+
 
 // NullBool represents a bool that may be null.
 // NullBool implements the Scanner interface so
@@ -77,9 +115,10 @@ type DB struct {
 // NullBool代表了可空的bool类型。
 // NullBool实现了Scanner接口，所以它和NullString一样可以被当做scan的目标变量。
 type NullBool struct {
-    Bool  bool
-    Valid bool // Valid is true if Bool is not NULL
+	Bool  bool
+	Valid bool // Valid is true if Bool is not NULL  // 如果Bool非空，Valid就为true
 }
+
 
 // NullFloat64 represents a float64 that may be null.
 // NullFloat64 implements the Scanner interface so
@@ -88,9 +127,10 @@ type NullBool struct {
 // NullFloat64代表了可空的float64类型。 NullFloat64实现了Scanner接口，所以它和
 // NullString一样可以被当做scan的目标变量。
 type NullFloat64 struct {
-    Float64 float64
-    Valid   bool // Valid is true if Float64 is not NULL
+	Float64 float64
+	Valid   bool // Valid is true if Float64 is not NULL  // 如果Float64非空，Valid就为true。
 }
+
 
 // NullInt64 represents an int64 that may be null.
 // NullInt64 implements the Scanner interface so
@@ -99,9 +139,10 @@ type NullFloat64 struct {
 // NullInt64代表了可空的int64类型。
 // NullInt64实现了Scanner接口，所以它和NullString一样可以被当做scan的目标变量。
 type NullInt64 struct {
-    Int64 int64
-    Valid bool // Valid is true if Int64 is not NULL
+	Int64 int64
+	Valid bool // Valid is true if Int64 is not NULL
 }
+
 
 // NullString represents a string that may be null.
 // NullString implements the Scanner interface so
@@ -119,18 +160,19 @@ type NullInt64 struct {
 // NullString代表一个可空的string。
 // NUllString实现了Scanner接口，所以它可以被当做scan的目标变量使用:
 //
-//     var s NullString
-//     err := db.QueryRow("SELECT name FROM foo WHERE id=?", id).Scan(&s)
-//     ...
-//     if s.Valid {
-//        // use s.String
-//     } else {
-//        // NULL value
-//     }
+//  var s NullString
+//  err := db.QueryRow("SELECT name FROM foo WHERE id=?", id).Scan(&s)
+//  ...
+//  if s.Valid {
+//     // use s.String
+//  } else {
+//     // NULL value
+//  }
 type NullString struct {
-    String string
-    Valid  bool // Valid is true if String is not NULL
+	String string
+	Valid  bool // Valid is true if String is not NULL  // 如果String不是空，则Valid为true
 }
+
 
 // RawBytes is a byte slice that holds a reference to memory owned by
 // the database itself. After a Scan into a RawBytes, the slice is only
@@ -140,28 +182,35 @@ type NullString struct {
 // 到RawBytes中之后，你下次调用Next，Scan或者Close就可以获取到slice了。
 type RawBytes []byte
 
+
 // A Result summarizes an executed SQL command.
 
 // 一个Result结构代表了一个执行过的SQL命令。
 type Result interface {
-    // LastInsertId returns the integer generated by the database
-    // in response to a command. Typically this will be from an
-    // "auto increment" column when inserting a new row. Not all
-    // databases support this feature, and the syntax of such
-    // statements varies.
-    LastInsertId() (int64, error)
+	// LastInsertId returns the integer generated by the database
+	// in response to a command. Typically this will be from an
+	// "auto increment" column when inserting a new row. Not all
+	// databases support this feature, and the syntax of such
+	// statements varies.
+	LastInsertId() (int64, error)
 
-    // RowsAffected returns the number of rows affected by an
-    // update, insert, or delete. Not every database or database
-    // driver may support this.
-    RowsAffected() (int64, error)
+	// RowsAffected returns the number of rows affected by an
+	// update, insert, or delete. Not every database or database
+	// driver may support this.
+	RowsAffected() (int64, error)
 }
+
 
 // Row is the result of calling QueryRow to select a single row.
 
 // Row是调用QueryRow的结果，代表了查询操作的一行数据。
 type Row struct {
+
+	// 这两个中的一个必须是非空：
+	err  error // deferred error for easy chaining  // 将error保存从而延迟返回，这样能保证Row链表的简易实现
+	rows *Rows
 }
+
 
 // Rows is the result of a query. Its cursor starts before the first row
 // of the result set. Use Next to advance through the rows:
@@ -192,36 +241,68 @@ type Row struct {
 //     err = rows.Err() // get any error encountered during iteration
 //     ...
 type Rows struct {
+	dc          *driverConn // owned; must call releaseConn when closed to release // 已经存在的连接；当释放连接的时候必须调用 releaseConn
+	releaseConn func(error)
+	rowsi       driver.Rows
+
+	closed    bool
+	lastcols  []driver.Value
+	lasterr   error       // non-nil only if closed is true // 仅当 closed 为 true 时非 nil
+	closeStmt driver.Stmt // if non-nil, statement to Close on close// 若非 nil，该语句会在 Close 调用时关闭
 }
+
 
 // Scanner is an interface used by Scan.
 
 // Scanner是被Scan使用的接口。
 type Scanner interface {
-    // Scan assigns a value from a database driver.
-    //
-    // The src value will be of one of the following restricted
-    // set of types:
-    //
-    //    int64
-    //    float64
-    //    bool
-    //    []byte
-    //    string
-    //    time.Time
-    //    nil - for NULL values
-    //
-    // An error should be returned if the value can not be stored
-    // without loss of information.
-    Scan(src interface{}) error
+
+	// Scan从数据库驱动中设置一个值。
+	//
+	// src值可以是下面限定的集中类型之一:
+	//
+	//    int64
+	//    float64
+	//    bool
+	//    []byte
+	//    string
+	//    time.Time
+	//    nil - for NULL values
+	//
+	// 如果数据只有通过丢失信息才能存储下来，这个方法就会返回error。
+	Scan(src interface{}) error
 }
+
 
 // Stmt is a prepared statement.
 // A Stmt is safe for concurrent use by multiple goroutines.
 
-// Stmt是定义好的声明。多个goroutine并发使用Stmt是安全的。
+// Stmt 是定义好的声明。多个 goroutine 并发使用一个 Stmt 是安全的。
 type Stmt struct {
+
+	// 不变的数据：
+	db        *DB    // where we came from	// 数据从哪里来
+	query     string // that created the Stmt	// 什么样的查询建立了这个Stmt
+	stickyErr error  // if non-nil, this error is returned for all operations  // 如果是非空的话，所有操作都会返回这个错误。
+
+	closemu sync.RWMutex // held exclusively during close, for read otherwise.
+
+	// 只有在事务中，者两个值才都非空，其他情况下都是空的：
+	tx   *Tx
+	txsi *driverStmt
+
+	mu     sync.Mutex // protects the rest of the fields // 保护其他字段
+	closed bool
+
+	// css是一个底层驱动的声明接口的数组，它只对特定的连接有效。只有当tx == nil的时候才使用，
+	// 它是从在空闲连接池中获取的。如果tx != nil，就会使用txsi。
+	css []connStmt
+
+	// lastNumClosed is copied from db.numClosed when Stmt is created
+	// without tx and closed connections in css are removed.
+	lastNumClosed uint64
 }
+
 
 // Tx is an in-progress database transaction.
 //
@@ -238,10 +319,31 @@ type Stmt struct {
 //
 // 必须调用Commit或者Rollback来结束事务。
 //
-// 在调用 Commit 或者 Rollback
-// 之后，所有对事务的后续操作就会返回 ErrTxDone。
+// 在调用 Commit 或者 Rollback 之后，所有对事务的后续操作就会返回 ErrTxDone。
+//
+// 该语句通过调用事务的 Prepare 或 Stmt 方法来准备，调用事务的 Commit 或
+// Rollback 方法来结束。
 type Tx struct {
+	db *DB
+
+	// 在调用 Commit 或 Rollback 之前，dc 会一直有值，在释放 dc 的时候，它会被
+	// putConn 调用返回。
+	ci  driver.Conn
+	dc  *driverConn
+	txi driver.Tx
+
+	// 一旦Commit或者Rollback，done这个事务标示就会从false值置为true。
+	// 一旦这个标志位设置为true，所有事务的操作都会失败并返回ErrTxDone。
+	done bool
+
+	// All Stmts prepared for this transaction. These will be closed after the
+	// transaction has been committed or rolled back.
+	stmts struct {
+		sync.Mutex
+		v []*Stmt
+	}
 }
+
 
 // Drivers returns a sorted list of the names of the registered drivers.
 func Drivers() []string
@@ -291,7 +393,8 @@ func (*DB) Begin() (*Tx, error)
 // It is rare to Close a DB, as the DB handle is meant to be
 // long-lived and shared between many goroutines.
 
-// Close关闭数据库，释放一些使用中的资源。 TODO: 待译
+// Close关闭数据库，释放一些使用中的资源。
+// TODO: 待译
 func (*DB) Close() error
 
 // Driver returns the database's underlying driver.
@@ -302,15 +405,16 @@ func (*DB) Driver() driver.Driver
 // Exec executes a query without returning any rows.
 // The args are for any placeholder parameters in the query.
 
-// Exec 执行query操作，而不返回任何行。 args
-// 为查询中的任意占位符形参。
+// Exec 执行query操作，而不返回任何行。
+// args 为查询中的任意占位符形参。
 func (*DB) Exec(query string, args ...interface{}) (Result, error)
 
 // Ping verifies a connection to the database is still alive,
 // establishing a connection if necessary.
 
-// Ping verifies a connection to the database is still alive, establishing a
-// connection if necessary. TODO：待译
+// Ping verifies a connection to the database is still alive,
+// establishing a connection if necessary.
+// TODO：待译
 func (*DB) Ping() error
 
 // Prepare creates a prepared statement for later queries or executions.
@@ -319,16 +423,16 @@ func (*DB) Ping() error
 // The caller must call the statement's Close method
 // when the statement is no longer needed.
 
-// Prepare
-// 为以后的查询或执行操作事先创建了语句。
+// Prepare 为以后的查询或执行操作事先创建了语句。
 // 多个查询或执行操作可在返回的语句中并发地运行。
+// 当不再需要该语句时，调用者必须调用其 Close 方法。
 func (*DB) Prepare(query string) (*Stmt, error)
 
 // Query executes a query that returns rows, typically a SELECT.
 // The args are for any placeholder parameters in the query.
 
-// Query执行了一个有返回行的查询操作，比如SELECT。 args
-// 形参为该查询中的任何占位符。
+// Query执行了一个有返回行的查询操作，比如SELECT。
+// args 形参为该查询中的任何占位符。
 func (*DB) Query(query string, args ...interface{}) (*Rows, error)
 
 // QueryRow executes a query that is expected to return at most one row.
@@ -339,6 +443,14 @@ func (*DB) Query(query string, args ...interface{}) (*Rows, error)
 // QueryRow总是返回一个非空值。Error只会在调用行的Scan方法的时候才返回。
 func (*DB) QueryRow(query string, args ...interface{}) *Row
 
+// SetConnMaxLifetime sets the maximum amount of time a connection may be
+// reused.
+//
+// Expired connections may be closed lazily before reuse.
+//
+// If d <= 0, connections are reused forever.
+func (*DB) SetConnMaxLifetime(d time.Duration)
+
 // SetMaxIdleConns sets the maximum number of connections in the idle
 // connection pool.
 //
@@ -347,24 +459,28 @@ func (*DB) QueryRow(query string, args ...interface{}) *Row
 //
 // If n <= 0, no idle connections are retained.
 
-// SetMaxIdleConns sets the maximum number of connections in the idle connection
-// pool.
+// SetMaxIdleConns sets the maximum number of connections in the idle
+// connection pool.
 //
-// If MaxOpenConns is greater than 0 but less than the new MaxIdleConns then the
-// new MaxIdleConns will be reduced to match the MaxOpenConns limit
+// If MaxOpenConns is greater than 0 but less than the new MaxIdleConns
+// then the new MaxIdleConns will be reduced to match the MaxOpenConns limit
 //
-// If n <= 0, no idle connections are retained. TODO：待译
+// If n <= 0, no idle connections are retained.
+// TODO：待译
 func (*DB) SetMaxIdleConns(n int)
 
 // SetMaxOpenConns sets the maximum number of open connections to the database.
 //
 // If MaxIdleConns is greater than 0 and the new MaxOpenConns is less than
-// MaxIdleConns, then MaxIdleConns will be reduced to match the new MaxOpenConns
-// limit
+// MaxIdleConns, then MaxIdleConns will be reduced to match the new
+// MaxOpenConns limit
 //
-// If n <= 0, then there is no limit on the number of open connections. The
-// default is 0 (unlimited).
+// If n <= 0, then there is no limit on the number of open connections.
+// The default is 0 (unlimited).
 func (*DB) SetMaxOpenConns(n int)
+
+// Stats returns database statistics.
+func (*DB) Stats() DBStats
 
 // Scan implements the Scanner interface.
 
@@ -401,22 +517,23 @@ func (*Row) Scan(dest ...interface{}) error
 // false, the Rows are closed automatically and it will suffice to check the
 // result of Err. Close is idempotent and does not affect the result of Err.
 
-// Close 关闭 Rows，阻止了进一步枚举。若 Next 返回 false，则 Rows
-// 会自动关闭并能够检查 Err 的结果。Close 是幂等的，并不会影响 Err 的结果。
+// Close 关闭 Rows，阻止了进一步枚举。若 Next 返回 false，则 Rows 会自动关闭并能
+// 够检查 Err 的结果。Close 是幂等的，并不会影响 Err 的结果。
 func (*Rows) Close() error
 
 // Columns returns the column names.
 // Columns returns an error if the rows are closed, or if the rows
 // are from QueryRow and there was a deferred error.
 
-// Columns返回列名字。 当rows设置了closed，Columns方法会返回error。
+// Columns返回列名字。
+// 当rows设置了closed，Columns方法会返回error。
 func (*Rows) Columns() ([]string, error)
 
 // Err returns the error, if any, that was encountered during iteration.
 // Err may be called after an explicit or implicit Close.
 
-// Err 返回错误。如果有错误的话，就会在循环过程中捕获到。 Err 可能会在一个显式或
-// 隐式的 Close 后调用。
+// Err 返回错误。如果有错误的话，就会在循环过程中捕获到。
+// Err 可能会在一个显式或隐式的 Close 后调用。
 func (*Rows) Err() error
 
 // Next prepares the next result row for reading with the Scan method.  It
@@ -426,8 +543,9 @@ func (*Rows) Err() error
 //
 // Every call to Scan, even the first one, must be preceded by a call to Next.
 
-// Next获取下一行的数据以便给Scan调用。 在成功的时候返回true，在没有下一行数据，
-// 或在准备过程中发生错误时返回false。 应通过 Err 来区分这两种情况。
+// Next获取下一行的数据以便给Scan调用。
+// 在成功的时候返回true，在没有下一行数据，或在准备过程中发生错误时返回false。
+// 应通过 Err 来区分这两种情况。
 //
 // 每次调用来Scan获取数据，甚至是第一行数据，都需要调用Next来处理。
 func (*Rows) Next() bool
@@ -484,14 +602,23 @@ func (*Rows) Next() bool
 // For scanning into *bool, the source may be true, false, 1, 0, or
 // string inputs parseable by strconv.ParseBool.
 
-// Scan将当前行的列输出到dest指向的目标值中。
-//
-// 如果有个参数是*[]byte的类型，Scan在这个参数里面存放的是相关数据的拷贝。 这个
-// 拷贝是调用函数的人所拥有的，并且可以随时被修改和存取。这个拷贝能避免使用
-// *RawBytes； 关于这个类型的使用限制请参考文档。
+// Scan将当前行的列输出到dest指向的目标值中。 TODO(osc): 完善翻译 如果有个参数
+// 是*[]byte的类型，Scan在这个参数里面存放的是相关数据的拷贝。 这个拷贝是调用函
+// 数的人所拥有的，并且可以随时被修改和存取。这个拷贝能避免使用*RawBytes； 关于
+// 这个类型的使用限制请参考文档。
 //
 // 如果有个参数是*interface{}类型，Scan会将底层驱动提供的这个值不做任何转换直接
-// 拷贝返回。 如果值是[]byte类型，Scan就会返回一份拷贝，并且调用者获得返回结果。
+// 拷贝返回。 当从一个 []byte 类型的来源值扫描到 *interface{} 时，就会创建该切片
+// 的一份副本， 而调用者会获得返回的结果。
+//
+// 类型为 time.Time 的来源值可被扫描到类型为 *time.Time、*interface{}、*string
+// 或 *[]byte 的值中。当转换为后面两个类型时，time.Format3339Nano 会被使用。
+//
+// 类型为 bool 的来源值可被扫描到类型为 *bool、*interface{}、*string、*[]byte 或
+// *RawBytes 的值中。
+//
+// 扫描到 *bool 中时，来源值可为 true、false、1、0 或可被 strconv.ParseBool 解析
+// 的字符串输入。
 func (*Rows) Scan(dest ...interface{}) error
 
 // Close closes the statement.
@@ -523,10 +650,10 @@ func (*Stmt) Query(args ...interface{}) (*Rows, error)
 //  var name string
 //  err := nameByUseridStmt.QueryRow(id).Scan(&name)
 
-// QueryRow根据传递的参数执行一个声明的查询操作。如果在执行声明过程中发生了错误
-// ， 这个error就会在Scan返回的*Row的时候返回，而这个*Row永远不会是nil。 如果查
-// 询没有任何行数据，*Row的Scan操作就会返回ErrNoRows。 否则，*Rows的Scan操作就会
-// 返回第一行数据，并且忽略其他行。
+// QueryRow根据传递的参数执行一个声明的查询操作。如果在执行声明过程中发生了错
+// 误， 这个error就会在Scan返回的*Row的时候返回，而这个*Row永远不会是nil。 如果
+// 查询没有任何行数据，*Row的Scan操作就会返回ErrNoRows。 否则，*Rows的Scan操作就
+// 会返回第一行数据，并且忽略其他行。
 //
 // Example usage:
 //
@@ -542,7 +669,8 @@ func (*Tx) Commit() error
 // Exec executes a query that doesn't return rows.
 // For example: an INSERT and UPDATE.
 
-// Exec执行不返回任何行的操作。 例如：INSERT和UPDATE操作。
+// Exec执行不返回任何行的操作。
+// 例如：INSERT和UPDATE操作。
 func (*Tx) Exec(query string, args ...interface{}) (Result, error)
 
 // Prepare creates a prepared statement for use within a transaction.
@@ -600,6 +728,8 @@ func (*Tx) Rollback() error
 //     tx, err := db.Begin()
 //     ...
 //     res, err := tx.Stmt(updateMoney).Exec(123.45, 98293203)
+//
+// 返回的语句用于在事务中进行操作。一旦该事务被提交或回滚，该语句便不再使用。
 func (*Tx) Stmt(stmt *Stmt) *Stmt
 
 // Value implements the driver Valuer interface.

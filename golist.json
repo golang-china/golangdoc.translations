@@ -1,6 +1,9 @@
 {
     "Repo": "github.com/golang/go",
-    "Lang": "",
+    "Description": "Golang standard library",
+    "Readme": "README.md",
+    "Filename": "doc_zh_CN.go",
+    "Subdir": "src",
     "Package": [
         {
             "Import": "archive/tar",
@@ -10,12 +13,12 @@
         {
             "Import": "archive/zip",
             "Synopsis": "zip包提供了zip档案文件的读写服务.",
-            "Progress": 95
+            "Progress": 84
         },
         {
             "Import": "bufio",
             "Synopsis": "bufio 包实现了带缓存的I/O操作.",
-            "Progress": 95
+            "Progress": 89
         },
         {
             "Import": "builtin",
@@ -24,18 +27,13 @@
         },
         {
             "Import": "bytes",
-            "Synopsis": "bytes 包实现了操作 byte 切片的常用函数.",
-            "Progress": 97
+            "Synopsis": "Package bytes implements functions for the manipulation of byte slices.",
+            "Progress": 10
         },
         {
             "Import": "cmd/addr2line",
             "Synopsis": "Addr2line is a minimal simulation of the GNU addr2line tool, just enough to support pprof.",
             "Progress": 100
-        },
-        {
-            "Import": "cmd/api",
-            "Synopsis": "Binary api computes the exported API of a set of Go packages.",
-            "Progress": 0
         },
         {
             "Import": "cmd/asm/internal/arch",
@@ -55,7 +53,7 @@
         {
             "Import": "cmd/asm/internal/lex",
             "Synopsis": "Package lex implements lexical analysis for the assembler.",
-            "Progress": 0
+            "Progress": 5
         },
         {
             "Import": "cmd/cgo",
@@ -65,12 +63,12 @@
         {
             "Import": "cmd/compile/internal/amd64",
             "Synopsis": "",
-            "Progress": 50
+            "Progress": 0
         },
         {
             "Import": "cmd/compile/internal/arm",
             "Synopsis": "",
-            "Progress": 100
+            "Progress": 0
         },
         {
             "Import": "cmd/compile/internal/arm64",
@@ -80,7 +78,7 @@
         {
             "Import": "cmd/compile/internal/big",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 1
         },
         {
             "Import": "cmd/compile/internal/gc",
@@ -105,7 +103,7 @@
         {
             "Import": "cmd/compile/internal/x86",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/cover",
@@ -116,11 +114,6 @@
             "Import": "cmd/dist",
             "Synopsis": "",
             "Progress": 100
-        },
-        {
-            "Import": "cmd/doc",
-            "Synopsis": "Doc (usually run as go doc) accepts zero, one or two arguments.",
-            "Progress": 0
         },
         {
             "Import": "cmd/fix",
@@ -150,7 +143,7 @@
         {
             "Import": "cmd/internal/obj",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 3
         },
         {
             "Import": "cmd/internal/obj/arm",
@@ -160,7 +153,7 @@
         {
             "Import": "cmd/internal/obj/arm64",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 7
         },
         {
             "Import": "cmd/internal/obj/mips",
@@ -175,7 +168,7 @@
         {
             "Import": "cmd/internal/obj/x86",
             "Synopsis": "",
-            "Progress": 100
+            "Progress": 0
         },
         {
             "Import": "cmd/internal/objfile",
@@ -190,7 +183,7 @@
         {
             "Import": "cmd/internal/unvendor/golang.org/x/arch/x86/x86asm",
             "Synopsis": "Package x86asm implements decoding of x86 machine code.",
-            "Progress": 5
+            "Progress": 0
         },
         {
             "Import": "cmd/link",
@@ -200,37 +193,37 @@
         {
             "Import": "cmd/link/internal/amd64",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/link/internal/arm",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/link/internal/arm64",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/link/internal/ld",
             "Synopsis": "",
-            "Progress": 3
+            "Progress": 18
         },
         {
             "Import": "cmd/link/internal/mips64",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/link/internal/ppc64",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/link/internal/x86",
             "Synopsis": "",
-            "Progress": 0
+            "Progress": 100
         },
         {
             "Import": "cmd/nm",
@@ -255,7 +248,7 @@
         {
             "Import": "cmd/pprof/internal/commands",
             "Synopsis": "Package commands defines and manages the basic pprof commands",
-            "Progress": 0
+            "Progress": 14
         },
         {
             "Import": "cmd/pprof/internal/driver",
@@ -270,17 +263,17 @@
         {
             "Import": "cmd/pprof/internal/plugin",
             "Synopsis": "Package plugin defines the plugin implementations that the main pprof driver requires.",
-            "Progress": 0
+            "Progress": 25
         },
         {
             "Import": "cmd/pprof/internal/profile",
             "Synopsis": "Implements methods to filter samples from profiles.",
-            "Progress": 14
+            "Progress": 17
         },
         {
             "Import": "cmd/pprof/internal/report",
             "Synopsis": "Package report summarizes a performance profile into a human-readable report.",
-            "Progress": 12
+            "Progress": 42
         },
         {
             "Import": "cmd/pprof/internal/svg",
@@ -303,11 +296,6 @@
             "Progress": 0
         },
         {
-            "Import": "cmd/trace",
-            "Synopsis": "Trace is a tool for viewing trace files.",
-            "Progress": 0
-        },
-        {
             "Import": "cmd/vet",
             "Synopsis": "Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string.",
             "Progress": 100
@@ -320,87 +308,87 @@
         {
             "Import": "cmd/yacc",
             "Synopsis": "Yacc is a version of yacc for Go.",
-            "Progress": 11
+            "Progress": 25
         },
         {
             "Import": "compress/bzip2",
-            "Synopsis": "bzip2 包实现 bzip2 的解压缩.",
-            "Progress": 100
+            "Synopsis": "Package bzip2 implements bzip2 decompression.",
+            "Progress": 0
         },
         {
             "Import": "compress/flate",
-            "Synopsis": "flate 包实现了 deflate 压缩数据格式, 参见RFC 1951.",
-            "Progress": 93
+            "Synopsis": "Package flate implements the DEFLATE compressed data format, described in RFC 1951.",
+            "Progress": 18
         },
         {
             "Import": "compress/gzip",
-            "Synopsis": "gzip 包实现了 gzip 格式压缩文件的读写, 参见RFC 1952.",
-            "Progress": 93
+            "Synopsis": "Package gzip implements reading and writing of gzip format compressed files, as specified in RFC 1952.",
+            "Progress": 12
         },
         {
             "Import": "compress/lzw",
-            "Synopsis": "lzw 包实现了 Lempel-Ziv-Welch 数据压缩格式, 这是一种 T. A. Welch 在 ``A Technique for High-Performance Data Compression'' 一文(Computer, 17(6) (June 1984), pp 8-19) 提出的一种压缩格式.",
-            "Progress": 100
+            "Synopsis": "Package lzw implements the Lempel-Ziv-Welch compressed data format, described in T. A. Welch, ``A Technique for High-Performance Data Compression'', Computer, 17(6) (June 1984), pp 8-19.",
+            "Progress": 0
         },
         {
             "Import": "compress/zlib",
-            "Synopsis": "zlib 包实现了对 zlib 格式压缩数据的读写, 参见 RFC 1950.",
-            "Progress": 100
+            "Synopsis": "Package zlib implements reading and writing of zlib format compressed data, as specified in RFC 1950.",
+            "Progress": 6
         },
         {
             "Import": "container/heap",
-            "Synopsis": "heap包提供了对任意类型（实现了heap.Interface接口）的堆操作。",
-            "Progress": 100
+            "Synopsis": "Package heap provides heap operations for any type that implements heap.Interface.",
+            "Progress": 0
         },
         {
             "Import": "container/list",
-            "Synopsis": "list包实现了双向链表。",
-            "Progress": 100
+            "Synopsis": "Package list implements a doubly linked list.",
+            "Progress": 0
         },
         {
             "Import": "container/ring",
-            "Synopsis": "ring实现了环形链表的操作。",
-            "Progress": 100
+            "Synopsis": "Package ring implements operations on circular lists.",
+            "Progress": 0
         },
         {
             "Import": "crypto",
-            "Synopsis": "crypto包搜集了常用的密码（算法）常量。",
-            "Progress": 72
+            "Synopsis": "Package crypto collects common cryptographic constants.",
+            "Progress": 0
         },
         {
             "Import": "crypto/aes",
-            "Synopsis": "aes包实现了AES加密算法，参见U.S. Federal Information Processing Standards Publication 197。",
-            "Progress": 100
+            "Synopsis": "Package aes implements AES encryption (formerly Rijndael), as defined in U.S. Federal Information Processing Standards Publication 197.",
+            "Progress": 0
         },
         {
             "Import": "crypto/cipher",
-            "Synopsis": "cipher包实现了多个标准的用于包装底层块加密算法的加密算法实现。",
-            "Progress": 66
+            "Synopsis": "Package cipher implements standard block cipher modes that can be wrapped around low-level block cipher implementations.",
+            "Progress": 6
         },
         {
             "Import": "crypto/des",
-            "Synopsis": "des包实现了DES标准和TDEA算法，参见U.S. Federal Information Processing Standards Publication 46-3。",
-            "Progress": 100
+            "Synopsis": "Package des implements the Data Encryption Standard (DES) and the Triple Data Encryption Algorithm (TDEA) as defined in U.S. Federal Information Processing Standards Publication 46-3.",
+            "Progress": 0
         },
         {
             "Import": "crypto/dsa",
             "Synopsis": "Package dsa implements the Digital Signature Algorithm, as defined in FIPS 186-3.",
-            "Progress": 10
+            "Progress": 0
         },
         {
             "Import": "crypto/ecdsa",
             "Synopsis": "Package ecdsa implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.",
-            "Progress": 12
+            "Progress": 0
         },
         {
             "Import": "crypto/elliptic",
-            "Synopsis": "elliptic包实现了几条覆盖素数有限域的标准椭圆曲线。",
-            "Progress": 100
+            "Synopsis": "Package elliptic implements several standard elliptic curves over prime fields.",
+            "Progress": 0
         },
         {
             "Import": "crypto/hmac",
-            "Synopsis": "hmac包实现了U.S. Federal Information Processing Standards Publication 198规定的HMAC（加密哈希信息认证码）。",
-            "Progress": 100
+            "Synopsis": "Package hmac implements the Keyed-Hash Message Authentication Code (HMAC) as defined in U.S. Federal Information Processing Standards Publication 198.",
+            "Progress": 0
         },
         {
             "Import": "crypto/md5",
@@ -409,78 +397,78 @@
         },
         {
             "Import": "crypto/rand",
-            "Synopsis": "rand包实现了用于加解密的更安全的随机数生成器。",
-            "Progress": 100
+            "Synopsis": "Package rand implements a cryptographically secure pseudorandom number generator.",
+            "Progress": 20
         },
         {
             "Import": "crypto/rc4",
-            "Synopsis": "rc4包实现了RC4加密算法，参见Bruce Schneier's Applied Cryptography。",
-            "Progress": 100
+            "Synopsis": "Package rc4 implements RC4 encryption, as defined in Bruce Schneier's Applied Cryptography.",
+            "Progress": 20
         },
         {
             "Import": "crypto/rsa",
-            "Synopsis": "rsa包实现了PKCS#1规定的RSA加密算法。",
-            "Progress": 79
+            "Synopsis": "Package rsa implements RSA encryption as specified in PKCS#1.",
+            "Progress": 10
         },
         {
             "Import": "crypto/sha1",
-            "Synopsis": "sha1包实现了SHA1哈希算法，参见RFC 3174。",
-            "Progress": 80
+            "Synopsis": "Package sha1 implements the SHA1 hash algorithm as defined in RFC 3174.",
+            "Progress": 0
         },
         {
             "Import": "crypto/sha256",
-            "Synopsis": "sha256包实现了SHA224和SHA256哈希算法，参见FIPS 180-4。",
-            "Progress": 75
+            "Synopsis": "Package sha256 implements the SHA224 and SHA256 hash algorithms as defined in FIPS 180-4.",
+            "Progress": 0
         },
         {
             "Import": "crypto/sha512",
-            "Synopsis": "sha512包实现了SHA384和SHA512哈希算法，参见FIPS 180-2。",
-            "Progress": 62
+            "Synopsis": "Package sha512 implements the SHA-384, SHA-512, SHA-512/224, and SHA-512/256 hash algorithms as defined in FIPS 180-4.",
+            "Progress": 0
         },
         {
             "Import": "crypto/subtle",
             "Synopsis": "Package subtle implements functions that are often useful in cryptographic code but require careful thought to use correctly.",
-            "Progress": 100
+            "Progress": 0
         },
         {
             "Import": "crypto/tls",
-            "Synopsis": "tls包实现了TLS 1.2，细节参见RFC 5246。",
-            "Progress": 96
+            "Synopsis": "Package tls partially implements TLS 1.2, as specified in RFC 5246.",
+            "Progress": 5
         },
         {
             "Import": "crypto/x509",
-            "Synopsis": "x509包解析X.509编码的证书和密钥。",
-            "Progress": 92
+            "Synopsis": "Package x509 parses X.509-encoded keys and certificates.",
+            "Progress": 8
         },
         {
             "Import": "crypto/x509/pkix",
-            "Synopsis": "pkix包提供了共享的、低层次的结构体，用于ASN.1解析和X.509证书、CRL、OCSP的序列 化。",
-            "Progress": 100
+            "Synopsis": "Package pkix contains shared, low level structures used for ASN.1 parsing and serialization of X.509 certificates, CRL and OCSP.",
+            "Progress": 0
         },
         {
             "Import": "database/sql",
             "Synopsis": "sql 包提供了通用的SQL（或类SQL）数据库接口.",
-            "Progress": 96
+            "Progress": 90
         },
         {
             "Import": "database/sql/driver",
-            "Synopsis": "driver包定义了应被数据库驱动实现的接口，这些接口会被sql包使用。",
-            "Progress": 80
+            "Synopsis": "Package driver defines interfaces to be implemented by database drivers as used by package sql.",
+            "Progress": 16
         },
         {
             "Import": "debug/dwarf",
             "Synopsis": "Package dwarf provides access to DWARF debugging information loaded from executable files, as defined in the DWARF 2.0 Standard at http://dwarfstd.org/doc/dwarf-2.0.0.pdf",
-            "Progress": 12
+            "Progress": 5
         },
         {
             "Import": "debug/elf",
             "Synopsis": "Package elf implements access to ELF object files.",
-            "Progress": 6
+            "Progress": 10
         },
         {
             "Import": "debug/gosym",
             "Synopsis": "Package gosym implements access to the Go symbol and line number tables embedded in Go binaries generated by the gc compilers.",
-            "Progress": 13
+            "Progress": 8
         },
         {
             "Import": "debug/macho",
@@ -490,7 +478,7 @@
         {
             "Import": "debug/pe",
             "Synopsis": "Package pe implements access to PE (Microsoft Windows Portable Executable) files.",
-            "Progress": 0
+            "Progress": 12
         },
         {
             "Import": "debug/plan9obj",
@@ -499,8 +487,8 @@
         },
         {
             "Import": "encoding",
-            "Synopsis": "encoding包定义了供其它包使用的可以将数据在字节水平和文本表示之间转换的接口。",
-            "Progress": 100
+            "Synopsis": "Package encoding defines interfaces shared by other packages that convert data to and from byte-level and textual representations.",
+            "Progress": 0
         },
         {
             "Import": "encoding/ascii85",
@@ -509,53 +497,53 @@
         },
         {
             "Import": "encoding/asn1",
-            "Synopsis": "asn1包实现了DER编码的ASN.1数据结构的解析，参见ITU-T Rec X.690。",
-            "Progress": 100
+            "Synopsis": "Package asn1 implements parsing of DER-encoded ASN.1 data structures, as defined in ITU-T Rec X.690.",
+            "Progress": 0
         },
         {
             "Import": "encoding/base32",
-            "Synopsis": "base32包实现了RFC 4648规定的base32编码。",
-            "Progress": 76
+            "Synopsis": "Package base32 implements base32 encoding as specified by RFC 4648.",
+            "Progress": 30
         },
         {
             "Import": "encoding/base64",
-            "Synopsis": "base64实现了RFC 4648规定的base64编码。",
-            "Progress": 76
+            "Synopsis": "Package base64 implements base64 encoding as specified by RFC 4648.",
+            "Progress": 25
         },
         {
             "Import": "encoding/binary",
-            "Synopsis": "binary包实现了简单的数字与字节序列的转换以及变长值的编解码。",
-            "Progress": 85
+            "Synopsis": "Package binary implements simple translation between numbers and byte sequences and encoding and decoding of varints.",
+            "Progress": 0
         },
         {
             "Import": "encoding/csv",
-            "Synopsis": "csv读写逗号分隔值（csv）的文件。",
-            "Progress": 100
+            "Synopsis": "Package csv reads and writes comma-separated values (CSV) files.",
+            "Progress": 33
         },
         {
             "Import": "encoding/gob",
-            "Synopsis": "gob包管理gob流——在编码器（发送器）和解码器（接受器）之间交换的binary值。",
-            "Progress": 93
+            "Synopsis": "Package gob manages streams of gobs - binary values exchanged between an Encoder (transmitter) and a Decoder (receiver).",
+            "Progress": 20
         },
         {
             "Import": "encoding/hex",
-            "Synopsis": "hex包实现了16进制字符表示的编解码。",
-            "Progress": 90
+            "Synopsis": "Package hex implements hexadecimal encoding and decoding.",
+            "Progress": 10
         },
         {
             "Import": "encoding/json",
-            "Synopsis": "json包实现了json对象的编解码，参见RFC 4627。",
-            "Progress": 80
+            "Synopsis": "Package json implements encoding and decoding of JSON as defined in RFC 4627.",
+            "Progress": 22
         },
         {
             "Import": "encoding/pem",
-            "Synopsis": "pem包实现了PEM数据编码（源自保密增强邮件协议）。",
-            "Progress": 100
+            "Synopsis": "Package pem implements the PEM data encoding, which originated in Privacy Enhanced Mail.",
+            "Progress": 0
         },
         {
             "Import": "encoding/xml",
             "Synopsis": "Package xml implements a simple XML 1.0 parser that understands XML name spaces.",
-            "Progress": 80
+            "Progress": 6
         },
         {
             "Import": "errors",
@@ -564,13 +552,13 @@
         },
         {
             "Import": "expvar",
-            "Synopsis": "expvar包提供了公共变量的标准接口，如服务的操作计数器。",
-            "Progress": 86
+            "Synopsis": "Package expvar provides a standardized interface to public variables, such as operation counters in servers.",
+            "Progress": 13
         },
         {
             "Import": "flag",
             "Synopsis": "flag 包实现命令行标签解析.",
-            "Progress": 97
+            "Progress": 98
         },
         {
             "Import": "fmt",
@@ -579,23 +567,23 @@
         },
         {
             "Import": "go/ast",
-            "Synopsis": "ast 包声明了用于描述 Go packages 语法树的类型.",
-            "Progress": 56
+            "Synopsis": "Package ast declares the types used to represent syntax trees for Go packages.",
+            "Progress": 27
         },
         {
             "Import": "go/build",
             "Synopsis": "Package build gathers information about Go packages.",
-            "Progress": 11
+            "Progress": 4
         },
         {
             "Import": "go/constant",
             "Synopsis": "Package constant implements Values representing untyped Go constants and their corresponding operations.",
-            "Progress": 0
+            "Progress": 8
         },
         {
             "Import": "go/doc",
             "Synopsis": "Package doc extracts source code documentation from a Go AST.",
-            "Progress": 14
+            "Progress": 6
         },
         {
             "Import": "go/format",
@@ -620,7 +608,7 @@
         {
             "Import": "go/parser",
             "Synopsis": "Package parser implements a parser for Go source files.",
-            "Progress": 20
+            "Progress": 0
         },
         {
             "Import": "go/printer",
@@ -630,17 +618,17 @@
         {
             "Import": "go/scanner",
             "Synopsis": "Package scanner implements a scanner for Go source text.",
-            "Progress": 11
+            "Progress": 5
         },
         {
             "Import": "go/token",
-            "Synopsis": "token 包定义了表示 Go 编程语言词法的和基础运算符的常量标记.",
-            "Progress": 75
+            "Synopsis": "Package token defines constants representing the lexical tokens of the Go programming language and basic operations on tokens (printing, predicates).",
+            "Progress": 2
         },
         {
             "Import": "go/types",
             "Synopsis": "Package types declares the data types and implements the algorithms for type-checking of Go packages.",
-            "Progress": 0
+            "Progress": 2
         },
         {
             "Import": "hash",
@@ -649,53 +637,53 @@
         },
         {
             "Import": "hash/adler32",
-            "Synopsis": "adler32包实现了Adler-32校验和算法，参见RFC 1950： Adler-32由两个每字节累积的和组成： s1是所有字节的累积，s2是所有s1的累积。",
-            "Progress": 100
+            "Synopsis": "Package adler32 implements the Adler-32 checksum.",
+            "Progress": 0
         },
         {
             "Import": "hash/crc32",
-            "Synopsis": "crc32包实现了32位循环冗余校验（CRC-32）的校验和算法，参见： http://en.wikipedia.org/wiki/Cyclic_redundancy_check",
-            "Progress": 90
+            "Synopsis": "Package crc32 implements the 32-bit cyclic redundancy check, or CRC-32, checksum.",
+            "Progress": 0
         },
         {
             "Import": "hash/crc64",
             "Synopsis": "Package crc64 implements the 64-bit cyclic redundancy check, or CRC-64, checksum.",
-            "Progress": 87
+            "Progress": 0
         },
         {
             "Import": "hash/fnv",
-            "Synopsis": "fnv包实现了FNV-1和FNV-1a（非加密hash函数），算法参见： http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function",
-            "Progress": 100
+            "Synopsis": "Package fnv implements FNV-1 and FNV-1a, non-cryptographic hash functions created by Glenn Fowler, Landon Curt Noll, and Phong Vo.",
+            "Progress": 0
         },
         {
             "Import": "html",
-            "Synopsis": "html包提供了用于转义和解转义HTML文本的函数。",
-            "Progress": 100
+            "Synopsis": "Package html provides functions for escaping and unescaping HTML text.",
+            "Progress": 0
         },
         {
             "Import": "html/template",
-            "Synopsis": "template包（html/template）实现了数据驱动的模板，用于生成可对抗代码注入的安全 HTML输出。",
-            "Progress": 86
+            "Synopsis": "Package template (html/template) implements data-driven templates for generating HTML output safe against code injection.",
+            "Progress": 8
         },
         {
             "Import": "image",
-            "Synopsis": "image实现了基本的2D图片库。",
-            "Progress": 97
+            "Synopsis": "Package image implements a basic 2-D image library.",
+            "Progress": 0
         },
         {
             "Import": "image/color",
             "Synopsis": "color 包实现了基本的颜色库。",
-            "Progress": 100
+            "Progress": 76
         },
         {
             "Import": "image/color/palette",
-            "Synopsis": "palette包提供了标准的调色板。",
-            "Progress": 66
+            "Synopsis": "Package palette provides standard color palettes.",
+            "Progress": 33
         },
         {
             "Import": "image/draw",
             "Synopsis": "draw 包提供组装图片的方法.",
-            "Progress": 66
+            "Progress": 54
         },
         {
             "Import": "image/gif",
@@ -709,8 +697,8 @@
         },
         {
             "Import": "image/jpeg",
-            "Synopsis": "jpeg包实现了jpeg格式图像的编解码。",
-            "Progress": 100
+            "Synopsis": "Package jpeg implements a JPEG image decoder and encoder.",
+            "Progress": 0
         },
         {
             "Import": "image/png",
@@ -719,8 +707,8 @@
         },
         {
             "Import": "index/suffixarray",
-            "Synopsis": "suffixarrayb包通过使用内存中的后缀树实现了对数级时间消耗的子字符串搜索。",
-            "Progress": 100
+            "Synopsis": "Package suffixarray implements substring search in logarithmic time using an in-memory suffix array.",
+            "Progress": 0
         },
         {
             "Import": "internal/golang.org/x/net/http2/hpack",
@@ -740,7 +728,7 @@
         {
             "Import": "internal/syscall/unix",
             "Synopsis": "",
-            "Progress": 50
+            "Progress": 0
         },
         {
             "Import": "internal/syscall/windows",
@@ -755,7 +743,7 @@
         {
             "Import": "internal/syscall/windows/sysdll",
             "Synopsis": "Package sysdll is an internal leaf package that records and reports which Windows DLL names are used by Go itself.",
-            "Progress": 33
+            "Progress": 0
         },
         {
             "Import": "internal/testenv",
@@ -770,7 +758,7 @@
         {
             "Import": "io",
             "Synopsis": "io 包为I/O原语提供了基础的接口.",
-            "Progress": 97
+            "Progress": 96
         },
         {
             "Import": "io/ioutil",
@@ -779,13 +767,13 @@
         },
         {
             "Import": "log",
-            "Synopsis": "log包实现了简单的日志服务。",
-            "Progress": 59
+            "Synopsis": "Package log implements a simple logging package.",
+            "Progress": 11
         },
         {
             "Import": "log/syslog",
             "Synopsis": "Package syslog provides a simple interface to the system log service.",
-            "Progress": 18
+            "Progress": 11
         },
         {
             "Import": "math",
@@ -794,8 +782,8 @@
         },
         {
             "Import": "math/big",
-            "Synopsis": "big 包实现了（大数的）高精度运算.",
-            "Progress": 61
+            "Synopsis": "Package big implements arbitrary-precision arithmetic (big numbers).",
+            "Progress": 37
         },
         {
             "Import": "math/cmplx",
@@ -805,17 +793,17 @@
         {
             "Import": "math/rand",
             "Synopsis": "rand 包实现了伪随机数生成器.",
-            "Progress": 14
+            "Progress": 13
         },
         {
             "Import": "mime",
-            "Synopsis": "mime实现了MIME的部分规定。",
-            "Progress": 100
+            "Synopsis": "Package mime implements parts of the MIME spec.",
+            "Progress": 7
         },
         {
             "Import": "mime/multipart",
-            "Synopsis": "multipart实现了MIME的multipart解析，参见RFC 2046。",
-            "Progress": 91
+            "Synopsis": "Package multipart implements MIME multipart parsing, as defined in RFC 2046.",
+            "Progress": 4
         },
         {
             "Import": "mime/quotedprintable",
@@ -824,13 +812,13 @@
         },
         {
             "Import": "net",
-            "Synopsis": "net包提供了可移植的网络I/O接口，包括TCP/IP、UDP、域名解析和Unix域socket。",
-            "Progress": 73
+            "Synopsis": "Package net provides a portable interface for network I/O, including TCP/IP, UDP, domain name resolution, and Unix domain sockets.",
+            "Progress": 21
         },
         {
             "Import": "net/http",
-            "Synopsis": "http包提供了HTTP客户端和服务端的实现。",
-            "Progress": 84
+            "Synopsis": "Package http provides HTTP client and server implementations.",
+            "Progress": 13
         },
         {
             "Import": "net/http/cgi",
@@ -839,33 +827,33 @@
         },
         {
             "Import": "net/http/cookiejar",
-            "Synopsis": "cookiejar包实现了保管在内存中的符合RFC 6265标准的http.CookieJar接口。",
-            "Progress": 100
+            "Synopsis": "Package cookiejar implements an in-memory RFC 6265-compliant http.CookieJar.",
+            "Progress": 0
         },
         {
             "Import": "net/http/fcgi",
             "Synopsis": "fcgi 包实现了FastCGI协议.",
-            "Progress": 100
+            "Progress": 50
         },
         {
             "Import": "net/http/httptest",
-            "Synopsis": "httptest 包提供HTTP测试的单元工具.",
-            "Progress": 100
+            "Synopsis": "Package httptest provides utilities for HTTP testing.",
+            "Progress": 73
         },
         {
             "Import": "net/http/httputil",
             "Synopsis": "Package httputil provides HTTP utility functions, complementing the more common ones in the net/http package.",
-            "Progress": 88
+            "Progress": 73
         },
         {
             "Import": "net/http/internal",
             "Synopsis": "internal 包含 net/http 和 net/http/httputil 共享的 HTTP 内部函数.",
-            "Progress": 100
+            "Progress": 50
         },
         {
             "Import": "net/http/pprof",
             "Synopsis": "pprof 包通过提供HTTP服务返回runtime的统计数据，这个数据是以pprof可视化工具规 定的返回格式返回的.",
-            "Progress": 100
+            "Progress": 85
         },
         {
             "Import": "net/internal/socktest",
@@ -875,12 +863,12 @@
         {
             "Import": "net/mail",
             "Synopsis": "mail 包实现了解析邮件消息的功能.",
-            "Progress": 100
+            "Progress": 78
         },
         {
             "Import": "net/rpc",
             "Synopsis": "rpc 包提供了一个方法来通过网络或者其他的I/O连接进入对象的外部方法.",
-            "Progress": 93
+            "Progress": 91
         },
         {
             "Import": "net/rpc/jsonrpc",
@@ -889,68 +877,68 @@
         },
         {
             "Import": "net/smtp",
-            "Synopsis": "smtp包实现了简单邮件传输协议（SMTP），参见RFC 5321。",
-            "Progress": 100
+            "Synopsis": "Package smtp implements the Simple Mail Transfer Protocol as defined in RFC 5321.",
+            "Progress": 14
         },
         {
             "Import": "net/textproto",
-            "Synopsis": "textproto实现了对基于文本的请求/回复协议的一般性支持，包括HTTP、NNTP和SMTP。",
-            "Progress": 100
+            "Synopsis": "Package textproto implements generic support for text-based request/response protocols in the style of HTTP, NNTP, and SMTP.",
+            "Progress": 13
         },
         {
             "Import": "net/url",
-            "Synopsis": "url包解析URL并实现了查询的逸码，参见RFC 3986。",
-            "Progress": 65
+            "Synopsis": "Package url parses URLs and implements query escaping.",
+            "Progress": 14
         },
         {
             "Import": "os",
-            "Synopsis": "os包提供了操作系统函数的不依赖平台的接口。",
-            "Progress": 91
+            "Synopsis": "Package os provides a platform-independent interface to operating system functionality.",
+            "Progress": 9
         },
         {
             "Import": "os/exec",
-            "Synopsis": "exec包执行外部命令。",
-            "Progress": 52
+            "Synopsis": "Package exec runs external commands.",
+            "Progress": 0
         },
         {
             "Import": "os/signal",
-            "Synopsis": "signal包实现了对输入信号的访问。",
-            "Progress": 100
+            "Synopsis": "Package signal implements access to incoming signals.",
+            "Progress": 40
         },
         {
             "Import": "os/user",
-            "Synopsis": "user包允许通过名称或ID查询用户帐户。",
-            "Progress": 100
+            "Synopsis": "Package user allows user account lookups by name or id.",
+            "Progress": 7
         },
         {
             "Import": "path",
-            "Synopsis": "path实现了对斜杠分隔的路径的实用操作函数。",
-            "Progress": 100
+            "Synopsis": "Package path implements utility routines for manipulating slash-separated paths.",
+            "Progress": 10
         },
         {
             "Import": "path/filepath",
-            "Synopsis": "filepath包实现了兼容各操作系统的文件路径的实用操作函数。",
-            "Progress": 95
+            "Synopsis": "Package filepath implements utility routines for manipulating filename paths in a way compatible with the target operating system-defined file paths.",
+            "Progress": 9
         },
         {
             "Import": "reflect",
-            "Synopsis": "reflect包实现了运行时反射，允许程序操作任意类型的对象。",
-            "Progress": 46
+            "Synopsis": "Package reflect implements run-time reflection, allowing a program to manipulate objects with arbitrary types.",
+            "Progress": 9
         },
         {
             "Import": "regexp",
-            "Synopsis": "regexp包实现了正则表达式搜索。",
-            "Progress": 51
+            "Synopsis": "Package regexp implements regular expression search.",
+            "Progress": 32
         },
         {
             "Import": "regexp/syntax",
             "Synopsis": "Package syntax parses regular expressions into parse trees and compiles parse trees into programs.",
-            "Progress": 21
+            "Progress": 16
         },
         {
             "Import": "runtime",
             "Synopsis": "TODO(osc): 需更新 runtime 包含与Go的运行时系统进行交互的操作，例如用于控制Go 程的函数.",
-            "Progress": 52
+            "Progress": 31
         },
         {
             "Import": "runtime/cgo",
@@ -960,7 +948,7 @@
         {
             "Import": "runtime/debug",
             "Synopsis": "debug 包含有程序在运行时调试其自身的功能.",
-            "Progress": 36
+            "Progress": 33
         },
         {
             "Import": "runtime/internal/atomic",
@@ -999,28 +987,33 @@
         },
         {
             "Import": "strconv",
-            "Synopsis": "strconv包实现了基本数据类型和其字符串表示的相互转换。",
-            "Progress": 96
+            "Synopsis": "strconv 包实现了 string 与其他基本类型之间的转换。",
+            "Progress": 36
         },
         {
             "Import": "strings",
-            "Synopsis": "strings包实现了用于操作字符的简单函数。",
-            "Progress": 96
+            "Synopsis": "Package strings implements simple functions to manipulate UTF-8 encoded strings.",
+            "Progress": 0
         },
         {
             "Import": "sync",
             "Synopsis": "sync 包提供了互斥锁这类的基本的同步原语.",
-            "Progress": 88
+            "Progress": 92
         },
         {
             "Import": "sync/atomic",
             "Synopsis": "atomic 包提供了底层的原子性内存原语，这对于同步算法的实现很有用.",
-            "Progress": 90
+            "Progress": 93
+        },
+        {
+            "Import": "syscall",
+            "Synopsis": "Package syscall contains an interface to the low-level operating system primitives.",
+            "Progress": 5
         },
         {
             "Import": "testing",
             "Synopsis": "Package testing provides support for automated testing of Go packages.",
-            "Progress": 8
+            "Progress": 15
         },
         {
             "Import": "testing/iotest",
@@ -1035,17 +1028,17 @@
         {
             "Import": "text/scanner",
             "Synopsis": "Package scanner provides a scanner and tokenizer for UTF-8-encoded text.",
-            "Progress": 21
+            "Progress": 8
         },
         {
             "Import": "text/tabwriter",
-            "Synopsis": "tabwriter包实现了写入过滤器（tabwriter.Writer），可以将输入的缩进修正为正确的 对齐文本。",
-            "Progress": 62
+            "Synopsis": "Package tabwriter implements a write filter (tabwriter.Writer) that translates tabbed columns in input into properly aligned text.",
+            "Progress": 7
         },
         {
             "Import": "text/template",
-            "Synopsis": "template包实现了数据驱动的用于生成文本输出的模板.",
-            "Progress": 100
+            "Synopsis": "Package template implements data-driven templates for generating textual output.",
+            "Progress": 16
         },
         {
             "Import": "text/template/parse",
@@ -1054,13 +1047,13 @@
         },
         {
             "Import": "time",
-            "Synopsis": "time包提供了时间的显示和测量用的函数。",
-            "Progress": 39
+            "Synopsis": "Package time provides functionality for measuring and displaying time.",
+            "Progress": 7
         },
         {
             "Import": "unicode",
             "Synopsis": "unicode 包提供了一些测试Unicode码点属性的数据和函数.",
-            "Progress": 97
+            "Progress": 100
         },
         {
             "Import": "unicode/utf16",
