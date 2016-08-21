@@ -25,98 +25,94 @@
 package rsa
 
 import (
-    "crypto"
-    "errors"
-    "hash"
-    "io"
-    "math/big"
+	"crypto"
+	"errors"
+	"hash"
+	"io"
+	"math/big"
 )
 
 const (
-    // PSSSaltLengthAuto causes the salt in a PSS signature to be as large
-    // as possible when signing, and to be auto-detected when verifying.
-    PSSSaltLengthAuto = 0
-    // PSSSaltLengthEqualsHash causes the salt length to equal the length
-    // of the hash used in the signature.
-    PSSSaltLengthEqualsHash = -1
+	// PSSSaltLengthAuto causes the salt in a PSS signature to be as large
+	// as possible when signing, and to be auto-detected when verifying.
+	PSSSaltLengthAuto = 0
+	// PSSSaltLengthEqualsHash causes the salt length to equal the length
+	// of the hash used in the signature.
+	PSSSaltLengthEqualsHash = -1
 )
 
 // ErrDecryption represents a failure to decrypt a message.
 // It is deliberately vague to avoid adaptive attacks.
 
-// ErrDecryption代表解密数据失败。它故意写的语焉不详，以避免适应性攻击。
-//
-//     var ErrMessageTooLong = errors.New("crypto/rsa: message too long for RSA public key size")
-//
-// 当试图用公钥加密尺寸过大的数据时，就会返回ErrMessageTooLong。
-//
-//     var ErrVerification = errors.New("crypto/rsa: verification error")
-//
-// ErrVerification代表认证签名失败。它故意写的语焉不详，以避免适应性攻击。
+// ErrDecryption 代表解密数据失败。它故意写的语焉不详，以避免适应性攻击。
 var ErrDecryption = errors.New("crypto/rsa: decryption error")
 
 // ErrMessageTooLong is returned when attempting to encrypt a message which is
 // too large for the size of the public key.
+
+// 当试图用公钥加密尺寸过大的数据时，就会返回ErrMessageTooLong。
 var ErrMessageTooLong = errors.New("crypto/rsa: message too long for RSA public key size")
 
 // ErrVerification represents a failure to verify a signature. It is
 // deliberately vague to avoid adaptive attacks.
+
+// ErrVerification代表认证签名失败。它故意写的语焉不详，以避免适应性攻击。
 var ErrVerification = errors.New("crypto/rsa: verification error")
 
 // CRTValue contains the precomputed Chinese remainder theorem values.
 
 // CRTValue包含预先计算的中国剩余定理的值。
 type CRTValue struct {
-    Exp   *big.Int // D mod (prime-1).
-    Coeff *big.Int // R·Coeff ≡ 1 mod Prime.
-    R     *big.Int // product of primes prior to this (inc p and q).
+	Exp   *big.Int // D mod (prime-1).
+	Coeff *big.Int // R·Coeff ≡ 1 mod Prime.
+	R     *big.Int // product of primes prior to this (inc p and q).
 }
 
 // PSSOptions contains options for creating and verifying PSS signatures.
 
 // PSSOptions包含用于创建和认证PSS签名的参数。
 type PSSOptions struct {
-    // SaltLength controls the length of the salt used in the PSS
-    // signature. It can either be a number of bytes, or one of the special
-    // PSSSaltLength constants.
-    SaltLength int
+	// SaltLength controls the length of the salt used in the PSS
+	// signature. It can either be a number of bytes, or one of the special
+	// PSSSaltLength constants.
+	SaltLength int
 
-    // Hash, if not zero, overrides the hash function passed to SignPSS.
-    // This is the only way to specify the hash function when using the
-    // crypto.Signer interface.
-    Hash crypto.Hash
+	// Hash, if not zero, overrides the hash function passed to SignPSS.
+	// This is the only way to specify the hash function when using the
+	// crypto.Signer interface.
+	Hash crypto.Hash
 }
 
 type PrecomputedValues struct {
-    Dp, Dq *big.Int // D mod (P-1) (or mod Q-1)
-    Qinv   *big.Int // Q^-1 mod P
+	Dp, Dq *big.Int // D mod (P-1) (or mod Q-1)
+	Qinv   *big.Int // Q^-1 mod P
 
-    // CRTValues is used for the 3rd and subsequent primes. Due to a
-    // historical accident, the CRT for the first two primes is handled
-    // differently in PKCS#1 and interoperability is sufficiently
-    // important that we mirror this.
-    CRTValues []CRTValue
+	// CRTValues is used for the 3rd and subsequent primes. Due to a
+	// historical accident, the CRT for the first two primes is handled
+	// differently in PKCS#1 and interoperability is sufficiently
+	// important that we mirror this.
+	CRTValues []CRTValue
 }
 
 // A PrivateKey represents an RSA key
 
 // 代表一个RSA私钥。
 type PrivateKey struct {
-    PublicKey            // public part.
-    D         *big.Int   // private exponent
-    Primes    []*big.Int // prime factors of N, has >= 2 elements.
+	PublicKey            // public part.
+	D         *big.Int   // private exponent
+	Primes    []*big.Int // prime factors of N, has >= 2 elements.
 
-    // Precomputed contains precomputed values that speed up private
-    // operations, if available.
-    Precomputed PrecomputedValues
+	// Precomputed contains precomputed values that speed up private
+	// operations, if available.
+	Precomputed PrecomputedValues
 }
 
 // A PublicKey represents the public part of an RSA key.
 
 // 代表一个RSA公钥。
 type PublicKey struct {
-    N   *big.Int // modulus
-    E   int      // public exponent
+	N *big.Int // modulus
+	E int      // public exponent
 }
 
 // OAEP is parameterised by a hash function that is used as a random oracle.
@@ -318,4 +314,3 @@ func (*PrivateKey) Sign(rand io.Reader, msg []byte, opts crypto.SignerOpts) ([]b
 // Validate方法进行密钥的完整性检查。如果密钥合法会返回nil，否则会返回说明问题的
 // error值。
 func (*PrivateKey) Validate() error
-

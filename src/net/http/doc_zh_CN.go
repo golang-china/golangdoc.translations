@@ -162,125 +162,116 @@
 package http
 
 import (
-    "bufio"
-    "bytes"
-    "compress/gzip"
-    "crypto/tls"
-    "encoding/base64"
-    "encoding/binary"
-    "errors"
-    "fmt"
-    "internal/golang.org/x/net/http2/hpack"
-    "io"
-    "io/ioutil"
-    "log"
-    "mime"
-    "mime/multipart"
-    "net"
-    "net/http/internal"
-    "net/textproto"
-    "net/url"
-    "os"
-    "path"
-    "path/filepath"
-    "reflect"
-    "runtime"
-    "sort"
-    "strconv"
-    "strings"
-    "sync"
-    "sync/atomic"
-    "time"
-    "unicode/utf8"
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"crypto/tls"
+	"encoding/base64"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"internal/golang.org/x/net/http2/hpack"
+	"io"
+	"io/ioutil"
+	"log"
+	"mime"
+	"mime/multipart"
+	"net"
+	"net/http/internal"
+	"net/textproto"
+	"net/url"
+	"os"
+	"path"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+	"unicode/utf8"
 )
 
 // DefaultMaxHeaderBytes is the maximum permitted size of the headers in an HTTP
 // request. This can be overridden by setting Server.MaxHeaderBytes.
 const DefaultMaxHeaderBytes = 1 << 20 // 1 MB
 
-
 // DefaultMaxIdleConnsPerHost is the default value of Transport's
 // MaxIdleConnsPerHost.
 const DefaultMaxIdleConnsPerHost = 2
 
 const (
-    // StateNew represents a new connection that is expected to
-    // send a request immediately. Connections begin at this
-    // state and then transition to either StateActive or
-    // StateClosed.
-    StateNew ConnState = iota
+	// StateNew代表一个新的连接，将要立刻发送请求。
+	// 连接从这个状态开始，然后转变为StateAlive或StateClosed。
+	StateNew ConnState = iota
 
-    // StateActive represents a connection that has read 1 or more
-    // bytes of a request. The Server.ConnState hook for
-    // StateActive fires before the request has entered a handler
-    // and doesn't fire again until the request has been
-    // handled. After the request is handled, the state
-    // transitions to StateClosed, StateHijacked, or StateIdle.
-    StateActive
+	// StateActive代表一个已经读取了请求数据1到多个字节的连接。
+	// 用于StateAlive的Server.ConnState回调函数在将连接交付给处理器之前被触发，
+	// 等到请求被处理完后，Server.ConnState回调函数再次被触发。
+	// 在请求被处理后，连接状态改变为StateClosed、StateHijacked或StateIdle。
+	StateActive
 
-    // StateIdle represents a connection that has finished
-    // handling a request and is in the keep-alive state, waiting
-    // for a new request. Connections transition from StateIdle
-    // to either StateActive or StateClosed.
-    StateIdle
+	// StateIdle代表一个已经处理完了请求、处在闲置状态、等待新请求的连接。
+	// 连接状态可以从StateIdle改变为StateActive或StateClosed。
+	StateIdle
 
-    // StateHijacked represents a hijacked connection.
-    // This is a terminal state. It does not transition to StateClosed.
-    StateHijacked
+	// 代表一个被劫持的连接。这是一个终止状态，不会转变为StateClosed。
+	StateHijacked
 
-    // StateClosed represents a closed connection.
-    // This is a terminal state. Hijacked connections do not
-    // transition to StateClosed.
-    StateClosed
+	// StateClosed代表一个关闭的连接。
+	// 这是一个终止状态。被劫持的连接不会转变为StateClosed。
+	StateClosed
 )
 
 // HTTP status codes, defined in RFC 2616.
 const (
-    StatusContinue           = 100
-    StatusSwitchingProtocols = 101
+	StatusContinue           = 100
+	StatusSwitchingProtocols = 101
 
-    StatusOK                   = 200
-    StatusCreated              = 201
-    StatusAccepted             = 202
-    StatusNonAuthoritativeInfo = 203
-    StatusNoContent            = 204
-    StatusResetContent         = 205
-    StatusPartialContent       = 206
+	StatusOK                   = 200
+	StatusCreated              = 201
+	StatusAccepted             = 202
+	StatusNonAuthoritativeInfo = 203
+	StatusNoContent            = 204
+	StatusResetContent         = 205
+	StatusPartialContent       = 206
 
-    StatusMultipleChoices   = 300
-    StatusMovedPermanently  = 301
-    StatusFound             = 302
-    StatusSeeOther          = 303
-    StatusNotModified       = 304
-    StatusUseProxy          = 305
-    StatusTemporaryRedirect = 307
+	StatusMultipleChoices   = 300
+	StatusMovedPermanently  = 301
+	StatusFound             = 302
+	StatusSeeOther          = 303
+	StatusNotModified       = 304
+	StatusUseProxy          = 305
+	StatusTemporaryRedirect = 307
 
-    StatusBadRequest                   = 400
-    StatusUnauthorized                 = 401
-    StatusPaymentRequired              = 402
-    StatusForbidden                    = 403
-    StatusNotFound                     = 404
-    StatusMethodNotAllowed             = 405
-    StatusNotAcceptable                = 406
-    StatusProxyAuthRequired            = 407
-    StatusRequestTimeout               = 408
-    StatusConflict                     = 409
-    StatusGone                         = 410
-    StatusLengthRequired               = 411
-    StatusPreconditionFailed           = 412
-    StatusRequestEntityTooLarge        = 413
-    StatusRequestURITooLong            = 414
-    StatusUnsupportedMediaType         = 415
-    StatusRequestedRangeNotSatisfiable = 416
-    StatusExpectationFailed            = 417
-    StatusTeapot                       = 418
+	StatusBadRequest                   = 400
+	StatusUnauthorized                 = 401
+	StatusPaymentRequired              = 402
+	StatusForbidden                    = 403
+	StatusNotFound                     = 404
+	StatusMethodNotAllowed             = 405
+	StatusNotAcceptable                = 406
+	StatusProxyAuthRequired            = 407
+	StatusRequestTimeout               = 408
+	StatusConflict                     = 409
+	StatusGone                         = 410
+	StatusLengthRequired               = 411
+	StatusPreconditionFailed           = 412
+	StatusRequestEntityTooLarge        = 413
+	StatusRequestURITooLong            = 414
+	StatusUnsupportedMediaType         = 415
+	StatusRequestedRangeNotSatisfiable = 416
+	StatusExpectationFailed            = 417
+	StatusTeapot                       = 418
 
-    StatusInternalServerError     = 500
-    StatusNotImplemented          = 501
-    StatusBadGateway              = 502
-    StatusServiceUnavailable      = 503
-    StatusGatewayTimeout          = 504
-    StatusHTTPVersionNotSupported = 505
+	StatusInternalServerError     = 500
+	StatusNotImplemented          = 501
+	StatusBadGateway              = 502
+	StatusServiceUnavailable      = 503
+	StatusGatewayTimeout          = 504
+	StatusHTTPVersionNotSupported = 505
 )
 
 // TimeFormat is the time format to use when generating times in HTTP
@@ -296,9 +287,13 @@ const (
 const TimeFormat = "Mon, 02 Jan 2006 15:04:05 GMT"
 
 // DefaultClient is the default Client and is used by Get, Head, and Post.
+
+// DefaultClient是用于包函数Get、Head和Post的默认Client。
 var DefaultClient = &Client{}
 
 // DefaultServeMux is the default ServeMux used by Serve.
+
+// DefaultServeMux是用于Serve的默认ServeMux。
 var DefaultServeMux = NewServeMux()
 
 // DefaultTransport is the default implementation of Transport and is used by
@@ -306,72 +301,44 @@ var DefaultServeMux = NewServeMux()
 // for reuse by subsequent calls. It uses HTTP proxies as directed by the
 // $HTTP_PROXY and $NO_PROXY (or $http_proxy and $no_proxy) environment
 // variables.
+
+// DefaultTransport是被包变量DefaultClient使用的默认RoundTripper接口。它会根据需
+// 要创建网络连接，并缓存以便在之后的请求中重用这些连接。它使用环境变量
+// $HTTP_PROXY和$NO_PROXY（或$http_proxy和$no_proxy）指定的HTTP代理。
 var DefaultTransport RoundTripper = &Transport{
-    Proxy: ProxyFromEnvironment,
-    Dial: (&net.Dialer{
-        Timeout:   30 * time.Second,
-        KeepAlive: 30 * time.Second,
-    }).Dial,
-    TLSHandshakeTimeout: 10 * time.Second,
+	Proxy: ProxyFromEnvironment,
+	Dial: (&net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).Dial,
+	TLSHandshakeTimeout: 10 * time.Second,
 }
 
 // ErrBodyReadAfterClose is returned when reading a Request or Response Body
 // after the body has been closed. This typically happens when the body is read
 // after an HTTP Handler calls WriteHeader or Write on its ResponseWriter.
+
+// 在Resquest或Response的Body字段已经关闭后，试图从中读取时，就会返回
+// ErrBodyReadAfterClose。这个错误一般发生在：HTTP处理器中调用完ResponseWriter
+// 接口的WriteHeader或Write后从请求中读取数据的时候。
 var ErrBodyReadAfterClose = errors.New("http: invalid Read on closed Body")
 
 // ErrHandlerTimeout is returned on ResponseWriter Write calls in handlers which
 // have timed out.
+
+// 在处理器超时以后调用 ResponseWriter 接口的 Write 方法，就会返回
+// ErrHandlerTimeout。
 var ErrHandlerTimeout = errors.New("http: Handler timeout")
 
 // HTTP请求的解析错误。
-//
-//     var (
-//         ErrWriteAfterFlush = errors.New("Conn.Write called after Flush")
-//         ErrBodyNotAllowed  = errors.New("http: request method or response status code does not allow body")
-//         ErrHijacked        = errors.New("Conn has been hijacked")
-//         ErrContentLength   = errors.New("Conn.Write wrote more than the declared Content-Length")
-//     )
-//
-// 会被HTTP服务端返回的错误。
-//
-//     var DefaultClient = &Client{}
-//
-// DefaultClient是用于包函数Get、Head和Post的默认Client。
-//
-//     var DefaultServeMux = NewServeMux()
-//
-// DefaultServeMux是用于Serve的默认ServeMux。
-//
-//     var ErrBodyReadAfterClose = errors.New("http: invalid Read on closed Body")
-//
-// 在Resquest或Response的Body字段已经关闭后，试图从中读取时，就会返回
-// ErrBodyReadAfterClose。这个错误一般发生在：HTTP处理器中调用完ResponseWriter
-// 接口的WriteHeader或Write后从请求中读取数据的时候。
-//
-//     var ErrHandlerTimeout = errors.New("http: Handler timeout")
-//
-// 在处理器超时以后调用ResponseWriter接口的Write方法，就会返回ErrHandlerTimeout
-// 。
-//
-//     var ErrLineTooLong = errors.New("header line too long")
-//
-//     var ErrMissingFile = errors.New("http: no such file")
-//
-// 当请求中没有提供给FormFile函数的文件字段名，或者该字段名不是文件字段时，该函
-// 数就会返回ErrMissingFile。
-//
-//     var ErrNoCookie = errors.New("http: named cookie not present")
-//
-//     var ErrNoLocation = errors.New("http: no Location header in response")
 var (
-    ErrHeaderTooLong        = &ProtocolError{"header too long"}
-    ErrShortBody            = &ProtocolError{"entity body too short"}
-    ErrNotSupported         = &ProtocolError{"feature not supported"}
-    ErrUnexpectedTrailer    = &ProtocolError{"trailer header without chunked transfer encoding"}
-    ErrMissingContentLength = &ProtocolError{"missing ContentLength in HEAD response"}
-    ErrNotMultipart         = &ProtocolError{"request Content-Type isn't multipart/form-data"}
-    ErrMissingBoundary      = &ProtocolError{"no multipart boundary param in Content-Type"}
+	ErrHeaderTooLong        = &ProtocolError{"header too long"}
+	ErrShortBody            = &ProtocolError{"entity body too short"}
+	ErrNotSupported         = &ProtocolError{"feature not supported"}
+	ErrUnexpectedTrailer    = &ProtocolError{"trailer header without chunked transfer encoding"}
+	ErrMissingContentLength = &ProtocolError{"missing ContentLength in HEAD response"}
+	ErrNotMultipart         = &ProtocolError{"request Content-Type isn't multipart/form-data"}
+	ErrMissingBoundary      = &ProtocolError{"no multipart boundary param in Content-Type"}
 )
 
 // ErrLineTooLong is returned when reading request or response bodies with
@@ -380,6 +347,9 @@ var ErrLineTooLong = internal.ErrLineTooLong
 
 // ErrMissingFile is returned by FormFile when the provided file field name is
 // either not present in the request or not a file field.
+
+// 当请求中没有提供给FormFile函数的文件字段名，或者该字段名不是文件字段时，该函
+// 数就会返回 ErrMissingFile。
 var ErrMissingFile = errors.New("http: no such file")
 
 // ErrNoCookie is returned by Request's Cookie method when a cookie is not
@@ -391,11 +361,13 @@ var ErrNoCookie = errors.New("http: named cookie not present")
 var ErrNoLocation = errors.New("http: no Location header in response")
 
 // Errors introduced by the HTTP server.
+
+// 会被HTTP服务端返回的错误。
 var (
-    ErrWriteAfterFlush = errors.New("Conn.Write called after Flush")
-    ErrBodyNotAllowed  = errors.New("http: request method or response status code does not allow body")
-    ErrHijacked        = errors.New("Conn has been hijacked")
-    ErrContentLength   = errors.New("Conn.Write wrote more than the declared Content-Length")
+	ErrWriteAfterFlush = errors.New("Conn.Write called after Flush")
+	ErrBodyNotAllowed  = errors.New("http: request method or response status code does not allow body")
+	ErrHijacked        = errors.New("Conn has been hijacked")
+	ErrContentLength   = errors.New("Conn.Write wrote more than the declared Content-Length")
 )
 
 // A Client is an HTTP client. Its zero value (DefaultClient) is a
@@ -418,42 +390,42 @@ var (
 // Client类型的层次比RoundTripper接口（如Transport）高，还会管理HTTP的cookie和重
 // 定向等细节。
 type Client struct {
-    // Transport specifies the mechanism by which individual
-    // HTTP requests are made.
-    // If nil, DefaultTransport is used.
-    Transport RoundTripper
+	// Transport specifies the mechanism by which individual
+	// HTTP requests are made.
+	// If nil, DefaultTransport is used.
+	Transport RoundTripper
 
-    // CheckRedirect specifies the policy for handling redirects.
-    // If CheckRedirect is not nil, the client calls it before
-    // following an HTTP redirect. The arguments req and via are
-    // the upcoming request and the requests made already, oldest
-    // first. If CheckRedirect returns an error, the Client's Get
-    // method returns both the previous Response and
-    // CheckRedirect's error (wrapped in a url.Error) instead of
-    // issuing the Request req.
-    //
-    // If CheckRedirect is nil, the Client uses its default policy,
-    // which is to stop after 10 consecutive requests.
-    CheckRedirect func(req *Request, via []*Request) error
+	// CheckRedirect specifies the policy for handling redirects.
+	// If CheckRedirect is not nil, the client calls it before
+	// following an HTTP redirect. The arguments req and via are
+	// the upcoming request and the requests made already, oldest
+	// first. If CheckRedirect returns an error, the Client's Get
+	// method returns both the previous Response and
+	// CheckRedirect's error (wrapped in a url.Error) instead of
+	// issuing the Request req.
+	//
+	// If CheckRedirect is nil, the Client uses its default policy,
+	// which is to stop after 10 consecutive requests.
+	CheckRedirect func(req *Request, via []*Request) error
 
-    // Jar specifies the cookie jar.
-    // If Jar is nil, cookies are not sent in requests and ignored
-    // in responses.
-    Jar CookieJar
+	// Jar specifies the cookie jar.
+	// If Jar is nil, cookies are not sent in requests and ignored
+	// in responses.
+	Jar CookieJar
 
-    // Timeout specifies a time limit for requests made by this
-    // Client. The timeout includes connection time, any
-    // redirects, and reading the response body. The timer remains
-    // running after Get, Head, Post, or Do return and will
-    // interrupt reading of the Response.Body.
-    //
-    // A Timeout of zero means no timeout.
-    //
-    // The Client's Transport must support the CancelRequest
-    // method or Client will return errors when attempting to make
-    // a request with Get, Head, Post, or Do. Client's default
-    // Transport (DefaultTransport) supports CancelRequest.
-    Timeout time.Duration
+	// Timeout specifies a time limit for requests made by this
+	// Client. The timeout includes connection time, any
+	// redirects, and reading the response body. The timer remains
+	// running after Get, Head, Post, or Do return and will
+	// interrupt reading of the Response.Body.
+	//
+	// A Timeout of zero means no timeout.
+	//
+	// The Client's Transport must support the CancelRequest
+	// method or Client will return errors when attempting to make
+	// a request with Get, Head, Post, or Do. Client's default
+	// Transport (DefaultTransport) supports CancelRequest.
+	Timeout time.Duration
 }
 
 // The CloseNotifier interface is implemented by ResponseWriters which
@@ -466,9 +438,9 @@ type Client struct {
 // 检测下层的连接是否停止。如果客户端在回复准备好之前关闭了连接，该机制可以用于
 // 取消服务端耗时较长的操作。
 type CloseNotifier interface {
-    // CloseNotify returns a channel that receives a single value
-    // when the client connection has gone away.
-    CloseNotify() <-chan bool
+	// CloseNotify returns a channel that receives a single value
+	// when the client connection has gone away.
+	CloseNotify() <-chan bool
 }
 
 // A ConnState represents the state of a client connection to a server.
@@ -476,25 +448,6 @@ type CloseNotifier interface {
 
 // ConnState代表一个客户端到服务端的连接的状态。本类型用于可选的Server.ConnState
 // 回调函数。
-//
-//     const (
-//         // StateNew代表一个新的连接，将要立刻发送请求。
-//         // 连接从这个状态开始，然后转变为StateAlive或StateClosed。
-//         StateNew ConnState = iota
-//         // StateActive代表一个已经读取了请求数据1到多个字节的连接。
-//         // 用于StateAlive的Server.ConnState回调函数在将连接交付给处理器之前被触发，
-//         // 等到请求被处理完后，Server.ConnState回调函数再次被触发。
-//         // 在请求被处理后，连接状态改变为StateClosed、StateHijacked或StateIdle。
-//         StateActive
-//         // StateIdle代表一个已经处理完了请求、处在闲置状态、等待新请求的连接。
-//         // 连接状态可以从StateIdle改变为StateActive或StateClosed。
-//         StateIdle
-//         // 代表一个被劫持的连接。这是一个终止状态，不会转变为StateClosed。
-//         StateHijacked
-//         // StateClosed代表一个关闭的连接。
-//         // 这是一个终止状态。被劫持的连接不会转变为StateClosed。
-//         StateClosed
-//     )
 type ConnState int
 
 // A Cookie represents an HTTP cookie as sent in the Set-Cookie header of an
@@ -505,21 +458,21 @@ type ConnState int
 // Cookie代表一个出现在HTTP回复的头域中Set-Cookie头的值里或者HTTP请求的头域中
 // Cookie头的值里的HTTP cookie。
 type Cookie struct {
-    Name       string
-    Value      string
-    Path       string
-    Domain     string
-    Expires    time.Time
-    RawExpires string
+	Name       string
+	Value      string
+	Path       string
+	Domain     string
+	Expires    time.Time
+	RawExpires string
 
-    // MaxAge=0 means no 'Max-Age' attribute specified.
-    // MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
-    // MaxAge>0 means Max-Age attribute present and given in seconds
-    MaxAge   int
-    Secure   bool
-    HttpOnly bool
-    Raw      string
-    Unparsed []string // Raw text of unparsed attribute-value pairs
+	// MaxAge=0 means no 'Max-Age' attribute specified.
+	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
+	// MaxAge>0 means Max-Age attribute present and given in seconds
+	MaxAge   int
+	Secure   bool
+	HttpOnly bool
+	Raw      string
+	Unparsed []string // Raw text of unparsed attribute-value pairs
 }
 
 // A CookieJar manages storage and use of cookies in HTTP requests.
@@ -534,15 +487,15 @@ type Cookie struct {
 //
 // net/http/cookiejar包提供了一个CookieJar的实现。
 type CookieJar interface {
-    // SetCookies handles the receipt of the cookies in a reply for the
-    // given URL.  It may or may not choose to save the cookies, depending
-    // on the jar's policy and implementation.
-    SetCookies(u *url.URL, cookies []*Cookie)
+	// SetCookies handles the receipt of the cookies in a reply for the
+	// given URL.  It may or may not choose to save the cookies, depending
+	// on the jar's policy and implementation.
+	SetCookies(u *url.URL, cookies []*Cookie)
 
-    // Cookies returns the cookies to send in a request for the given URL.
-    // It is up to the implementation to honor the standard cookie use
-    // restrictions such as in RFC 6265.
-    Cookies(u *url.URL) []*Cookie
+	// Cookies returns the cookies to send in a request for the given URL.
+	// It is up to the implementation to honor the standard cookie use
+	// restrictions such as in RFC 6265.
+	Cookies(u *url.URL) []*Cookie
 }
 
 // A Dir implements FileSystem using the native file system restricted to a
@@ -568,11 +521,11 @@ type Dir string
 //
 // 该接口的方法的行为应该和*os.File类型的同名方法相同。
 type File interface {
-    io.Closer
-    io.Reader
-    Readdir(count int) ([]os.FileInfo, error)
-    Seek(offset int64, whence int) (int64, error)
-    Stat() (os.FileInfo, error)
+	io.Closer
+	io.Reader
+	Readdir(count int) ([]os.FileInfo, error)
+	Seek(offset int64, whence int) (int64, error)
+	Stat() (os.FileInfo, error)
 }
 
 // A FileSystem implements access to a collection of named files.
@@ -582,7 +535,7 @@ type File interface {
 // FileSystem接口实现了对一系列命名文件的访问。文件路径的分隔符为'/'，不管主机操
 // 作系统的惯例如何。
 type FileSystem interface {
-    Open(name string) (File, error)
+	Open(name string) (File, error)
 }
 
 // The Flusher interface is implemented by ResponseWriters that allow
@@ -599,8 +552,8 @@ type FileSystem interface {
 // 注意：即使ResponseWriter接口的下层支持Flush方法，如果客户端是通过HTTP代理连接
 // 的，缓冲中的数据也可能直到回复完毕才被传输到客户端。
 type Flusher interface {
-    // Flush sends any buffered data to the client.
-    Flush()
+	// Flush sends any buffered data to the client.
+	Flush()
 }
 
 // A Handler responds to an HTTP request.
@@ -627,7 +580,7 @@ type Flusher interface {
 // ServeHTTP应该将回复的头域和数据写入ResponseWriter接口然后返回。返回标志着该请
 // 求已经结束，HTTP服务端可以转移向该连接上的下一个请求。
 type Handler interface {
-    ServeHTTP(ResponseWriter, *Request)
+	ServeHTTP(ResponseWriter, *Request)
 }
 
 // The HandlerFunc type is an adapter to allow the use of
@@ -651,19 +604,19 @@ type Header map[string][]string
 // HTTP处理器ResponseWriter接口参数的下层如果实现了Hijacker接口，可以让HTTP处理
 // 器接管该连接。
 type Hijacker interface {
-    // Hijack lets the caller take over the connection.
-    // After a call to Hijack(), the HTTP server library
-    // will not do anything else with the connection.
-    // It becomes the caller's responsibility to manage
-    // and close the connection.
-    Hijack() (net.Conn, *bufio.ReadWriter, error)
+	// Hijack lets the caller take over the connection.
+	// After a call to Hijack(), the HTTP server library
+	// will not do anything else with the connection.
+	// It becomes the caller's responsibility to manage
+	// and close the connection.
+	Hijack() (net.Conn, *bufio.ReadWriter, error)
 }
 
 // HTTP request parsing errors.
 
 // HTTP请求解析错误。
 type ProtocolError struct {
-    ErrorString string
+	ErrorString string
 }
 
 // A Request represents an HTTP request received by a server
@@ -678,219 +631,219 @@ type ProtocolError struct {
 // Request各字段的意义和用途在服务端和客户端是不同的。除了字段本身上方文档，还可
 // 参见Request.Write方法和RoundTripper接口的文档。
 type Request struct {
-    // Method specifies the HTTP method (GET, POST, PUT, etc.).
-    // For client requests an empty string means GET.
-    Method string
+	// Method specifies the HTTP method (GET, POST, PUT, etc.).
+	// For client requests an empty string means GET.
+	Method string
 
-    // URL specifies either the URI being requested (for server
-    // requests) or the URL to access (for client requests).
-    //
-    // For server requests the URL is parsed from the URI
-    // supplied on the Request-Line as stored in RequestURI.  For
-    // most requests, fields other than Path and RawQuery will be
-    // empty. (See RFC 2616, Section 5.1.2)
-    //
-    // For client requests, the URL's Host specifies the server to
-    // connect to, while the Request's Host field optionally
-    // specifies the Host header value to send in the HTTP
-    // request.
-    URL *url.URL
+	// URL specifies either the URI being requested (for server
+	// requests) or the URL to access (for client requests).
+	//
+	// For server requests the URL is parsed from the URI
+	// supplied on the Request-Line as stored in RequestURI.  For
+	// most requests, fields other than Path and RawQuery will be
+	// empty. (See RFC 2616, Section 5.1.2)
+	//
+	// For client requests, the URL's Host specifies the server to
+	// connect to, while the Request's Host field optionally
+	// specifies the Host header value to send in the HTTP
+	// request.
+	URL *url.URL
 
-    // The protocol version for incoming requests.
-    // Client requests always use HTTP/1.1.
-    Proto      string // "HTTP/1.0"
-    ProtoMajor int    // 1
-    ProtoMinor int    // 0
+	// The protocol version for incoming requests.
+	// Client requests always use HTTP/1.1.
+	Proto      string // "HTTP/1.0"
+	ProtoMajor int    // 1
+	ProtoMinor int    // 0
 
-    // A header maps request lines to their values.
-    // If the header says
-    //
-    //	accept-encoding: gzip, deflate
-    //	Accept-Language: en-us
-    //	Connection: keep-alive
-    //
-    // then
-    //
-    //	Header = map[string][]string{
-    //		"Accept-Encoding": {"gzip, deflate"},
-    //		"Accept-Language": {"en-us"},
-    //		"Connection": {"keep-alive"},
-    //	}
-    //
-    // HTTP defines that header names are case-insensitive.
-    // The request parser implements this by canonicalizing the
-    // name, making the first character and any characters
-    // following a hyphen uppercase and the rest lowercase.
-    //
-    // For client requests certain headers are automatically
-    // added and may override values in Header.
-    //
-    // See the documentation for the Request.Write method.
-    Header Header
+	// A header maps request lines to their values.
+	// If the header says
+	//
+	//	accept-encoding: gzip, deflate
+	//	Accept-Language: en-us
+	//	Connection: keep-alive
+	//
+	// then
+	//
+	//	Header = map[string][]string{
+	//		"Accept-Encoding": {"gzip, deflate"},
+	//		"Accept-Language": {"en-us"},
+	//		"Connection": {"keep-alive"},
+	//	}
+	//
+	// HTTP defines that header names are case-insensitive.
+	// The request parser implements this by canonicalizing the
+	// name, making the first character and any characters
+	// following a hyphen uppercase and the rest lowercase.
+	//
+	// For client requests certain headers are automatically
+	// added and may override values in Header.
+	//
+	// See the documentation for the Request.Write method.
+	Header Header
 
-    // Body is the request's body.
-    //
-    // For client requests a nil body means the request has no
-    // body, such as a GET request. The HTTP Client's Transport
-    // is responsible for calling the Close method.
-    //
-    // For server requests the Request Body is always non-nil
-    // but will return EOF immediately when no body is present.
-    // The Server will close the request body. The ServeHTTP
-    // Handler does not need to.
-    Body io.ReadCloser
+	// Body is the request's body.
+	//
+	// For client requests a nil body means the request has no
+	// body, such as a GET request. The HTTP Client's Transport
+	// is responsible for calling the Close method.
+	//
+	// For server requests the Request Body is always non-nil
+	// but will return EOF immediately when no body is present.
+	// The Server will close the request body. The ServeHTTP
+	// Handler does not need to.
+	Body io.ReadCloser
 
-    // ContentLength records the length of the associated content.
-    // The value -1 indicates that the length is unknown.
-    // Values >= 0 indicate that the given number of bytes may
-    // be read from Body.
-    // For client requests, a value of 0 means unknown if Body is not nil.
-    ContentLength int64
+	// ContentLength records the length of the associated content.
+	// The value -1 indicates that the length is unknown.
+	// Values >= 0 indicate that the given number of bytes may
+	// be read from Body.
+	// For client requests, a value of 0 means unknown if Body is not nil.
+	ContentLength int64
 
-    // TransferEncoding lists the transfer encodings from outermost to
-    // innermost. An empty list denotes the "identity" encoding.
-    // TransferEncoding can usually be ignored; chunked encoding is
-    // automatically added and removed as necessary when sending and
-    // receiving requests.
-    TransferEncoding []string
+	// TransferEncoding lists the transfer encodings from outermost to
+	// innermost. An empty list denotes the "identity" encoding.
+	// TransferEncoding can usually be ignored; chunked encoding is
+	// automatically added and removed as necessary when sending and
+	// receiving requests.
+	TransferEncoding []string
 
-    // Close indicates whether to close the connection after
-    // replying to this request (for servers) or after sending
-    // the request (for clients).
-    Close bool
+	// Close indicates whether to close the connection after
+	// replying to this request (for servers) or after sending
+	// the request (for clients).
+	Close bool
 
-    // For server requests Host specifies the host on which the
-    // URL is sought. Per RFC 2616, this is either the value of
-    // the "Host" header or the host name given in the URL itself.
-    // It may be of the form "host:port".
-    //
-    // For client requests Host optionally overrides the Host
-    // header to send. If empty, the Request.Write method uses
-    // the value of URL.Host.
-    Host string
+	// For server requests Host specifies the host on which the
+	// URL is sought. Per RFC 2616, this is either the value of
+	// the "Host" header or the host name given in the URL itself.
+	// It may be of the form "host:port".
+	//
+	// For client requests Host optionally overrides the Host
+	// header to send. If empty, the Request.Write method uses
+	// the value of URL.Host.
+	Host string
 
-    // Form contains the parsed form data, including both the URL
-    // field's query parameters and the POST or PUT form data.
-    // This field is only available after ParseForm is called.
-    // The HTTP client ignores Form and uses Body instead.
-    Form url.Values
+	// Form contains the parsed form data, including both the URL
+	// field's query parameters and the POST or PUT form data.
+	// This field is only available after ParseForm is called.
+	// The HTTP client ignores Form and uses Body instead.
+	Form url.Values
 
-    // PostForm contains the parsed form data from POST or PUT
-    // body parameters.
-    // This field is only available after ParseForm is called.
-    // The HTTP client ignores PostForm and uses Body instead.
-    PostForm url.Values
+	// PostForm contains the parsed form data from POST or PUT
+	// body parameters.
+	// This field is only available after ParseForm is called.
+	// The HTTP client ignores PostForm and uses Body instead.
+	PostForm url.Values
 
-    // MultipartForm is the parsed multipart form, including file uploads.
-    // This field is only available after ParseMultipartForm is called.
-    // The HTTP client ignores MultipartForm and uses Body instead.
-    MultipartForm *multipart.Form
+	// MultipartForm is the parsed multipart form, including file uploads.
+	// This field is only available after ParseMultipartForm is called.
+	// The HTTP client ignores MultipartForm and uses Body instead.
+	MultipartForm *multipart.Form
 
-    // Trailer specifies additional headers that are sent after the request
-    // body.
-    //
-    // For server requests the Trailer map initially contains only the
-    // trailer keys, with nil values. (The client declares which trailers it
-    // will later send.)  While the handler is reading from Body, it must
-    // not reference Trailer. After reading from Body returns EOF, Trailer
-    // can be read again and will contain non-nil values, if they were sent
-    // by the client.
-    //
-    // For client requests Trailer must be initialized to a map containing
-    // the trailer keys to later send. The values may be nil or their final
-    // values. The ContentLength must be 0 or -1, to send a chunked request.
-    // After the HTTP request is sent the map values can be updated while
-    // the request body is read. Once the body returns EOF, the caller must
-    // not mutate Trailer.
-    //
-    // Few HTTP clients, servers, or proxies support HTTP trailers.
-    Trailer Header
+	// Trailer specifies additional headers that are sent after the request
+	// body.
+	//
+	// For server requests the Trailer map initially contains only the
+	// trailer keys, with nil values. (The client declares which trailers it
+	// will later send.)  While the handler is reading from Body, it must
+	// not reference Trailer. After reading from Body returns EOF, Trailer
+	// can be read again and will contain non-nil values, if they were sent
+	// by the client.
+	//
+	// For client requests Trailer must be initialized to a map containing
+	// the trailer keys to later send. The values may be nil or their final
+	// values. The ContentLength must be 0 or -1, to send a chunked request.
+	// After the HTTP request is sent the map values can be updated while
+	// the request body is read. Once the body returns EOF, the caller must
+	// not mutate Trailer.
+	//
+	// Few HTTP clients, servers, or proxies support HTTP trailers.
+	Trailer Header
 
-    // RemoteAddr allows HTTP servers and other software to record
-    // the network address that sent the request, usually for
-    // logging. This field is not filled in by ReadRequest and
-    // has no defined format. The HTTP server in this package
-    // sets RemoteAddr to an "IP:port" address before invoking a
-    // handler.
-    // This field is ignored by the HTTP client.
-    RemoteAddr string
+	// RemoteAddr allows HTTP servers and other software to record
+	// the network address that sent the request, usually for
+	// logging. This field is not filled in by ReadRequest and
+	// has no defined format. The HTTP server in this package
+	// sets RemoteAddr to an "IP:port" address before invoking a
+	// handler.
+	// This field is ignored by the HTTP client.
+	RemoteAddr string
 
-    // RequestURI is the unmodified Request-URI of the
-    // Request-Line (RFC 2616, Section 5.1) as sent by the client
-    // to a server. Usually the URL field should be used instead.
-    // It is an error to set this field in an HTTP client request.
-    RequestURI string
+	// RequestURI is the unmodified Request-URI of the
+	// Request-Line (RFC 2616, Section 5.1) as sent by the client
+	// to a server. Usually the URL field should be used instead.
+	// It is an error to set this field in an HTTP client request.
+	RequestURI string
 
-    // TLS allows HTTP servers and other software to record
-    // information about the TLS connection on which the request
-    // was received. This field is not filled in by ReadRequest.
-    // The HTTP server in this package sets the field for
-    // TLS-enabled connections before invoking a handler;
-    // otherwise it leaves the field nil.
-    // This field is ignored by the HTTP client.
-    TLS *tls.ConnectionState
+	// TLS allows HTTP servers and other software to record
+	// information about the TLS connection on which the request
+	// was received. This field is not filled in by ReadRequest.
+	// The HTTP server in this package sets the field for
+	// TLS-enabled connections before invoking a handler;
+	// otherwise it leaves the field nil.
+	// This field is ignored by the HTTP client.
+	TLS *tls.ConnectionState
 }
 
 // Response represents the response from an HTTP request.
 
 // Response代表一个HTTP请求的回复。
 type Response struct {
-    Status     string // e.g. "200 OK"
-    StatusCode int    // e.g. 200
-    Proto      string // e.g. "HTTP/1.0"
-    ProtoMajor int    // e.g. 1
-    ProtoMinor int    // e.g. 0
+	Status     string // e.g. "200 OK"
+	StatusCode int    // e.g. 200
+	Proto      string // e.g. "HTTP/1.0"
+	ProtoMajor int    // e.g. 1
+	ProtoMinor int    // e.g. 0
 
-    // Header maps header keys to values.  If the response had multiple
-    // headers with the same key, they may be concatenated, with comma
-    // delimiters.  (Section 4.2 of RFC 2616 requires that multiple headers
-    // be semantically equivalent to a comma-delimited sequence.) Values
-    // duplicated by other fields in this struct (e.g., ContentLength) are
-    // omitted from Header.
-    //
-    // Keys in the map are canonicalized (see CanonicalHeaderKey).
-    Header Header
+	// Header maps header keys to values.  If the response had multiple
+	// headers with the same key, they may be concatenated, with comma
+	// delimiters.  (Section 4.2 of RFC 2616 requires that multiple headers
+	// be semantically equivalent to a comma-delimited sequence.) Values
+	// duplicated by other fields in this struct (e.g., ContentLength) are
+	// omitted from Header.
+	//
+	// Keys in the map are canonicalized (see CanonicalHeaderKey).
+	Header Header
 
-    // Body represents the response body.
-    //
-    // The http Client and Transport guarantee that Body is always
-    // non-nil, even on responses without a body or responses with
-    // a zero-length body. It is the caller's responsibility to
-    // close Body.
-    //
-    // The Body is automatically dechunked if the server replied
-    // with a "chunked" Transfer-Encoding.
-    Body io.ReadCloser
+	// Body represents the response body.
+	//
+	// The http Client and Transport guarantee that Body is always
+	// non-nil, even on responses without a body or responses with
+	// a zero-length body. It is the caller's responsibility to
+	// close Body.
+	//
+	// The Body is automatically dechunked if the server replied
+	// with a "chunked" Transfer-Encoding.
+	Body io.ReadCloser
 
-    // ContentLength records the length of the associated content.  The
-    // value -1 indicates that the length is unknown.  Unless Request.Method
-    // is "HEAD", values >= 0 indicate that the given number of bytes may
-    // be read from Body.
-    ContentLength int64
+	// ContentLength records the length of the associated content.  The
+	// value -1 indicates that the length is unknown.  Unless Request.Method
+	// is "HEAD", values >= 0 indicate that the given number of bytes may
+	// be read from Body.
+	ContentLength int64
 
-    // Contains transfer encodings from outer-most to inner-most. Value is
-    // nil, means that "identity" encoding is used.
-    TransferEncoding []string
+	// Contains transfer encodings from outer-most to inner-most. Value is
+	// nil, means that "identity" encoding is used.
+	TransferEncoding []string
 
-    // Close records whether the header directed that the connection be
-    // closed after reading Body.  The value is advice for clients: neither
-    // ReadResponse nor Response.Write ever closes a connection.
-    Close bool
+	// Close records whether the header directed that the connection be
+	// closed after reading Body.  The value is advice for clients: neither
+	// ReadResponse nor Response.Write ever closes a connection.
+	Close bool
 
-    // Trailer maps trailer keys to values, in the same
-    // format as the header.
-    Trailer Header
+	// Trailer maps trailer keys to values, in the same
+	// format as the header.
+	Trailer Header
 
-    // The Request that was sent to obtain this Response.
-    // Request's Body is nil (having already been consumed).
-    // This is only populated for Client requests.
-    Request *Request
+	// The Request that was sent to obtain this Response.
+	// Request's Body is nil (having already been consumed).
+	// This is only populated for Client requests.
+	Request *Request
 
-    // TLS contains information about the TLS connection on which the
-    // response was received. It is nil for unencrypted responses.
-    // The pointer is shared between responses and should not be
-    // modified.
-    TLS *tls.ConnectionState
+	// TLS contains information about the TLS connection on which the
+	// response was received. It is nil for unencrypted responses.
+	// The pointer is shared between responses and should not be
+	// modified.
+	TLS *tls.ConnectionState
 }
 
 // A ResponseWriter interface is used by an HTTP handler to
@@ -901,24 +854,24 @@ type Response struct {
 
 // ResponseWriter接口被HTTP处理器用于构造HTTP回复。
 type ResponseWriter interface {
-    // Header returns the header map that will be sent by WriteHeader.
-    // Changing the header after a call to WriteHeader (or Write) has
-    // no effect.
-    Header() Header
+	// Header returns the header map that will be sent by WriteHeader.
+	// Changing the header after a call to WriteHeader (or Write) has
+	// no effect.
+	Header() Header
 
-    // Write writes the data to the connection as part of an HTTP reply.
-    // If WriteHeader has not yet been called, Write calls WriteHeader(http.StatusOK)
-    // before writing the data.  If the Header does not contain a
-    // Content-Type line, Write adds a Content-Type set to the result of passing
-    // the initial 512 bytes of written data to DetectContentType.
-    Write([]byte) (int, error)
+	// Write writes the data to the connection as part of an HTTP reply.
+	// If WriteHeader has not yet been called, Write calls WriteHeader(http.StatusOK)
+	// before writing the data.  If the Header does not contain a
+	// Content-Type line, Write adds a Content-Type set to the result of passing
+	// the initial 512 bytes of written data to DetectContentType.
+	Write([]byte) (int, error)
 
-    // WriteHeader sends an HTTP response header with status code.
-    // If WriteHeader is not called explicitly, the first call to Write
-    // will trigger an implicit WriteHeader(http.StatusOK).
-    // Thus explicit calls to WriteHeader are mainly used to
-    // send error codes.
-    WriteHeader(int)
+	// WriteHeader sends an HTTP response header with status code.
+	// If WriteHeader is not called explicitly, the first call to Write
+	// will trigger an implicit WriteHeader(http.StatusOK).
+	// Thus explicit calls to WriteHeader are mainly used to
+	// send error codes.
+	WriteHeader(int)
 }
 
 // RoundTripper is an interface representing the ability to execute a
@@ -931,21 +884,21 @@ type ResponseWriter interface {
 //
 // RoundTripper接口的类型必须可以安全的被多线程同时使用。
 type RoundTripper interface {
-    // RoundTrip executes a single HTTP transaction, returning
-    // the Response for the request req.  RoundTrip should not
-    // attempt to interpret the response.  In particular,
-    // RoundTrip must return err == nil if it obtained a response,
-    // regardless of the response's HTTP status code.  A non-nil
-    // err should be reserved for failure to obtain a response.
-    // Similarly, RoundTrip should not attempt to handle
-    // higher-level protocol details such as redirects,
-    // authentication, or cookies.
-    //
-    // RoundTrip should not modify the request, except for
-    // consuming and closing the Body, including on errors. The
-    // request's URL and Header fields are guaranteed to be
-    // initialized.
-    RoundTrip(*Request) (*Response, error)
+	// RoundTrip executes a single HTTP transaction, returning
+	// the Response for the request req.  RoundTrip should not
+	// attempt to interpret the response.  In particular,
+	// RoundTrip must return err == nil if it obtained a response,
+	// regardless of the response's HTTP status code.  A non-nil
+	// err should be reserved for failure to obtain a response.
+	// Similarly, RoundTrip should not attempt to handle
+	// higher-level protocol details such as redirects,
+	// authentication, or cookies.
+	//
+	// RoundTrip should not modify the request, except for
+	// consuming and closing the Body, including on errors. The
+	// request's URL and Header fields are guaranteed to be
+	// initialized.
+	RoundTrip(*Request) (*Response, error)
 }
 
 // ServeMux is an HTTP request multiplexer.
@@ -1010,32 +963,32 @@ type ServeMux struct {
 
 // Server类型定义了运行HTTP服务端的参数。Server的零值是合法的配置。
 type Server struct {
-    Addr           string        // TCP address to listen on, ":http" if empty
-    Handler        Handler       // handler to invoke, http.DefaultServeMux if nil
-    ReadTimeout    time.Duration // maximum duration before timing out read of the request
-    WriteTimeout   time.Duration // maximum duration before timing out write of the response
-    MaxHeaderBytes int           // maximum size of request headers, DefaultMaxHeaderBytes if 0
-    TLSConfig      *tls.Config   // optional TLS config, used by ListenAndServeTLS
+	Addr           string        // TCP address to listen on, ":http" if empty
+	Handler        Handler       // handler to invoke, http.DefaultServeMux if nil
+	ReadTimeout    time.Duration // maximum duration before timing out read of the request
+	WriteTimeout   time.Duration // maximum duration before timing out write of the response
+	MaxHeaderBytes int           // maximum size of request headers, DefaultMaxHeaderBytes if 0
+	TLSConfig      *tls.Config   // optional TLS config, used by ListenAndServeTLS
 
-    // TLSNextProto optionally specifies a function to take over
-    // ownership of the provided TLS connection when an NPN
-    // protocol upgrade has occurred.  The map key is the protocol
-    // name negotiated. The Handler argument should be used to
-    // handle HTTP requests and will initialize the Request's TLS
-    // and RemoteAddr if not already set.  The connection is
-    // automatically closed when the function returns.
-    TLSNextProto map[string]func(*Server, *tls.Conn, Handler)
+	// TLSNextProto optionally specifies a function to take over
+	// ownership of the provided TLS connection when an NPN
+	// protocol upgrade has occurred.  The map key is the protocol
+	// name negotiated. The Handler argument should be used to
+	// handle HTTP requests and will initialize the Request's TLS
+	// and RemoteAddr if not already set.  The connection is
+	// automatically closed when the function returns.
+	TLSNextProto map[string]func(*Server, *tls.Conn, Handler)
 
-    // ConnState specifies an optional callback function that is
-    // called when a client connection changes state. See the
-    // ConnState type and associated constants for details.
-    ConnState func(net.Conn, ConnState)
+	// ConnState specifies an optional callback function that is
+	// called when a client connection changes state. See the
+	// ConnState type and associated constants for details.
+	ConnState func(net.Conn, ConnState)
 
-    // ErrorLog specifies an optional logger for errors accepting
-    // connections and unexpected behavior from handlers.
-    // If nil, logging goes to os.Stderr via the log package's
-    // standard logger.
-    ErrorLog *log.Logger
+	// ErrorLog specifies an optional logger for errors accepting
+	// connections and unexpected behavior from handlers.
+	// If nil, logging goes to os.Stderr via the log package's
+	// standard logger.
+	ErrorLog *log.Logger
 }
 
 // Transport is an implementation of RoundTripper that supports HTTP,
@@ -1058,75 +1011,62 @@ type Server struct {
 
 // Transport类型实现了RoundTripper接口，支持http、https和http/https代理。
 // Transport类型可以缓存连接以在未来重用。
-//
-//     var DefaultTransport RoundTripper = &Transport{
-//         Proxy: ProxyFromEnvironment,
-//         Dial: (&net.Dialer{
-//             Timeout:   30 * time.Second,
-//             KeepAlive: 30 * time.Second,
-//         }).Dial,
-//         TLSHandshakeTimeout: 10 * time.Second,
-//     }
-//
-// DefaultTransport是被包变量DefaultClient使用的默认RoundTripper接口。它会根据需
-// 要创建网络连接，并缓存以便在之后的请求中重用这些连接。它使用环境变量
-// $HTTP_PROXY和$NO_PROXY（或$http_proxy和$no_proxy）指定的HTTP代理。
 type Transport struct {
 
-    // Proxy specifies a function to return a proxy for a given
-    // Request. If the function returns a non-nil error, the
-    // request is aborted with the provided error.
-    // If Proxy is nil or returns a nil *URL, no proxy is used.
-    Proxy func(*Request) (*url.URL, error)
+	// Proxy specifies a function to return a proxy for a given
+	// Request. If the function returns a non-nil error, the
+	// request is aborted with the provided error.
+	// If Proxy is nil or returns a nil *URL, no proxy is used.
+	Proxy func(*Request) (*url.URL, error)
 
-    // Dial specifies the dial function for creating unencrypted
-    // TCP connections.
-    // If Dial is nil, net.Dial is used.
-    Dial func(network, addr string) (net.Conn, error)
+	// Dial specifies the dial function for creating unencrypted
+	// TCP connections.
+	// If Dial is nil, net.Dial is used.
+	Dial func(network, addr string) (net.Conn, error)
 
-    // DialTLS specifies an optional dial function for creating
-    // TLS connections for non-proxied HTTPS requests.
-    //
-    // If DialTLS is nil, Dial and TLSClientConfig are used.
-    //
-    // If DialTLS is set, the Dial hook is not used for HTTPS
-    // requests and the TLSClientConfig and TLSHandshakeTimeout
-    // are ignored. The returned net.Conn is assumed to already be
-    // past the TLS handshake.
-    DialTLS func(network, addr string) (net.Conn, error)
+	// DialTLS specifies an optional dial function for creating
+	// TLS connections for non-proxied HTTPS requests.
+	//
+	// If DialTLS is nil, Dial and TLSClientConfig are used.
+	//
+	// If DialTLS is set, the Dial hook is not used for HTTPS
+	// requests and the TLSClientConfig and TLSHandshakeTimeout
+	// are ignored. The returned net.Conn is assumed to already be
+	// past the TLS handshake.
+	DialTLS func(network, addr string) (net.Conn, error)
 
-    // TLSClientConfig specifies the TLS configuration to use with
-    // tls.Client. If nil, the default configuration is used.
-    TLSClientConfig *tls.Config
+	// TLSClientConfig specifies the TLS configuration to use with
+	// tls.Client. If nil, the default configuration is used.
+	TLSClientConfig *tls.Config
 
-    // TLSHandshakeTimeout specifies the maximum amount of time waiting to
-    // wait for a TLS handshake. Zero means no timeout.
-    TLSHandshakeTimeout time.Duration
+	// TLSHandshakeTimeout specifies the maximum amount of time waiting to
+	// wait for a TLS handshake. Zero means no timeout.
+	TLSHandshakeTimeout time.Duration
 
-    // DisableKeepAlives, if true, prevents re-use of TCP connections
-    // between different HTTP requests.
-    DisableKeepAlives bool
+	// DisableKeepAlives, if true, prevents re-use of TCP connections
+	// between different HTTP requests.
+	DisableKeepAlives bool
 
-    // DisableCompression, if true, prevents the Transport from
-    // requesting compression with an "Accept-Encoding: gzip"
-    // request header when the Request contains no existing
-    // Accept-Encoding value. If the Transport requests gzip on
-    // its own and gets a gzipped response, it's transparently
-    // decoded in the Response.Body. However, if the user
-    // explicitly requested gzip it is not automatically
-    // uncompressed.
-    DisableCompression bool
+	// DisableCompression, if true, prevents the Transport from
+	// requesting compression with an "Accept-Encoding: gzip"
+	// request header when the Request contains no existing
+	// Accept-Encoding value. If the Transport requests gzip on
+	// its own and gets a gzipped response, it's transparently
+	// decoded in the Response.Body. However, if the user
+	// explicitly requested gzip it is not automatically
+	// uncompressed.
+	DisableCompression bool
 
-    // MaxIdleConnsPerHost, if non-zero, controls the maximum idle
-    // (keep-alive) to keep per-host.  If zero,
-    // DefaultMaxIdleConnsPerHost is used.
-    MaxIdleConnsPerHost int
+	// MaxIdleConnsPerHost, if non-zero, controls the maximum idle
+	// (keep-alive) to keep per-host.  If zero,
+	// DefaultMaxIdleConnsPerHost is used.
+	MaxIdleConnsPerHost int
 
-    // ResponseHeaderTimeout, if non-zero, specifies the amount of
-    // time to wait for a server's response headers after fully
-    // writing the request (including its body, if any). This
-    // time does not include the time to read the response body.
-    ResponseHeaderTimeout time.Duration
+	// ResponseHeaderTimeout, if non-zero, specifies the amount of
+	// time to wait for a server's response headers after fully
+	// writing the request (including its body, if any). This
+	// time does not include the time to read the response body.
+	ResponseHeaderTimeout time.Duration
 }
 
 // CanonicalHeaderKey returns the canonical format of the
@@ -1521,7 +1461,7 @@ func ProxyFromEnvironment(req *Request) (*url.URL, error)
 // that always returns the same URL.
 
 // ProxyURL返回一个代理函数（用于Transport类型），该函数总是返回同一个URL。
-func ProxyURL(fixedURL *url.URL) (func(*Request) (*url.URL, error))
+func ProxyURL(fixedURL *url.URL) func(*Request) (*url.URL, error)
 
 // ReadRequest reads and parses an incoming request from b.
 
@@ -2213,4 +2153,3 @@ func (Header) Write(w io.Writer) error
 // WriteSubset以有线格式将头域写入w。当exclude不为nil时，如果h的键值对的键在
 // exclude中存在且其对应值为真，该键值对就不会被写入w。
 func (Header) WriteSubset(w io.Writer, exclude map[string]bool) error
-

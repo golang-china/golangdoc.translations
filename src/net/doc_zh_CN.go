@@ -112,90 +112,77 @@
 package net
 
 import (
-    "C"
-    "errors"
-    "internal/race"
-    "internal/singleflight"
-    "internal/syscall/windows"
-    "io"
-    "math/rand"
-    "os"
-    "runtime"
-    "sort"
-    "sync"
-    "sync/atomic"
-    "syscall"
-    "time"
-    "unsafe"
+	"C"
+	"errors"
+	"internal/race"
+	"internal/singleflight"
+	"internal/syscall/windows"
+	"io"
+	"math/rand"
+	"os"
+	"runtime"
+	"sort"
+	"sync"
+	"sync/atomic"
+	"syscall"
+	"time"
+	"unsafe"
 )
 
 const (
-    FlagUp           Flags = 1 << iota // interface is up
-    FlagBroadcast                      // interface supports broadcast access capability
-    FlagLoopback                       // interface is a loopback interface
-    FlagPointToPoint                   // interface belongs to a point-to-point link
-    FlagMulticast                      // interface supports multicast access capability
+	FlagUp           Flags = 1 << iota // interface is up
+	FlagBroadcast                      // interface supports broadcast access capability
+	FlagLoopback                       // interface is a loopback interface
+	FlagPointToPoint                   // interface belongs to a point-to-point link
+	FlagMulticast                      // interface supports multicast access capability
 )
 
 // IP address lengths (bytes).
 const (
-    IPv4len = 4
-    IPv6len = 16
+	IPv4len = 4
+	IPv6len = 16
 )
 
 // Various errors contained in OpError.
+
+// 很多OpError类型的错误会包含本错误。
 var (
-    ErrWriteToConnected = errors.New("use of WriteTo with pre-connected connection")
+	ErrWriteToConnected = errors.New("use of WriteTo with pre-connected connection")
 )
 
 // Well-known IPv4 addresses
 
-// 常用的IPv4地址。
-//
-//     var (
-//         IPv6zero                   = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-//         IPv6unspecified            = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-//         IPv6loopback               = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-//         IPv6interfacelocalallnodes = IP{0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
-//         IPv6linklocalallnodes      = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
-//         IPv6linklocalallrouters    = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02}
-//     )
-//
 // 常用的IPv6地址。
-//
-//     var (
-//         ErrWriteToConnected = errors.New("use of WriteTo with pre-connected connection")
-//     )
-//
-// 很多OpError类型的错误会包含本错误。
 var (
-    IPv4bcast     = IPv4(255, 255, 255, 255) // broadcast
-    IPv4allsys    = IPv4(224, 0, 0, 1)       // all systems
-    IPv4allrouter = IPv4(224, 0, 0, 2)       // all routers
-    IPv4zero      = IPv4(0, 0, 0, 0)         // all zeros
+	IPv4bcast     = IPv4(255, 255, 255, 255) // broadcast
+	IPv4allsys    = IPv4(224, 0, 0, 1)       // all systems
+	IPv4allrouter = IPv4(224, 0, 0, 2)       // all routers
+	IPv4zero      = IPv4(0, 0, 0, 0)         // all zeros
 )
 
 // Well-known IPv6 addresses
+
+// 常用的IPv4地址。
 var (
-    IPv6zero                   = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    IPv6unspecified            = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    IPv6loopback               = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-    IPv6interfacelocalallnodes = IP{0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
-    IPv6linklocalallnodes      = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
-    IPv6linklocalallrouters    = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02}
+	IPv6zero                   = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	IPv6unspecified            = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	IPv6loopback               = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	IPv6interfacelocalallnodes = IP{0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
+	IPv6linklocalallnodes      = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
+	IPv6linklocalallrouters    = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02}
 )
 
 // Addr represents a network end point address.
 
 // Addr代表一个网络终端地址。
 type Addr interface {
-    Network() string // name of the network
-    String() string  // string form of address
+	Network() string // name of the network
+	String() string  // string form of address
 }
 
 type AddrError struct {
-    Err  string
-    Addr string
+	Err  string
+	Addr string
 }
 
 // Conn is a generic stream-oriented network connection.
@@ -204,50 +191,50 @@ type AddrError struct {
 
 // Conn接口代表通用的面向流的网络连接。多个线程可能会同时调用同一个Conn的方法。
 type Conn interface {
-    // Read reads data from the connection.
-    // Read can be made to time out and return a Error with Timeout() == true
-    // after a fixed time limit; see SetDeadline and SetReadDeadline.
-    Read(b []byte) (n int, err error)
+	// Read reads data from the connection.
+	// Read can be made to time out and return a Error with Timeout() == true
+	// after a fixed time limit; see SetDeadline and SetReadDeadline.
+	Read(b []byte) (n int, err error)
 
-    // Write writes data to the connection.
-    // Write can be made to time out and return a Error with Timeout() == true
-    // after a fixed time limit; see SetDeadline and SetWriteDeadline.
-    Write(b []byte) (n int, err error)
+	// Write writes data to the connection.
+	// Write can be made to time out and return a Error with Timeout() == true
+	// after a fixed time limit; see SetDeadline and SetWriteDeadline.
+	Write(b []byte) (n int, err error)
 
-    // Close closes the connection.
-    // Any blocked Read or Write operations will be unblocked and return errors.
-    Close() error
+	// Close closes the connection.
+	// Any blocked Read or Write operations will be unblocked and return errors.
+	Close() error
 
-    // LocalAddr returns the local network address.
-    LocalAddr() Addr
+	// LocalAddr returns the local network address.
+	LocalAddr() Addr
 
-    // RemoteAddr returns the remote network address.
-    RemoteAddr() Addr
+	// RemoteAddr returns the remote network address.
+	RemoteAddr() Addr
 
-    // SetDeadline sets the read and write deadlines associated
-    // with the connection. It is equivalent to calling both
-    // SetReadDeadline and SetWriteDeadline.
-    //
-    // A deadline is an absolute time after which I/O operations
-    // fail with a timeout (see type Error) instead of
-    // blocking. The deadline applies to all future I/O, not just
-    // the immediately following call to Read or Write.
-    //
-    // An idle timeout can be implemented by repeatedly extending
-    // the deadline after successful Read or Write calls.
-    //
-    // A zero value for t means I/O operations will not time out.
-    SetDeadline(t time.Time) error
+	// SetDeadline sets the read and write deadlines associated
+	// with the connection. It is equivalent to calling both
+	// SetReadDeadline and SetWriteDeadline.
+	//
+	// A deadline is an absolute time after which I/O operations
+	// fail with a timeout (see type Error) instead of
+	// blocking. The deadline applies to all future I/O, not just
+	// the immediately following call to Read or Write.
+	//
+	// An idle timeout can be implemented by repeatedly extending
+	// the deadline after successful Read or Write calls.
+	//
+	// A zero value for t means I/O operations will not time out.
+	SetDeadline(t time.Time) error
 
-    // SetReadDeadline sets the deadline for future Read calls.
-    // A zero value for t means Read will not time out.
-    SetReadDeadline(t time.Time) error
+	// SetReadDeadline sets the deadline for future Read calls.
+	// A zero value for t means Read will not time out.
+	SetReadDeadline(t time.Time) error
 
-    // SetWriteDeadline sets the deadline for future Write calls.
-    // Even if write times out, it may return n > 0, indicating that
-    // some of the data was successfully written.
-    // A zero value for t means Write will not time out.
-    SetWriteDeadline(t time.Time) error
+	// SetWriteDeadline sets the deadline for future Write calls.
+	// Even if write times out, it may return n > 0, indicating that
+	// some of the data was successfully written.
+	// A zero value for t means Write will not time out.
+	SetWriteDeadline(t time.Time) error
 }
 
 // DNSConfigError represents an error reading the machine's DNS configuration.
@@ -255,17 +242,17 @@ type Conn interface {
 
 // DNSConfigError代表读取主机DNS配置时出现的错误。
 type DNSConfigError struct {
-    Err error
+	Err error
 }
 
 // DNSError represents a DNS lookup error.
 
 // DNSError代表DNS查询的错误。
 type DNSError struct {
-    Err       string // description of the error
-    Name      string // name looked for
-    Server    string // server used
-    IsTimeout bool
+	Err       string // description of the error
+	Name      string // name looked for
+	Server    string // server used
+	IsTimeout bool
 }
 
 // A Dialer contains options for connecting to an address.
@@ -279,50 +266,50 @@ type DNSError struct {
 // 每一个字段的零值都等价于没有该字段。因此调用Dialer零值的Dial方法等价于调用
 // Dial函数。
 type Dialer struct {
-    // Timeout is the maximum amount of time a dial will wait for
-    // a connect to complete. If Deadline is also set, it may fail
-    // earlier.
-    //
-    // The default is no timeout.
-    //
-    // With or without a timeout, the operating system may impose
-    // its own earlier timeout. For instance, TCP timeouts are
-    // often around 3 minutes.
-    Timeout time.Duration
+	// Timeout is the maximum amount of time a dial will wait for
+	// a connect to complete. If Deadline is also set, it may fail
+	// earlier.
+	//
+	// The default is no timeout.
+	//
+	// With or without a timeout, the operating system may impose
+	// its own earlier timeout. For instance, TCP timeouts are
+	// often around 3 minutes.
+	Timeout time.Duration
 
-    // Deadline is the absolute point in time after which dials
-    // will fail. If Timeout is set, it may fail earlier.
-    // Zero means no deadline, or dependent on the operating system
-    // as with the Timeout option.
-    Deadline time.Time
+	// Deadline is the absolute point in time after which dials
+	// will fail. If Timeout is set, it may fail earlier.
+	// Zero means no deadline, or dependent on the operating system
+	// as with the Timeout option.
+	Deadline time.Time
 
-    // LocalAddr is the local address to use when dialing an
-    // address. The address must be of a compatible type for the
-    // network being dialed.
-    // If nil, a local address is automatically chosen.
-    LocalAddr Addr
+	// LocalAddr is the local address to use when dialing an
+	// address. The address must be of a compatible type for the
+	// network being dialed.
+	// If nil, a local address is automatically chosen.
+	LocalAddr Addr
 
-    // DualStack allows a single dial to attempt to establish
-    // multiple IPv4 and IPv6 connections and to return the first
-    // established connection when the network is "tcp" and the
-    // destination is a host name that has multiple address family
-    // DNS records.
-    DualStack bool
+	// DualStack allows a single dial to attempt to establish
+	// multiple IPv4 and IPv6 connections and to return the first
+	// established connection when the network is "tcp" and the
+	// destination is a host name that has multiple address family
+	// DNS records.
+	DualStack bool
 
-    // KeepAlive specifies the keep-alive period for an active
-    // network connection.
-    // If zero, keep-alives are not enabled. Network protocols
-    // that do not support keep-alives ignore this field.
-    KeepAlive time.Duration
+	// KeepAlive specifies the keep-alive period for an active
+	// network connection.
+	// If zero, keep-alives are not enabled. Network protocols
+	// that do not support keep-alives ignore this field.
+	KeepAlive time.Duration
 }
 
 // An Error represents a network error.
 
 // Error代表一个网络错误。
 type Error interface {
-    error
-    Timeout() bool   // Is the error a timeout?
-    Temporary() bool // Is the error temporary?
+	error
+	Timeout() bool   // Is the error a timeout?
+	Temporary() bool // Is the error temporary?
 }
 
 type Flags uint
@@ -353,8 +340,8 @@ type IP []byte
 
 // IPAddr代表一个IP终端的地址。
 type IPAddr struct {
-    IP   IP
-    Zone string // IPv6 scoped addressing zone
+	IP   IP
+	Zone string // IPv6 scoped addressing zone
 }
 
 // IPConn is the implementation of the Conn and PacketConn interfaces
@@ -376,8 +363,8 @@ type IPMask []byte
 
 // IPNet表示一个IP网络。
 type IPNet struct {
-    IP   IP     // network number
-    Mask IPMask // network mask
+	IP   IP     // network number
+	Mask IPMask // network mask
 }
 
 // Interface represents a mapping between network interface name
@@ -387,11 +374,11 @@ type IPNet struct {
 // Interface类型代表一个网络接口（系统与网络的一个接点）。包含接口索引到名字的映
 // 射，也包含接口的设备信息。
 type Interface struct {
-    Index        int          // positive integer that starts at one, zero is never used
-    MTU          int          // maximum transmission unit
-    Name         string       // e.g., "en0", "lo0", "eth0.100"
-    HardwareAddr HardwareAddr // IEEE MAC-48, EUI-48 and EUI-64 form
-    Flags        Flags        // e.g., FlagUp, FlagLoopback, FlagMulticast
+	Index        int          // positive integer that starts at one, zero is never used
+	MTU          int          // maximum transmission unit
+	Name         string       // e.g., "en0", "lo0", "eth0.100"
+	HardwareAddr HardwareAddr // IEEE MAC-48, EUI-48 and EUI-64 form
+	Flags        Flags        // e.g., FlagUp, FlagLoopback, FlagMulticast
 }
 
 type InvalidAddrError string
@@ -403,15 +390,15 @@ type InvalidAddrError string
 // Listener是一个用于面向流的网络协议的公用的网络监听器接口。多个线程可能会同时
 // 调用一个Listener的方法。
 type Listener interface {
-    // Accept waits for and returns the next connection to the listener.
-    Accept() (c Conn, err error)
+	// Accept waits for and returns the next connection to the listener.
+	Accept() (c Conn, err error)
 
-    // Close closes the listener.
-    // Any blocked Accept operations will be unblocked and return errors.
-    Close() error
+	// Close closes the listener.
+	// Any blocked Accept operations will be unblocked and return errors.
+	Close() error
 
-    // Addr returns the listener's network address.
-    Addr() Addr
+	// Addr returns the listener's network address.
+	Addr() Addr
 }
 
 // An MX represents a single DNS MX record.
@@ -419,8 +406,8 @@ type Listener interface {
 // MX代表一条DNS
 // MX记录（邮件交换记录），根据收信人的地址后缀来定位邮件服务器。
 type MX struct {
-    Host string
-    Pref uint16
+	Host string
+	Pref uint16
 }
 
 // An NS represents a single DNS NS record.
@@ -428,7 +415,7 @@ type MX struct {
 // NS代表一条DNS
 // NS记录（域名服务器记录），指定该域名由哪个DNS服务器来进行解析。
 type NS struct {
-    Host string
+	Host string
 }
 
 // OpError is the error type usually returned by functions in the net
@@ -438,19 +425,19 @@ type NS struct {
 // OpError是经常被net包的函数返回的错误类型。它描述了该错误的操作、网络类型和网
 // 络地址。
 type OpError struct {
-    // Op is the operation which caused the error, such as
-    // "read" or "write".
-    Op  string
+	// Op is the operation which caused the error, such as
+	// "read" or "write".
+	Op string
 
-    // Net is the network type on which this error occurred,
-    // such as "tcp" or "udp6".
-    Net string
+	// Net is the network type on which this error occurred,
+	// such as "tcp" or "udp6".
+	Net string
 
-    // Addr is the network address on which this error occurred.
-    Addr Addr
+	// Addr is the network address on which this error occurred.
+	Addr Addr
 
-    // Err is the error that occurred during the operation.
-    Err error
+	// Err is the error that occurred during the operation.
+	Err error
 }
 
 // PacketConn is a generic packet-oriented network connection.
@@ -460,54 +447,54 @@ type OpError struct {
 // PacketConn接口代表通用的面向数据包的网络连接。多个线程可能会同时调用同一个
 // Conn的方法。
 type PacketConn interface {
-    // ReadFrom reads a packet from the connection,
-    // copying the payload into b.  It returns the number of
-    // bytes copied into b and the return address that
-    // was on the packet.
-    // ReadFrom can be made to time out and return
-    // an error with Timeout() == true after a fixed time limit;
-    // see SetDeadline and SetReadDeadline.
-    ReadFrom(b []byte) (n int, addr Addr, err error)
+	// ReadFrom reads a packet from the connection,
+	// copying the payload into b.  It returns the number of
+	// bytes copied into b and the return address that
+	// was on the packet.
+	// ReadFrom can be made to time out and return
+	// an error with Timeout() == true after a fixed time limit;
+	// see SetDeadline and SetReadDeadline.
+	ReadFrom(b []byte) (n int, addr Addr, err error)
 
-    // WriteTo writes a packet with payload b to addr.
-    // WriteTo can be made to time out and return
-    // an error with Timeout() == true after a fixed time limit;
-    // see SetDeadline and SetWriteDeadline.
-    // On packet-oriented connections, write timeouts are rare.
-    WriteTo(b []byte, addr Addr) (n int, err error)
+	// WriteTo writes a packet with payload b to addr.
+	// WriteTo can be made to time out and return
+	// an error with Timeout() == true after a fixed time limit;
+	// see SetDeadline and SetWriteDeadline.
+	// On packet-oriented connections, write timeouts are rare.
+	WriteTo(b []byte, addr Addr) (n int, err error)
 
-    // Close closes the connection.
-    // Any blocked ReadFrom or WriteTo operations will be unblocked and return errors.
-    Close() error
+	// Close closes the connection.
+	// Any blocked ReadFrom or WriteTo operations will be unblocked and return errors.
+	Close() error
 
-    // LocalAddr returns the local network address.
-    LocalAddr() Addr
+	// LocalAddr returns the local network address.
+	LocalAddr() Addr
 
-    // SetDeadline sets the read and write deadlines associated
-    // with the connection.
-    SetDeadline(t time.Time) error
+	// SetDeadline sets the read and write deadlines associated
+	// with the connection.
+	SetDeadline(t time.Time) error
 
-    // SetReadDeadline sets the deadline for future Read calls.
-    // If the deadline is reached, Read will fail with a timeout
-    // (see type Error) instead of blocking.
-    // A zero value for t means Read will not time out.
-    SetReadDeadline(t time.Time) error
+	// SetReadDeadline sets the deadline for future Read calls.
+	// If the deadline is reached, Read will fail with a timeout
+	// (see type Error) instead of blocking.
+	// A zero value for t means Read will not time out.
+	SetReadDeadline(t time.Time) error
 
-    // SetWriteDeadline sets the deadline for future Write calls.
-    // If the deadline is reached, Write will fail with a timeout
-    // (see type Error) instead of blocking.
-    // A zero value for t means Write will not time out.
-    // Even if write times out, it may return n > 0, indicating that
-    // some of the data was successfully written.
-    SetWriteDeadline(t time.Time) error
+	// SetWriteDeadline sets the deadline for future Write calls.
+	// If the deadline is reached, Write will fail with a timeout
+	// (see type Error) instead of blocking.
+	// A zero value for t means Write will not time out.
+	// Even if write times out, it may return n > 0, indicating that
+	// some of the data was successfully written.
+	SetWriteDeadline(t time.Time) error
 }
 
 // A ParseError is the error type of literal network address parsers.
 
 // ParseError代表一个格式错误的字符串，Type为期望的格式。
 type ParseError struct {
-    Type string
-    Text string
+	Type string
+	Text string
 }
 
 // An SRV represents a single DNS SRV record.
@@ -515,19 +502,19 @@ type ParseError struct {
 // SRV代表一条DNS
 // SRV记录（资源记录），记录某个服务由哪台计算机提供。
 type SRV struct {
-    Target   string
-    Port     uint16
-    Priority uint16
-    Weight   uint16
+	Target   string
+	Port     uint16
+	Priority uint16
+	Weight   uint16
 }
 
 // TCPAddr represents the address of a TCP end point.
 
 // TCPAddr代表一个TCP终端地址。
 type TCPAddr struct {
-    IP   IP
-    Port int
-    Zone string // IPv6 scoped addressing zone
+	IP   IP
+	Port int
+	Zone string // IPv6 scoped addressing zone
 }
 
 // TCPConn is an implementation of the Conn interface for TCP network
@@ -555,9 +542,9 @@ type TCPListener struct {
 
 // UDPAddr代表一个UDP终端地址。
 type UDPAddr struct {
-    IP   IP
-    Port int
-    Zone string // IPv6 scoped addressing zone
+	IP   IP
+	Port int
+	Zone string // IPv6 scoped addressing zone
 }
 
 // UDPConn is the implementation of the Conn and PacketConn interfaces
@@ -574,8 +561,8 @@ type UDPConn struct {
 
 // UnixAddr代表一个Unix域socket终端地址。
 type UnixAddr struct {
-    Name string
-    Net  string
+	Name string
+	Net  string
 }
 
 // UnixConn is an implementation of the Conn interface for connections
@@ -1766,4 +1753,3 @@ func (UnknownNetworkError) Error() string
 func (UnknownNetworkError) Temporary() bool
 
 func (UnknownNetworkError) Timeout() bool
-

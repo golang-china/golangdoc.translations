@@ -10,131 +10,129 @@
 package x509
 
 import (
-    "C"
-    "bytes"
-    "crypto"
-    "crypto/aes"
-    "crypto/cipher"
-    "crypto/des"
-    "crypto/dsa"
-    "crypto/ecdsa"
-    "crypto/elliptic"
-    "crypto/md5"
-    "crypto/rsa"
-    "crypto/sha1"
-    "crypto/sha256"
-    "crypto/sha512"
-    "crypto/x509/pkix"
-    "encoding/asn1"
-    "encoding/hex"
-    "encoding/pem"
-    "errors"
-    "fmt"
-    "io"
-    "io/ioutil"
-    "math/big"
-    "net"
-    "os/exec"
-    "runtime"
-    "strconv"
-    "strings"
-    "sync"
-    "syscall"
-    "time"
-    "unicode/utf8"
-    "unsafe"
+	"C"
+	"bytes"
+	"crypto"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/des"
+	"crypto/dsa"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/md5"
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/x509/pkix"
+	"encoding/asn1"
+	"encoding/hex"
+	"encoding/pem"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"math/big"
+	"net"
+	"os/exec"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+	"unicode/utf8"
+	"unsafe"
 )
 
 const (
-    ExtKeyUsageAny ExtKeyUsage = iota
-    ExtKeyUsageServerAuth
-    ExtKeyUsageClientAuth
-    ExtKeyUsageCodeSigning
-    ExtKeyUsageEmailProtection
-    ExtKeyUsageIPSECEndSystem
-    ExtKeyUsageIPSECTunnel
-    ExtKeyUsageIPSECUser
-    ExtKeyUsageTimeStamping
-    ExtKeyUsageOCSPSigning
-    ExtKeyUsageMicrosoftServerGatedCrypto
-    ExtKeyUsageNetscapeServerGatedCrypto
+	ExtKeyUsageAny ExtKeyUsage = iota
+	ExtKeyUsageServerAuth
+	ExtKeyUsageClientAuth
+	ExtKeyUsageCodeSigning
+	ExtKeyUsageEmailProtection
+	ExtKeyUsageIPSECEndSystem
+	ExtKeyUsageIPSECTunnel
+	ExtKeyUsageIPSECUser
+	ExtKeyUsageTimeStamping
+	ExtKeyUsageOCSPSigning
+	ExtKeyUsageMicrosoftServerGatedCrypto
+	ExtKeyUsageNetscapeServerGatedCrypto
 )
 
 const (
-    KeyUsageDigitalSignature KeyUsage = 1 << iota
-    KeyUsageContentCommitment
-    KeyUsageKeyEncipherment
-    KeyUsageDataEncipherment
-    KeyUsageKeyAgreement
-    KeyUsageCertSign
-    KeyUsageCRLSign
-    KeyUsageEncipherOnly
-    KeyUsageDecipherOnly
+	KeyUsageDigitalSignature KeyUsage = 1 << iota
+	KeyUsageContentCommitment
+	KeyUsageKeyEncipherment
+	KeyUsageDataEncipherment
+	KeyUsageKeyAgreement
+	KeyUsageCertSign
+	KeyUsageCRLSign
+	KeyUsageEncipherOnly
+	KeyUsageDecipherOnly
 )
 
 const (
-    // NotAuthorizedToSign results when a certificate is signed by another
-    // which isn't marked as a CA certificate.
-    NotAuthorizedToSign InvalidReason = iota
-    // Expired results when a certificate has expired, based on the time
-    // given in the VerifyOptions.
-    Expired
-    // CANotAuthorizedForThisName results when an intermediate or root
-    // certificate has a name constraint which doesn't include the name
-    // being checked.
-    CANotAuthorizedForThisName
-    // TooManyIntermediates results when a path length constraint is
-    // violated.
-    TooManyIntermediates
-    // IncompatibleUsage results when the certificate's key usage indicates
-    // that it may only be used for a different purpose.
-    IncompatibleUsage
+	// NotAuthorizedToSign results when a certificate is signed by another
+	// which isn't marked as a CA certificate.
+	NotAuthorizedToSign InvalidReason = iota
+	// Expired results when a certificate has expired, based on the time
+	// given in the VerifyOptions.
+	Expired
+	// CANotAuthorizedForThisName results when an intermediate or root
+	// certificate has a name constraint which doesn't include the name
+	// being checked.
+	CANotAuthorizedForThisName
+	// TooManyIntermediates results when a path length constraint is
+	// violated.
+	TooManyIntermediates
+	// IncompatibleUsage results when the certificate's key usage indicates
+	// that it may only be used for a different purpose.
+	IncompatibleUsage
 )
 
 const (
-    UnknownPublicKeyAlgorithm PublicKeyAlgorithm = iota
-    RSA
-    DSA
-    ECDSA
+	UnknownPublicKeyAlgorithm PublicKeyAlgorithm = iota
+	RSA
+	DSA
+	ECDSA
 )
 
 const (
-    UnknownSignatureAlgorithm SignatureAlgorithm = iota
-    MD2WithRSA
-    MD5WithRSA
-    SHA1WithRSA
-    SHA256WithRSA
-    SHA384WithRSA
-    SHA512WithRSA
-    DSAWithSHA1
-    DSAWithSHA256
-    ECDSAWithSHA1
-    ECDSAWithSHA256
-    ECDSAWithSHA384
-    ECDSAWithSHA512
+	UnknownSignatureAlgorithm SignatureAlgorithm = iota
+	MD2WithRSA
+	MD5WithRSA
+	SHA1WithRSA
+	SHA256WithRSA
+	SHA384WithRSA
+	SHA512WithRSA
+	DSAWithSHA1
+	DSAWithSHA256
+	ECDSAWithSHA1
+	ECDSAWithSHA256
+	ECDSAWithSHA384
+	ECDSAWithSHA512
 )
 
 // Possible values for the EncryptPEMBlock encryption algorithm.
 const (
-    _   PEMCipher = iota
-    PEMCipherDES
-    PEMCipher3DES
-    PEMCipherAES128
-    PEMCipherAES192
-    PEMCipherAES256
+	_ PEMCipher = iota
+	PEMCipherDES
+	PEMCipher3DES
+	PEMCipherAES128
+	PEMCipherAES192
+	PEMCipherAES256
 )
 
 // ErrUnsupportedAlgorithm results from attempting to perform an operation that
 // involves algorithms that are not currently implemented.
 
-// 当试图执行包含目前未实现的算法的操作时，会返回ErrUnsupportedAlgorithm。
-//
-//     var IncorrectPasswordError = errors.New("x509: decryption password incorrect")
-//
-// 当检测到不正确的密码时，会返回IncorrectPasswordError。
+// 当试图执行包含目前未实现的算法的操作时，会返回 ErrUnsupportedAlgorithm。
 var ErrUnsupportedAlgorithm = errors.New("x509: cannot verify signature: algorithm unimplemented")
 
 // IncorrectPasswordError is returned when an incorrect password is detected.
+
+// 当检测到不正确的密码时，会返回 IncorrectPasswordError。
 var IncorrectPasswordError = errors.New("x509: decryption password incorrect")
 
 // CertPool is a set of certificates.
@@ -147,69 +145,69 @@ type CertPool struct {
 
 // Certificate代表一个X.509证书。
 type Certificate struct {
-    Raw                     []byte // Complete ASN.1 DER content (certificate, signature algorithm and signature).
-    RawTBSCertificate       []byte // Certificate part of raw ASN.1 DER content.
-    RawSubjectPublicKeyInfo []byte // DER encoded SubjectPublicKeyInfo.
-    RawSubject              []byte // DER encoded Subject
-    RawIssuer               []byte // DER encoded Issuer
+	Raw                     []byte // Complete ASN.1 DER content (certificate, signature algorithm and signature).
+	RawTBSCertificate       []byte // Certificate part of raw ASN.1 DER content.
+	RawSubjectPublicKeyInfo []byte // DER encoded SubjectPublicKeyInfo.
+	RawSubject              []byte // DER encoded Subject
+	RawIssuer               []byte // DER encoded Issuer
 
-    Signature          []byte
-    SignatureAlgorithm SignatureAlgorithm
+	Signature          []byte
+	SignatureAlgorithm SignatureAlgorithm
 
-    PublicKeyAlgorithm PublicKeyAlgorithm
-    PublicKey          interface{}
+	PublicKeyAlgorithm PublicKeyAlgorithm
+	PublicKey          interface{}
 
-    Version             int
-    SerialNumber        *big.Int
-    Issuer              pkix.Name
-    Subject             pkix.Name
-    NotBefore, NotAfter time.Time // Validity bounds.
-    KeyUsage            KeyUsage
+	Version             int
+	SerialNumber        *big.Int
+	Issuer              pkix.Name
+	Subject             pkix.Name
+	NotBefore, NotAfter time.Time // Validity bounds.
+	KeyUsage            KeyUsage
 
-    // Extensions contains raw X.509 extensions. When parsing certificates,
-    // this can be used to extract non-critical extensions that are not
-    // parsed by this package. When marshaling certificates, the Extensions
-    // field is ignored, see ExtraExtensions.
-    Extensions []pkix.Extension
+	// Extensions contains raw X.509 extensions. When parsing certificates,
+	// this can be used to extract non-critical extensions that are not
+	// parsed by this package. When marshaling certificates, the Extensions
+	// field is ignored, see ExtraExtensions.
+	Extensions []pkix.Extension
 
-    // ExtraExtensions contains extensions to be copied, raw, into any
-    // marshaled certificates. Values override any extensions that would
-    // otherwise be produced based on the other fields. The ExtraExtensions
-    // field is not populated when parsing certificates, see Extensions.
-    ExtraExtensions []pkix.Extension
+	// ExtraExtensions contains extensions to be copied, raw, into any
+	// marshaled certificates. Values override any extensions that would
+	// otherwise be produced based on the other fields. The ExtraExtensions
+	// field is not populated when parsing certificates, see Extensions.
+	ExtraExtensions []pkix.Extension
 
-    ExtKeyUsage        []ExtKeyUsage           // Sequence of extended key usages.
-    UnknownExtKeyUsage []asn1.ObjectIdentifier // Encountered extended key usages unknown to this package.
+	ExtKeyUsage        []ExtKeyUsage           // Sequence of extended key usages.
+	UnknownExtKeyUsage []asn1.ObjectIdentifier // Encountered extended key usages unknown to this package.
 
-    BasicConstraintsValid bool // if true then the next two fields are valid.
-    IsCA                  bool
-    MaxPathLen            int
-    // MaxPathLenZero indicates that BasicConstraintsValid==true and
-    // MaxPathLen==0 should be interpreted as an actual maximum path length
-    // of zero. Otherwise, that combination is interpreted as MaxPathLen
-    // not being set.
-    MaxPathLenZero bool
+	BasicConstraintsValid bool // if true then the next two fields are valid.
+	IsCA                  bool
+	MaxPathLen            int
+	// MaxPathLenZero indicates that BasicConstraintsValid==true and
+	// MaxPathLen==0 should be interpreted as an actual maximum path length
+	// of zero. Otherwise, that combination is interpreted as MaxPathLen
+	// not being set.
+	MaxPathLenZero bool
 
-    SubjectKeyId   []byte
-    AuthorityKeyId []byte
+	SubjectKeyId   []byte
+	AuthorityKeyId []byte
 
-    // RFC 5280, 4.2.2.1 (Authority Information Access)
-    OCSPServer            []string
-    IssuingCertificateURL []string
+	// RFC 5280, 4.2.2.1 (Authority Information Access)
+	OCSPServer            []string
+	IssuingCertificateURL []string
 
-    // Subject Alternate Name values
-    DNSNames       []string
-    EmailAddresses []string
-    IPAddresses    []net.IP
+	// Subject Alternate Name values
+	DNSNames       []string
+	EmailAddresses []string
+	IPAddresses    []net.IP
 
-    // Name constraints
-    PermittedDNSDomainsCritical bool // if true then the name constraints are marked critical.
-    PermittedDNSDomains         []string
+	// Name constraints
+	PermittedDNSDomainsCritical bool // if true then the name constraints are marked critical.
+	PermittedDNSDomains         []string
 
-    // CRL Distribution Points
-    CRLDistributionPoints []string
+	// CRL Distribution Points
+	CRLDistributionPoints []string
 
-    PolicyIdentifiers []asn1.ObjectIdentifier
+	PolicyIdentifiers []asn1.ObjectIdentifier
 }
 
 // CertificateInvalidError results when an odd error occurs. Users of this
@@ -218,51 +216,51 @@ type Certificate struct {
 // 当发生其余的错误时，会返回CertificateInvalidError。本包的使用者可能会想统一处
 // 理所有这类错误。
 type CertificateInvalidError struct {
-    Cert   *Certificate
-    Reason InvalidReason
+	Cert   *Certificate
+	Reason InvalidReason
 }
 
 // CertificateRequest represents a PKCS #10, certificate signature request.
 
 // CertificateRequest代表一个PKCS #10证书签名请求。
 type CertificateRequest struct {
-    Raw                      []byte // Complete ASN.1 DER content (CSR, signature algorithm and signature).
-    RawTBSCertificateRequest []byte // Certificate request info part of raw ASN.1 DER content.
-    RawSubjectPublicKeyInfo  []byte // DER encoded SubjectPublicKeyInfo.
-    RawSubject               []byte // DER encoded Subject.
+	Raw                      []byte // Complete ASN.1 DER content (CSR, signature algorithm and signature).
+	RawTBSCertificateRequest []byte // Certificate request info part of raw ASN.1 DER content.
+	RawSubjectPublicKeyInfo  []byte // DER encoded SubjectPublicKeyInfo.
+	RawSubject               []byte // DER encoded Subject.
 
-    Version            int
-    Signature          []byte
-    SignatureAlgorithm SignatureAlgorithm
+	Version            int
+	Signature          []byte
+	SignatureAlgorithm SignatureAlgorithm
 
-    PublicKeyAlgorithm PublicKeyAlgorithm
-    PublicKey          interface{}
+	PublicKeyAlgorithm PublicKeyAlgorithm
+	PublicKey          interface{}
 
-    Subject pkix.Name
+	Subject pkix.Name
 
-    // Attributes is a collection of attributes providing
-    // additional information about the subject of the certificate.
-    // See RFC 2986 section 4.1.
-    Attributes []pkix.AttributeTypeAndValueSET
+	// Attributes is a collection of attributes providing
+	// additional information about the subject of the certificate.
+	// See RFC 2986 section 4.1.
+	Attributes []pkix.AttributeTypeAndValueSET
 
-    // Extensions contains raw X.509 extensions. When parsing CSRs, this
-    // can be used to extract extensions that are not parsed by this
-    // package.
-    Extensions []pkix.Extension
+	// Extensions contains raw X.509 extensions. When parsing CSRs, this
+	// can be used to extract extensions that are not parsed by this
+	// package.
+	Extensions []pkix.Extension
 
-    // ExtraExtensions contains extensions to be copied, raw, into any
-    // marshaled CSR. Values override any extensions that would otherwise
-    // be produced based on the other fields but are overridden by any
-    // extensions specified in Attributes.
-    //
-    // The ExtraExtensions field is not populated when parsing CSRs, see
-    // Extensions.
-    ExtraExtensions []pkix.Extension
+	// ExtraExtensions contains extensions to be copied, raw, into any
+	// marshaled CSR. Values override any extensions that would otherwise
+	// be produced based on the other fields but are overridden by any
+	// extensions specified in Attributes.
+	//
+	// The ExtraExtensions field is not populated when parsing CSRs, see
+	// Extensions.
+	ExtraExtensions []pkix.Extension
 
-    // Subject Alternate Name values.
-    DNSNames       []string
-    EmailAddresses []string
-    IPAddresses    []net.IP
+	// Subject Alternate Name values.
+	DNSNames       []string
+	EmailAddresses []string
+	IPAddresses    []net.IP
 }
 
 // ConstraintViolationError results when a requested usage is not permitted by
@@ -278,21 +276,6 @@ type ConstraintViolationError struct{}
 
 // ExtKeyUsage代表给定密钥的合法操作扩展集。每一个ExtKeyUsage类型常数定义一个特
 // 定的操作。
-//
-//     const (
-//         ExtKeyUsageAny ExtKeyUsage = iota
-//         ExtKeyUsageServerAuth
-//         ExtKeyUsageClientAuth
-//         ExtKeyUsageCodeSigning
-//         ExtKeyUsageEmailProtection
-//         ExtKeyUsageIPSECEndSystem
-//         ExtKeyUsageIPSECTunnel
-//         ExtKeyUsageIPSECUser
-//         ExtKeyUsageTimeStamping
-//         ExtKeyUsageOCSPSigning
-//         ExtKeyUsageMicrosoftServerGatedCrypto
-//         ExtKeyUsageNetscapeServerGatedCrypto
-//     )
 type ExtKeyUsage int
 
 // HostnameError results when the set of authorized names doesn't match the
@@ -300,8 +283,8 @@ type ExtKeyUsage int
 
 // 当认证的名字和请求的名字不匹配时，会返回HostnameError。
 type HostnameError struct {
-    Certificate *Certificate
-    Host        string
+	Certificate *Certificate
+	Host        string
 }
 
 type InvalidReason int
@@ -311,18 +294,6 @@ type InvalidReason int
 
 // KeyUsage代表给定密钥的合法操作集。用KeyUsage类型常数的位图表示。（字位表示有
 // 无）
-//
-//     const (
-//         KeyUsageDigitalSignature KeyUsage = 1 << iota
-//         KeyUsageContentCommitment
-//         KeyUsageKeyEncipherment
-//         KeyUsageDataEncipherment
-//         KeyUsageKeyAgreement
-//         KeyUsageCertSign
-//         KeyUsageCRLSign
-//         KeyUsageEncipherOnly
-//         KeyUsageDecipherOnly
-//     )
 type KeyUsage int
 
 type PEMCipher int
@@ -350,15 +321,15 @@ type UnknownAuthorityError struct {
 // VerifyOptions包含提供给Certificate.Verify方法的参数。它是结构体类型，因为其他
 // PKIX认证API需要很长参数。
 type VerifyOptions struct {
-    DNSName       string
-    Intermediates *CertPool
-    Roots         *CertPool // if nil, the system roots are used
-    CurrentTime   time.Time // if zero, the current time is used
-    // KeyUsage specifies which Extended Key Usage values are acceptable.
-    // An empty list means ExtKeyUsageServerAuth. Key usage is considered a
-    // constraint down the chain which mirrors Windows CryptoAPI behaviour,
-    // but not the spec. To accept any key usage, include ExtKeyUsageAny.
-    KeyUsages []ExtKeyUsage
+	DNSName       string
+	Intermediates *CertPool
+	Roots         *CertPool // if nil, the system roots are used
+	CurrentTime   time.Time // if zero, the current time is used
+	// KeyUsage specifies which Extended Key Usage values are acceptable.
+	// An empty list means ExtKeyUsageServerAuth. Key usage is considered a
+	// constraint down the chain which mirrors Windows CryptoAPI behaviour,
+	// but not the spec. To accept any key usage, include ExtKeyUsageAny.
+	KeyUsages []ExtKeyUsage
 }
 
 // CreateCertificate creates a new certificate based on a template. The
@@ -603,4 +574,3 @@ func (SystemRootsError) Error() string
 func (UnhandledCriticalExtension) Error() string
 
 func (UnknownAuthorityError) Error() string
-

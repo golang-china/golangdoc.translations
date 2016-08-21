@@ -10,23 +10,20 @@
 package base64
 
 import (
-    "io"
-    "strconv"
+	"io"
+	"strconv"
 )
 
 // StdEncoding is the standard base64 encoding, as defined in
 // RFC 4648.
 
 // RFC 4648定义的标准base64编码字符集。
-//
-//     var URLEncoding = NewEncoding(encodeURL)
-//
-// RFC
-// 4648定义的另一base64编码字符集，用于URL和文件名。
 var StdEncoding = NewEncoding(encodeStd)
 
 // URLEncoding is the alternate base64 encoding defined in RFC 4648. It is
 // typically used in URLs and file names.
+
+// RFC 4648 定义的另一base64编码字符集，用于URL和文件名。
 var URLEncoding = NewEncoding(encodeURL)
 
 type CorruptInputError int64
@@ -112,4 +109,3 @@ func (*Encoding) EncodeToString(src []byte) string
 func (*Encoding) EncodedLen(n int) int
 
 func (CorruptInputError) Error() string
-

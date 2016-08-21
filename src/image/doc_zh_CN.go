@@ -39,29 +39,29 @@
 package image
 
 import (
-    "bufio"
-    "errors"
-    "image/color"
-    "io"
-    "strconv"
+	"bufio"
+	"errors"
+	"image/color"
+	"io"
+	"strconv"
 )
 
 const (
-    YCbCrSubsampleRatio444 YCbCrSubsampleRatio = iota
-    YCbCrSubsampleRatio422
-    YCbCrSubsampleRatio420
-    YCbCrSubsampleRatio440
+	YCbCrSubsampleRatio444 YCbCrSubsampleRatio = iota
+	YCbCrSubsampleRatio422
+	YCbCrSubsampleRatio420
+	YCbCrSubsampleRatio440
 )
 
 var (
-    // Black is an opaque black uniform image.
-    Black = NewUniform(color.Black)
-    // White is an opaque white uniform image.
-    White = NewUniform(color.White)
-    // Transparent is a fully transparent uniform image.
-    Transparent = NewUniform(color.Transparent)
-    // Opaque is a fully opaque uniform image.
-    Opaque = NewUniform(color.Opaque)
+	// Black is an opaque black uniform image.
+	Black = NewUniform(color.Black)
+	// White is an opaque white uniform image.
+	White = NewUniform(color.White)
+	// Transparent is a fully transparent uniform image.
+	Transparent = NewUniform(color.Transparent)
+	// Opaque is a fully opaque uniform image.
+	Opaque = NewUniform(color.Opaque)
 )
 
 // ErrFormat indicates that decoding encountered an unknown format.
@@ -70,69 +70,73 @@ var (
 var ErrFormat = errors.New("image: unknown format")
 
 // ZP is the zero Point.
+
+// ZP是原点。
 var ZP Point
 
 // ZR is the zero Rectangle.
+
+// ZR是矩形的零值。
 var ZR Rectangle
 
 // Alpha is an in-memory image whose At method returns color.Alpha values.
 
 // Alpha类型代表一幅内存中的图像，其At方法返回color.Alpha类型的值。
 type Alpha struct {
-    // Pix holds the image's pixels, as alpha values. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, as alpha values. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // Alpha16 is an in-memory image whose At method returns color.Alpha16 values.
 
 // Alpha16类型代表一幅内存中的图像，其At方法返回color.Alpha16类型的值。
 type Alpha16 struct {
-    // Pix holds the image's pixels, as alpha values in big-endian format. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*2].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, as alpha values in big-endian format. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*2].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // Config holds an image's color model and dimensions.
 
 // Config保管图像的色彩模型和尺寸信息。
 type Config struct {
-    ColorModel    color.Model
-    Width, Height int
+	ColorModel    color.Model
+	Width, Height int
 }
 
 // Gray is an in-memory image whose At method returns color.Gray values.
 
 // Gray类型代表一幅内存中的图像，其At方法返回color.Gray类型的值。
 type Gray struct {
-    // Pix holds the image's pixels, as gray values. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, as gray values. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // Gray16 is an in-memory image whose At method returns color.Gray16 values.
 
 // Gray16类型代表一幅内存中的图像，其At方法返回color.Gray16类型的值。
 type Gray16 struct {
-    // Pix holds the image's pixels, as gray values in big-endian format. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*2].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, as gray values in big-endian format. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*2].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // Image is a finite rectangular grid of color.Color values taken from a color
@@ -140,56 +144,56 @@ type Gray16 struct {
 
 // Image接口表示一个采用某色彩模型的颜色构成的有限矩形网格（即一幅图像）。
 type Image interface {
-    // ColorModel returns the Image's color model.
-    ColorModel() color.Model
-    // Bounds returns the domain for which At can return non-zero color.
-    // The bounds do not necessarily contain the point (0, 0).
-    Bounds() Rectangle
-    // At returns the color of the pixel at (x, y).
-    // At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
-    // At(Bounds().Max.X-1, Bounds().Max.Y-1) returns the lower-right one.
-    At(x, y int) color.Color
+	// ColorModel returns the Image's color model.
+	ColorModel() color.Model
+	// Bounds returns the domain for which At can return non-zero color.
+	// The bounds do not necessarily contain the point (0, 0).
+	Bounds() Rectangle
+	// At returns the color of the pixel at (x, y).
+	// At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
+	// At(Bounds().Max.X-1, Bounds().Max.Y-1) returns the lower-right one.
+	At(x, y int) color.Color
 }
 
 // NRGBA is an in-memory image whose At method returns color.NRGBA values.
 
 // NRGBA类型代表一幅内存中的图像，其At方法返回color.NRGBA类型的值。
 type NRGBA struct {
-    // Pix holds the image's pixels, in R, G, B, A order. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, in R, G, B, A order. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // NRGBA64 is an in-memory image whose At method returns color.NRGBA64 values.
 
 // NRGBA64类型代表一幅内存中的图像，其At方法返回color.NRGBA64类型的值。
 type NRGBA64 struct {
-    // Pix holds the image's pixels, in R, G, B, A order and big-endian format. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*8].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, in R, G, B, A order and big-endian format. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*8].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // Paletted is an in-memory image of uint8 indices into a given palette.
 
 // Paletted类型是一幅采用uint8类型索引调色板的内存中的图像。
 type Paletted struct {
-    // Pix holds the image's pixels, as palette indices. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
-    // Palette is the image's palette.
-    Palette color.Palette
+	// Pix holds the image's pixels, as palette indices. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*1].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
+	// Palette is the image's palette.
+	Palette color.Palette
 }
 
 // PalettedImage is an image whose colors may come from a limited palette.
@@ -204,47 +208,43 @@ type Paletted struct {
 // 一个Palette类型值（记为p），则m.At(x, y)返回值应等于p[m.ColorIndexAt(x, y)]。
 // 如果m的色彩模型不是Palette，则ColorIndexAt的行为是不确定的。
 type PalettedImage interface {
-    // ColorIndexAt returns the palette index of the pixel at (x, y).
-    ColorIndexAt(x, y int) uint8
-    Image
+	// ColorIndexAt returns the palette index of the pixel at (x, y).
+	ColorIndexAt(x, y int) uint8
+	Image
 }
 
 // A Point is an X, Y coordinate pair. The axes increase right and down.
 
 // Point是X,
 // Y坐标对。坐标轴是向右（X）向下（Y）的。既可以表示点，也可以表示向量。
-//
-//     var ZP Point
-//
-// ZP是原点。
 type Point struct {
-    X, Y int
+	X, Y int
 }
 
 // RGBA is an in-memory image whose At method returns color.RGBA values.
 
 // RGBA类型代表一幅内存中的图像，其At方法返回color.RGBA类型的值。
 type RGBA struct {
-    // Pix holds the image's pixels, in R, G, B, A order. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, in R, G, B, A order. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // RGBA64 is an in-memory image whose At method returns color.RGBA64 values.
 
 // RGBA64类型代表一幅内存中的图像，其At方法返回color.RGBA64类型的值
 type RGBA64 struct {
-    // Pix holds the image's pixels, in R, G, B, A order and big-endian format. The pixel at
-    // (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*8].
-    Pix []uint8
-    // Stride is the Pix stride (in bytes) between vertically adjacent pixels.
-    Stride int
-    // Rect is the image's bounds.
-    Rect Rectangle
+	// Pix holds the image's pixels, in R, G, B, A order and big-endian format. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*8].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
 }
 
 // A Rectangle contains the points with Min.X <= X < Max.X, Min.Y <= Y < Max.Y.
@@ -259,12 +259,8 @@ type RGBA64 struct {
 // Rectangle代表一个矩形。该矩形包含所有满足Min.X <= X < Max.X且Min.Y <= Y <
 // Max.Y的点。如果两个字段满足Min.X <= Max.X且Min.Y <= Max.Y，就称该实例为规范格
 // 式的。矩形的方法，当输入是规范格式时，总是返回规范格式的输出。
-//
-//     var ZR Rectangle
-//
-// ZR是矩形的零值。
 type Rectangle struct {
-    Min, Max Point
+	Min, Max Point
 }
 
 // Uniform is an infinite-sized Image of uniform color.
@@ -273,7 +269,7 @@ type Rectangle struct {
 // Uniform类型代表一块面积无限大的具有同一色彩的图像。它实现了color.Color、
 // color.Model和Image等接口。
 type Uniform struct {
-    C color.Color
+	C color.Color
 }
 
 // YCbCr is an in-memory image of Y'CbCr colors. There is one Y sample per
@@ -300,23 +296,16 @@ type Uniform struct {
 //     For 4:2:0, CStride == YStride/2 && len(Cb) == len(Cr) == len(Y)/4.
 //     For 4:4:0, CStride == YStride/1 && len(Cb) == len(Cr) == len(Y)/2.
 type YCbCr struct {
-    Y, Cb, Cr      []uint8
-    YStride        int
-    CStride        int
-    SubsampleRatio YCbCrSubsampleRatio
-    Rect           Rectangle
+	Y, Cb, Cr      []uint8
+	YStride        int
+	CStride        int
+	SubsampleRatio YCbCrSubsampleRatio
+	Rect           Rectangle
 }
 
 // YCbCrSubsampleRatio is the chroma subsample ratio used in a YCbCr image.
 
 // YcbCrSubsampleRatio是YCbCr图像的色度二次采样比率。
-//
-//     const (
-//         YCbCrSubsampleRatio444 YCbCrSubsampleRatio = iota
-//         YCbCrSubsampleRatio422
-//         YCbCrSubsampleRatio420
-//         YCbCrSubsampleRatio440
-//     )
 type YCbCrSubsampleRatio int
 
 // Decode decodes an image that has been encoded in a registered format.
@@ -860,4 +849,3 @@ func (Rectangle) Sub(p Point) Rectangle
 func (Rectangle) Union(s Rectangle) Rectangle
 
 func (YCbCrSubsampleRatio) String() string
-

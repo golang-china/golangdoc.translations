@@ -10,23 +10,21 @@
 package base32
 
 import (
-    "bytes"
-    "io"
-    "strconv"
-    "strings"
+	"bytes"
+	"io"
+	"strconv"
+	"strings"
 )
 
 // HexEncoding is the ``Extended Hex Alphabet'' defined in RFC 4648.
 // It is typically used in DNS.
 
 // RFC 4648定义的“扩展Hex字符集”，用于DNS。
-//
-//     var StdEncoding = NewEncoding(encodeStd)
-//
-// RFC 4648定义的标准base32编码字符集。
 var HexEncoding = NewEncoding(encodeHex)
 
 // StdEncoding is the standard base32 encoding, as defined in RFC 4648.
+
+// RFC 4648定义的标准base32编码字符集。
 var StdEncoding = NewEncoding(encodeStd)
 
 type CorruptInputError int64
@@ -108,4 +106,3 @@ func (*Encoding) EncodeToString(src []byte) string
 func (*Encoding) EncodedLen(n int) int
 
 func (CorruptInputError) Error() string
-

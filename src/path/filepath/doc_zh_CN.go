@@ -15,33 +15,31 @@
 package filepath
 
 import (
-    "errors"
-    "os"
-    "runtime"
-    "sort"
-    "strings"
-    "syscall"
-    "unicode/utf8"
+	"errors"
+	"os"
+	"runtime"
+	"sort"
+	"strings"
+	"syscall"
+	"unicode/utf8"
 )
 
 const (
-    Separator     = os.PathSeparator
-    ListSeparator = os.PathListSeparator
+	Separator     = os.PathSeparator
+	ListSeparator = os.PathListSeparator
 )
 
 // ErrBadPattern indicates a globbing pattern was malformed.
 
 // ErrBadPattern表示一个glob模式匹配字符串的格式错误。
-//
-//     var SkipDir = errors.New("skip this directory")
-//
-// 用作WalkFunc类型的返回值，表示该次调用的path参数指定的目录应被跳过。本错误不
-// 应被任何其他函数返回。
 var ErrBadPattern = errors.New("syntax error in pattern")
 
 // SkipDir is used as a return value from WalkFuncs to indicate that the
 // directory named in the call is to be skipped. It is not returned as an error
 // by any function.
+
+// 用作WalkFunc类型的返回值，表示该次调用的path参数指定的目录应被跳过。本错误不
+// 应被任何其他函数返回。
 var SkipDir = errors.New("skip this directory")
 
 // WalkFunc is the type of the function called for each file or directory
@@ -312,4 +310,3 @@ func VolumeName(path string) (v string)
 // 件是按词法顺序遍历的，这让输出更漂亮，但也导致处理非常大的目录时效率会降低。
 // Walk函数不会遍历文件树中的符号链接（快捷方式）文件包含的路径。
 func Walk(root string, walkFn WalkFunc) error
-

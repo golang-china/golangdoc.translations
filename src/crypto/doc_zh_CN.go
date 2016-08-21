@@ -10,25 +10,25 @@
 package crypto
 
 import (
-    "hash"
-    "io"
-    "strconv"
+	"hash"
+	"io"
+	"strconv"
 )
 
 const (
-    MD4       Hash = 1 + iota // import golang.org/x/crypto/md4
-    MD5                       // import crypto/md5
-    SHA1                      // import crypto/sha1
-    SHA224                    // import crypto/sha256
-    SHA256                    // import crypto/sha256
-    SHA384                    // import crypto/sha512
-    SHA512                    // import crypto/sha512
-    MD5SHA1                   // no implementation; MD5+SHA1 used for TLS RSA
-    RIPEMD160                 // import golang.org/x/crypto/ripemd160
-    SHA3_224                  // import golang.org/x/crypto/sha3
-    SHA3_256                  // import golang.org/x/crypto/sha3
-    SHA3_384                  // import golang.org/x/crypto/sha3
-    SHA3_512                  // import golang.org/x/crypto/sha3
+	MD4       Hash = 1 + iota // import golang.org/x/crypto/md4 // 导入code.google.com/p/go.crypto/md4
+	MD5                       // import crypto/md5 // 导入crypto/md5
+	SHA1                      // import crypto/sha1 // 导入crypto/sha1
+	SHA224                    // import crypto/sha256 // 导入crypto/sha256
+	SHA256                    // import crypto/sha256 // 导入crypto/sha256
+	SHA384                    // import crypto/sha512 // 导入crypto/sha512
+	SHA512                    // import crypto/sha512 // 导入crypto/sha512
+	MD5SHA1                   // no implementation; MD5+SHA1 used for TLS RSA // 未实现；MD5+SHA1用于TLS RSA
+	RIPEMD160                 // import golang.org/x/crypto/ripemd160 // 导入code.google.com/p/go.crypto/ripemd160
+	SHA3_224                  // import golang.org/x/crypto/sha3
+	SHA3_256                  // import golang.org/x/crypto/sha3
+	SHA3_384                  // import golang.org/x/crypto/sha3
+	SHA3_512                  // import golang.org/x/crypto/sha3
 
 )
 
@@ -36,18 +36,6 @@ const (
 // package.
 
 // Hash用来识别/标识另一个包里实现的加密函数。
-//
-//     const (
-//         MD4       Hash = 1 + iota // 导入code.google.com/p/go.crypto/md4
-//         MD5                       // 导入crypto/md5
-//         SHA1                      // 导入crypto/sha1
-//         SHA224                    // 导入crypto/sha256
-//         SHA256                    // 导入crypto/sha256
-//         SHA384                    // 导入crypto/sha512
-//         SHA512                    // 导入crypto/sha512
-//         MD5SHA1                   // 未实现；MD5+SHA1用于TLS RSA
-//         RIPEMD160                 // 导入code.google.com/p/go.crypto/ripemd160
-//     )
 type Hash uint
 
 // PrivateKey represents a private key using an unspecified algorithm.
@@ -63,28 +51,28 @@ type PublicKey interface{}
 // Signer is an interface for an opaque private key that can be used for signing
 // operations. For example, an RSA key kept in a hardware module.
 type Signer interface {
-    // Public returns the public key corresponding to the opaque,
-    // private key.
-    Public() PublicKey
+	// Public returns the public key corresponding to the opaque,
+	// private key.
+	Public() PublicKey
 
-    // Sign signs msg with the private key, possibly using entropy from
-    // rand. For an RSA key, the resulting signature should be either a
-    // PKCS#1 v1.5 or PSS signature (as indicated by opts). For an (EC)DSA
-    // key, it should be a DER-serialised, ASN.1 signature structure.
-    //
-    // Hash implements the SignerOpts interface and, in most cases, one can
-    // simply pass in the hash function used as opts. Sign may also attempt
-    // to type assert opts to other types in order to obtain algorithm
-    // specific values. See the documentation in each package for details.
-    Sign(rand io.Reader, msg []byte, opts SignerOpts) (signature []byte, err error)
+	// Sign signs msg with the private key, possibly using entropy from
+	// rand. For an RSA key, the resulting signature should be either a
+	// PKCS#1 v1.5 or PSS signature (as indicated by opts). For an (EC)DSA
+	// key, it should be a DER-serialised, ASN.1 signature structure.
+	//
+	// Hash implements the SignerOpts interface and, in most cases, one can
+	// simply pass in the hash function used as opts. Sign may also attempt
+	// to type assert opts to other types in order to obtain algorithm
+	// specific values. See the documentation in each package for details.
+	Sign(rand io.Reader, msg []byte, opts SignerOpts) (signature []byte, err error)
 }
 
 // SignerOpts contains options for signing with a Signer.
 type SignerOpts interface {
-    // HashFunc returns an identifier for the hash function used to produce
-    // the message passed to Signer.Sign, or else zero to indicate that no
-    // hashing was done.
-    HashFunc() Hash
+	// HashFunc returns an identifier for the hash function used to produce
+	// the message passed to Signer.Sign, or else zero to indicate that no
+	// hashing was done.
+	HashFunc() Hash
 }
 
 // RegisterHash registers a function that returns a new instance of the given
@@ -116,4 +104,3 @@ func (Hash) New() hash.Hash
 
 // 返回给定hash函数返回值的字节长度。
 func (Hash) Size() int
-

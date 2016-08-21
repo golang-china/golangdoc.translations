@@ -68,27 +68,24 @@
 package os
 
 import (
-    "errors"
-    "internal/syscall/windows"
-    "io"
-    "runtime"
-    "sync"
-    "sync/atomic"
-    "syscall"
-    "time"
-    "unicode/utf16"
-    "unicode/utf8"
-    "unsafe"
+	"errors"
+	"internal/syscall/windows"
+	"io"
+	"runtime"
+	"sync"
+	"sync/atomic"
+	"syscall"
+	"time"
+	"unicode/utf16"
+	"unicode/utf8"
+	"unsafe"
 )
 
 // DevNull is the name of the operating system's ``null device.'' On Unix-like
 // systems, it is "/dev/null"; on Windows, "NUL".
-const DevNull = "/dev/null"
 
-const DevNull = "NUL"
-
-// DevNull is the name of the operating system's ``null device.'' On Unix-like
-// systems, it is "/dev/null"; on Windows, "NUL".
+// DevNull是操作系统空设备的名字。在类似Unix的操作系统中，是"/dev/null"；在
+// Windows中，为"NUL"。
 const DevNull = "/dev/null"
 
 // The defined file mode bits are the most significant bits of the FileMode. The
@@ -96,133 +93,89 @@ const DevNull = "/dev/null"
 // values of these bits should be considered part of the public API and may be
 // used in wire protocols or disk representations: they must not be changed,
 // although new bits might be added.
+
+// 这些被定义的位是FileMode最重要的位。另外9个不重要的位为标准Unix rwxrwxrwx权限
+// （任何人都可读、写、运行）。这些（重要）位的值应被视为公共API的一部分，可能会
+// 用于线路协议或硬盘标识：它们不能被修改，但可以添加新的位。
 const (
-    // The single letters are the abbreviations
-    // used by the String method's formatting.
-    ModeDir        FileMode = 1 << (32 - 1 - iota) // d: is a directory
-    ModeAppend                                     // a: append-only
-    ModeExclusive                                  // l: exclusive use
-    ModeTemporary                                  // T: temporary file (not backed up)
-    ModeSymlink                                    // L: symbolic link
-    ModeDevice                                     // D: device file
-    ModeNamedPipe                                  // p: named pipe (FIFO)
-    ModeSocket                                     // S: Unix domain socket
-    ModeSetuid                                     // u: setuid
-    ModeSetgid                                     // g: setgid
-    ModeCharDevice                                 // c: Unix character device, when ModeDevice is set
-    ModeSticky                                     // t: sticky
+	// The single letters are the abbreviations
+	// used by the String method's formatting.
+	ModeDir        FileMode = 1 << (32 - 1 - iota) // d: is a directory // d: 目录
+	ModeAppend                                     // a: append-only // a: 只能写入，且只能写入到末尾
+	ModeExclusive                                  // l: exclusive use // l: 用于执行
+	ModeTemporary                                  // T: temporary file (not backed up) // T: 临时文件（非备份文件）
+	ModeSymlink                                    // L: symbolic link // L: 符号链接（不是快捷方式文件）
+	ModeDevice                                     // D: device file // D: 设备
+	ModeNamedPipe                                  // p: named pipe (FIFO) // p: 命名管道（FIFO）
+	ModeSocket                                     // S: Unix domain socket // S: Unix域socket
+	ModeSetuid                                     // u: setuid // u: 表示文件具有其创建者用户id权限
+	ModeSetgid                                     // g: setgid // g: 表示文件具有其创建者组id的权限
+	ModeCharDevice                                 // c: Unix character device, when ModeDevice is set // c: 字符设备，需已设置ModeDevice
+	ModeSticky                                     // t: sticky // t: 只有root/创建者能删除/移动文件
 
-    // Mask for the type bits. For regular files, none will be set.
-    ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice
+	// Mask for the type bits. For regular files, none will be set.
 
-    ModePerm FileMode = 0777 // permission bits
-)
+	// 覆盖所有类型位（用于通过&获取类型位），对普通文件，所有这些位都不应被设置
+	ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice
 
-// Flags to OpenFile wrapping those of the underlying system. Not all
-// flags may be implemented on a given system.
-
-// 用于包装底层系统的参数用于Open函数，不是所有的flag都能在特定系统里使用的。
-//
-//     const (
-//         SEEK_SET int = 0 // 相对于文件起始位置seek
-//         SEEK_CUR int = 1 // 相对于文件当前位置seek
-//         SEEK_END int = 2 // 相对于文件结尾位置seek
-//     )
-//
-// 指定Seek函数从何处开始搜索（即相对位置）
-//
-//     const (
-//         PathSeparator     = '/' // 操作系统指定的路径分隔符
-//         PathListSeparator = ':' // 操作系统指定的表分隔符
-//     )
-//
-//     const DevNull = "/dev/null"
-//
-// DevNull是操作系统空设备的名字。在类似Unix的操作系统中，是"/dev/null"；在
-// Windows中，为"NUL"。
-const (
-    O_RDONLY int = syscall.O_RDONLY // open the file read-only.
-    O_WRONLY int = syscall.O_WRONLY // open the file write-only.
-    O_RDWR   int = syscall.O_RDWR   // open the file read-write.
-    O_APPEND int = syscall.O_APPEND // append data to the file when writing.
-    O_CREATE int = syscall.O_CREAT  // create a new file if none exists.
-    O_EXCL   int = syscall.O_EXCL   // used with O_CREATE, file must not exist
-    O_SYNC   int = syscall.O_SYNC   // open for synchronous I/O.
-    O_TRUNC  int = syscall.O_TRUNC  // if possible, truncate file when opened.
+	ModePerm FileMode = 0777 // permission bits // 覆盖所有Unix权限位（用于通过&获取类型位）
 )
 
 const (
-    PathSeparator     = '\\' // OS-specific path separator
-    PathListSeparator = ';'  // OS-specific path list separator
+	O_RDONLY int = syscall.O_RDONLY // open the file read-only.
+	O_WRONLY int = syscall.O_WRONLY // open the file write-only.
+	O_RDWR   int = syscall.O_RDWR   // open the file read-write.
+	O_APPEND int = syscall.O_APPEND // append data to the file when writing.
+	O_CREATE int = syscall.O_CREAT  // create a new file if none exists.
+	O_EXCL   int = syscall.O_EXCL   // used with O_CREATE, file must not exist
+	O_SYNC   int = syscall.O_SYNC   // open for synchronous I/O.
+	O_TRUNC  int = syscall.O_TRUNC  // if possible, truncate file when opened.
 )
 
 const (
-    PathSeparator     = '/' // OS-specific path separator
-    PathListSeparator = ':' // OS-specific path list separator
-)
-
-const (
-    PathSeparator     = '/'    // OS-specific path separator
-    PathListSeparator = '\000' // OS-specific path list separator
+	PathSeparator     = '/' // OS-specific path separator // 操作系统指定的路径分隔符
+	PathListSeparator = ':' // OS-specific path list separator // 操作系统指定的表分隔符
 )
 
 // Seek whence values.
 const (
-    SEEK_SET int = 0 // seek relative to the origin of the file
-    SEEK_CUR int = 1 // seek relative to the current offset
-    SEEK_END int = 2 // seek relative to the end
+	SEEK_SET int = 0 // seek relative to the origin of the file // 相对于文件起始位置seek
+	SEEK_CUR int = 1 // seek relative to the current offset // 相对于文件当前位置seek
+	SEEK_END int = 2 // seek relative to the end // 相对于文件结尾位置seek
 )
 
 // Args hold the command-line arguments, starting with the program name.
+
+// Args保管了命令行参数，第一个是程序名。
 var Args []string
 
 // Portable analogs of some common system call errors.
-
-// 一些可移植的、共有的系统调用错误。
-//
-//     var (
-//         Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
-//         Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
-//         Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
-//     )
-//
-// Stdin、Stdout和Stderr是指向标准输入、标准输出、标准错误输出的文件描述符。
-//
-//     var Args []string
-//
-// Args保管了命令行参数，第一个是程序名。
 var (
-    ErrInvalid    = errors.New("invalid argument")
-    ErrPermission = errors.New("permission denied")
-    ErrExist      = errors.New("file already exists")
-    ErrNotExist   = errors.New("file does not exist")
+	ErrInvalid    = errors.New("invalid argument")
+	ErrPermission = errors.New("permission denied")
+	ErrExist      = errors.New("file already exists")
+	ErrNotExist   = errors.New("file does not exist")
 )
 
 // The only signal values guaranteed to be present on all systems are Interrupt
 // (send the process an interrupt) and Kill (force the process to exit).
-var (
-    Interrupt Signal = syscall.SIGINT
-    Kill      Signal = syscall.SIGKILL
-)
 
-// The only signal values guaranteed to be present on all systems are Interrupt
-// (send the process an interrupt) and Kill (force the process to exit).
+// 仅有的肯定会被所有操作系统提供的信号，Interrupt（中断信号）和Kill（强制退出信
+// 号）。
 var (
-    Interrupt Signal = syscall.Note("interrupt")
-    Kill      Signal = syscall.Note("kill")
+	Interrupt Signal = syscall.SIGINT
+	Kill      Signal = syscall.SIGKILL
 )
 
 // Stdin, Stdout, and Stderr are open Files pointing to the standard input,
 // standard output, and standard error file descriptors.
+
+// Stdin、Stdout和Stderr是指向标准输入、标准输出、标准错误输出的文件描述符。
 var (
-    Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
-    Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
-    Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
+	Stdin  = NewFile(uintptr(syscall.Stdin), "/dev/stdin")
+	Stdout = NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+	Stderr = NewFile(uintptr(syscall.Stderr), "/dev/stderr")
 )
-
-// File represents an open file descriptor.
-
-// File represents an open file descriptor.
 
 // File represents an open file descriptor.
 
@@ -234,12 +187,12 @@ type File struct {
 
 // FileInfo用来描述一个文件对象。
 type FileInfo interface {
-    Name() string       // base name of the file
-    Size() int64        // length in bytes for regular files; system-dependent for others
-    Mode() FileMode     // file mode bits
-    ModTime() time.Time // modification time
-    IsDir() bool        // abbreviation for Mode().IsDir()
-    Sys() interface{}   // underlying data source (can return nil)
+	Name() string       // base name of the file
+	Size() int64        // length in bytes for regular files; system-dependent for others
+	Mode() FileMode     // file mode bits
+	ModTime() time.Time // modification time
+	IsDir() bool        // abbreviation for Mode().IsDir()
+	Sys() interface{}   // underlying data source (can return nil)
 }
 
 // A FileMode represents a file's mode and permission bits.
@@ -248,53 +201,30 @@ type FileInfo interface {
 // to another portably.  Not all bits apply to all systems.
 // The only required bit is ModeDir for directories.
 
-// FileMode代表文件的模式和权限位。这些字位在所有的操作系统都有相同的含义，因此
-// 文件的信息可以在不同的操作系统之间安全的移植。不是所有的位都能用于所有的系统
-// ，唯一共有的是用于表示目录的ModeDir位。
-//
-//     const (
-//         // 单字符是被String方法用于格式化的属性缩写。
-//         ModeDir        FileMode = 1 << (32 - 1 - iota) // d: 目录
-//         ModeAppend                                     // a: 只能写入，且只能写入到末尾
-//         ModeExclusive                                  // l: 用于执行
-//         ModeTemporary                                  // T: 临时文件（非备份文件）
-//         ModeSymlink                                    // L: 符号链接（不是快捷方式文件）
-//         ModeDevice                                     // D: 设备
-//         ModeNamedPipe                                  // p: 命名管道（FIFO）
-//         ModeSocket                                     // S: Unix域socket
-//         ModeSetuid                                     // u: 表示文件具有其创建者用户id权限
-//         ModeSetgid                                     // g: 表示文件具有其创建者组id的权限
-//         ModeCharDevice                                 // c: 字符设备，需已设置ModeDevice
-//         ModeSticky                                     // t: 只有root/创建者能删除/移动文件
-//         // 覆盖所有类型位（用于通过&获取类型位），对普通文件，所有这些位都不应被设置
-//         ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice
-//         ModePerm FileMode = 0777 // 覆盖所有Unix权限位（用于通过&获取类型位）
-//     )
-//
-// 这些被定义的位是FileMode最重要的位。另外9个不重要的位为标准Unix rwxrwxrwx权限
-// （任何人都可读、写、运行）。这些（重要）位的值应被视为公共API的一部分，可能会
-// 用于线路协议或硬盘标识：它们不能被修改，但可以添加新的位。
+// FileMode 代表文件的模式和权限位。这些字位在所有的操作系统都有相同的含义，因此
+// 文件的信息可以在不同的操作系统之间安全的移植。不是所有的位都能用于所有的系
+// 统，唯一共有的是用于表示目录的ModeDir位。
 type FileMode uint32
 
 // LinkError records an error during a link or symlink or rename
 // system call and the paths that caused it.
 
-// LinkError记录在Link、Symlink、Rename系统调用时出现的错误，以及导致错误的路径
-// 。
+// LinkError 记录在 Link、Symlink、Rename 系统调用时出现的错误，以及导致错误的
+// 路径。
 type LinkError struct {
-    Op  string
-    Old string
-    New string
-    Err error
+	Op  string
+	Old string
+	New string
+	Err error
 }
 
 // PathError records an error and the operation and file path that caused it.
 
 // PathError记录一个错误，以及导致错误的路径。
 type PathError struct {
-    Op   string
-    Path string
-    Err  error
+	Op   string
+	Path string
+	Err  error
 }
 
 // ProcAttr holds the attributes that will be applied to a new process
@@ -302,32 +232,32 @@ type PathError struct {
 
 // ProcAttr保管将被StartProcess函数用于一个新进程的属性。
 type ProcAttr struct {
-    // If Dir is non-empty, the child changes into the directory before
-    // creating the process.
-    Dir string
-    // If Env is non-nil, it gives the environment variables for the
-    // new process in the form returned by Environ.
-    // If it is nil, the result of Environ will be used.
-    Env []string
-    // Files specifies the open files inherited by the new process.  The
-    // first three entries correspond to standard input, standard output, and
-    // standard error.  An implementation may support additional entries,
-    // depending on the underlying operating system.  A nil entry corresponds
-    // to that file being closed when the process starts.
-    Files []*File
+	// If Dir is non-empty, the child changes into the directory before
+	// creating the process.
+	Dir string
+	// If Env is non-nil, it gives the environment variables for the
+	// new process in the form returned by Environ.
+	// If it is nil, the result of Environ will be used.
+	Env []string
+	// Files specifies the open files inherited by the new process.  The
+	// first three entries correspond to standard input, standard output, and
+	// standard error.  An implementation may support additional entries,
+	// depending on the underlying operating system.  A nil entry corresponds
+	// to that file being closed when the process starts.
+	Files []*File
 
-    // Operating system-specific process creation attributes.
-    // Note that setting this field means that your program
-    // may not execute properly or even compile on some
-    // operating systems.
-    Sys *syscall.SysProcAttr
+	// Operating system-specific process creation attributes.
+	// Note that setting this field means that your program
+	// may not execute properly or even compile on some
+	// operating systems.
+	Sys *syscall.SysProcAttr
 }
 
 // Process stores the information about a process created by StartProcess.
 
 // Process保管一个被StarProcess创建的进程的信息。
 type Process struct {
-    Pid int
+	Pid int
 }
 
 // ProcessState stores information about a process, as reported by Wait.
@@ -342,27 +272,19 @@ type ProcessState struct {
 // The usual underlying implementation is operating system-dependent:
 // on Unix it is syscall.Signal.
 
-// Signal代表一个操作系统信号。一般其底层实现是依赖于操作系统的：在Unix中，它是
+// Signal 代表一个操作系统信号。一般其底层实现是依赖于操作系统的：在Unix中，它是
 // syscall.Signal类型。
-//
-//     var (
-//         Interrupt Signal = syscall.SIGINT
-//         Kill      Signal = syscall.SIGKILL
-//     )
-//
-// 仅有的肯定会被所有操作系统提供的信号，Interrupt（中断信号）和Kill（强制退出信
-// 号）。
 type Signal interface {
-    String() string
-    Signal() // to distinguish from other Stringers
+	String() string
+	Signal() // to distinguish from other Stringers
 }
 
 // SyscallError records an error from a specific system call.
 
 // SyscallError记录某个系统调用出现的错误。
 type SyscallError struct {
-    Syscall string
-    Err     error
+	Syscall string
+	Err     error
 }
 
 // Chdir changes the current working directory to the named directory.
@@ -995,4 +917,3 @@ func (FileMode) IsRegular() bool
 func (FileMode) Perm() FileMode
 
 func (FileMode) String() string
-

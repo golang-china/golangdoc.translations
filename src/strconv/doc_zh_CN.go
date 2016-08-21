@@ -63,9 +63,9 @@
 package strconv
 
 import (
-    "errors"
-    "math"
-    "unicode/utf8"
+	"errors"
+	"math"
+	"unicode/utf8"
 )
 
 // IntSize is the size in bits of an int or uint value.
@@ -76,23 +76,21 @@ const IntSize = intSize
 // ErrRange indicates that a value is out of range for the target type.
 
 // ErrRange表示超出目标类型表示范围。
-//
-//     var ErrSyntax = errors.New("invalid syntax")
-//
-// ErrSyntax表示不符合目标类型语法。
 var ErrRange = errors.New("value out of range")
 
 // ErrSyntax indicates that a value does not have the right syntax for the
 // target type.
+
+// ErrSyntax表示不符合目标类型语法。
 var ErrSyntax = errors.New("invalid syntax")
 
 // A NumError records a failed conversion.
 
 // NumError表示一次失败的转换。
 type NumError struct {
-    Func string // the failing function (ParseBool, ParseInt, ParseUint, ParseFloat)
-    Num  string // the input
-    Err  error  // the reason the conversion failed (ErrRange, ErrSyntax)
+	Func string // the failing function (ParseBool, ParseInt, ParseUint, ParseFloat)
+	Num  string // the input
+	Err  error  // the reason the conversion failed (ErrRange, ErrSyntax)
 }
 
 // AppendBool appends "true" or "false", according to the value of b,
@@ -363,4 +361,3 @@ func Unquote(s string) (t string, err error)
 func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string, err error)
 
 func (*NumError) Error() string
-

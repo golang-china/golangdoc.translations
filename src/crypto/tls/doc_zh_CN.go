@@ -10,52 +10,52 @@
 package tls
 
 import (
-    "bytes"
-    "container/list"
-    "crypto"
-    "crypto/aes"
-    "crypto/cipher"
-    "crypto/des"
-    "crypto/ecdsa"
-    "crypto/elliptic"
-    "crypto/hmac"
-    "crypto/md5"
-    "crypto/rand"
-    "crypto/rc4"
-    "crypto/rsa"
-    "crypto/sha1"
-    "crypto/sha256"
-    "crypto/sha512"
-    "crypto/subtle"
-    "crypto/x509"
-    "encoding/asn1"
-    "encoding/pem"
-    "errors"
-    "fmt"
-    "hash"
-    "io"
-    "io/ioutil"
-    "math/big"
-    "net"
-    "strconv"
-    "strings"
-    "sync"
-    "sync/atomic"
-    "time"
+	"bytes"
+	"container/list"
+	"crypto"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/des"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/hmac"
+	"crypto/md5"
+	"crypto/rand"
+	"crypto/rc4"
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/subtle"
+	"crypto/x509"
+	"encoding/asn1"
+	"encoding/pem"
+	"errors"
+	"fmt"
+	"hash"
+	"io"
+	"io/ioutil"
+	"math/big"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 const (
-    CurveP256 CurveID = 23
-    CurveP384 CurveID = 24
-    CurveP521 CurveID = 25
+	CurveP256 CurveID = 23
+	CurveP384 CurveID = 24
+	CurveP521 CurveID = 25
 )
 
 const (
-    NoClientCert ClientAuthType = iota
-    RequestClientCert
-    RequireAnyClientCert
-    VerifyClientCertIfGiven
-    RequireAndVerifyClientCert
+	NoClientCert ClientAuthType = iota
+	RequestClientCert
+	RequireAnyClientCert
+	VerifyClientCertIfGiven
+	RequireAndVerifyClientCert
 )
 
 // A list of the possible cipher suite ids. Taken from
@@ -63,100 +63,85 @@ const (
 
 // 可选的加密组的ID的列表。参见：
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
-//
-//     const (
-//         VersionSSL30 = 0x0300
-//         VersionTLS10 = 0x0301
-//         VersionTLS11 = 0x0302
-//         VersionTLS12 = 0x0303
-//     )
 const (
-    TLS_RSA_WITH_RC4_128_SHA                uint16 = 0x0005
-    TLS_RSA_WITH_3DES_EDE_CBC_SHA           uint16 = 0x000a
-    TLS_RSA_WITH_AES_128_CBC_SHA            uint16 = 0x002f
-    TLS_RSA_WITH_AES_256_CBC_SHA            uint16 = 0x0035
-    TLS_ECDHE_ECDSA_WITH_RC4_128_SHA        uint16 = 0xc007
-    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA    uint16 = 0xc009
-    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA    uint16 = 0xc00a
-    TLS_ECDHE_RSA_WITH_RC4_128_SHA          uint16 = 0xc011
-    TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA     uint16 = 0xc012
-    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA      uint16 = 0xc013
-    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA      uint16 = 0xc014
-    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   uint16 = 0xc02f
-    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 uint16 = 0xc02b
+	TLS_RSA_WITH_RC4_128_SHA                uint16 = 0x0005
+	TLS_RSA_WITH_3DES_EDE_CBC_SHA           uint16 = 0x000a
+	TLS_RSA_WITH_AES_128_CBC_SHA            uint16 = 0x002f
+	TLS_RSA_WITH_AES_256_CBC_SHA            uint16 = 0x0035
+	TLS_ECDHE_ECDSA_WITH_RC4_128_SHA        uint16 = 0xc007
+	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA    uint16 = 0xc009
+	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA    uint16 = 0xc00a
+	TLS_ECDHE_RSA_WITH_RC4_128_SHA          uint16 = 0xc011
+	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA     uint16 = 0xc012
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA      uint16 = 0xc013
+	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA      uint16 = 0xc014
+	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   uint16 = 0xc02f
+	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 uint16 = 0xc02b
 
-    // TLS_FALLBACK_SCSV isn't a standard cipher suite but an indicator
-    // that the client is doing version fallback. See
-    // https://tools.ietf.org/html/draft-ietf-tls-downgrade-scsv-00.
-    TLS_FALLBACK_SCSV uint16 = 0x5600
+	// TLS_FALLBACK_SCSV isn't a standard cipher suite but an indicator
+	// that the client is doing version fallback. See
+	// https://tools.ietf.org/html/draft-ietf-tls-downgrade-scsv-00.
+	TLS_FALLBACK_SCSV uint16 = 0x5600
 )
 
 const (
-    VersionSSL30 = 0x0300
-    VersionTLS10 = 0x0301
-    VersionTLS11 = 0x0302
-    VersionTLS12 = 0x0303
+	VersionSSL30 = 0x0300
+	VersionTLS10 = 0x0301
+	VersionTLS11 = 0x0302
+	VersionTLS12 = 0x0303
 )
 
 // A Certificate is a chain of one or more certificates, leaf first.
 
 // Certificate是一个或多个证书的链条，叶证书在最前面。
 type Certificate struct {
-    Certificate [][]byte
-    // PrivateKey contains the private key corresponding to the public key
-    // in Leaf. For a server, this must be a *rsa.PrivateKey or
-    // *ecdsa.PrivateKey. For a client doing client authentication, this
-    // can be any type that implements crypto.Signer (which includes RSA
-    // and ECDSA private keys).
-    PrivateKey crypto.PrivateKey
-    // OCSPStaple contains an optional OCSP response which will be served
-    // to clients that request it.
-    OCSPStaple []byte
-    // Leaf is the parsed form of the leaf certificate, which may be
-    // initialized using x509.ParseCertificate to reduce per-handshake
-    // processing for TLS clients doing client authentication. If nil, the
-    // leaf certificate will be parsed as needed.
-    Leaf *x509.Certificate
+	Certificate [][]byte
+	// PrivateKey contains the private key corresponding to the public key
+	// in Leaf. For a server, this must be a *rsa.PrivateKey or
+	// *ecdsa.PrivateKey. For a client doing client authentication, this
+	// can be any type that implements crypto.Signer (which includes RSA
+	// and ECDSA private keys).
+	PrivateKey crypto.PrivateKey
+	// OCSPStaple contains an optional OCSP response which will be served
+	// to clients that request it.
+	OCSPStaple []byte
+	// Leaf is the parsed form of the leaf certificate, which may be
+	// initialized using x509.ParseCertificate to reduce per-handshake
+	// processing for TLS clients doing client authentication. If nil, the
+	// leaf certificate will be parsed as needed.
+	Leaf *x509.Certificate
 }
 
 // ClientAuthType declares the policy the server will follow for
 // TLS Client Authentication.
 
 // ClientAuthType类型声明服务端将遵循的TLS客户端验证策略。
-//
-//     const (
-//         NoClientCert ClientAuthType = iota
-//         RequestClientCert
-//         RequireAnyClientCert
-//         VerifyClientCertIfGiven
-//         RequireAndVerifyClientCert
-//     )
 type ClientAuthType int
 
 // ClientHelloInfo contains information from a ClientHello message in order to
 // guide certificate selection in the GetCertificate callback.
 type ClientHelloInfo struct {
-    // CipherSuites lists the CipherSuites supported by the client (e.g.
-    // TLS_RSA_WITH_RC4_128_SHA).
-    CipherSuites []uint16
+	// CipherSuites lists the CipherSuites supported by the client (e.g.
+	// TLS_RSA_WITH_RC4_128_SHA).
+	CipherSuites []uint16
 
-    // ServerName indicates the name of the server requested by the client
-    // in order to support virtual hosting. ServerName is only set if the
-    // client is using SNI (see
-    // http://tools.ietf.org/html/rfc4366#section-3.1).
-    ServerName string
+	// ServerName indicates the name of the server requested by the client
+	// in order to support virtual hosting. ServerName is only set if the
+	// client is using SNI (see
+	// http://tools.ietf.org/html/rfc4366#section-3.1).
+	ServerName string
 
-    // SupportedCurves lists the elliptic curves supported by the client.
-    // SupportedCurves is set only if the Supported Elliptic Curves
-    // Extension is being used (see
-    // http://tools.ietf.org/html/rfc4492#section-5.1.1).
-    SupportedCurves []CurveID
+	// SupportedCurves lists the elliptic curves supported by the client.
+	// SupportedCurves is set only if the Supported Elliptic Curves
+	// Extension is being used (see
+	// http://tools.ietf.org/html/rfc4492#section-5.1.1).
+	SupportedCurves []CurveID
 
-    // SupportedPoints lists the point formats supported by the client.
-    // SupportedPoints is set only if the Supported Point Formats Extension
-    // is being used (see
-    // http://tools.ietf.org/html/rfc4492#section-5.1.2).
-    SupportedPoints []uint8
+	// SupportedPoints lists the point formats supported by the client.
+	// SupportedPoints is set only if the Supported Point Formats Extension
+	// is being used (see
+	// http://tools.ietf.org/html/rfc4492#section-5.1.2).
+	SupportedPoints []uint8
 }
 
 // ClientSessionCache is a cache of ClientSessionState objects that can be used
@@ -167,12 +152,12 @@ type ClientHelloInfo struct {
 // ClientSessionCache是ClientSessionState对象的缓存，可以被客户端用于恢复与某个
 // 服务端的TLS会话。本类型的实现期望被不同线程并行的调用。
 type ClientSessionCache interface {
-    // Get searches for a ClientSessionState associated with the given key.
-    // On return, ok is true if one was found.
-    Get(sessionKey string) (session *ClientSessionState, ok bool)
+	// Get searches for a ClientSessionState associated with the given key.
+	// On return, ok is true if one was found.
+	Get(sessionKey string) (session *ClientSessionState, ok bool)
 
-    // Put adds the ClientSessionState to the cache with the given key.
-    Put(sessionKey string, cs *ClientSessionState)
+	// Put adds the ClientSessionState to the cache with the given key.
+	Put(sessionKey string, cs *ClientSessionState)
 }
 
 // ClientSessionState contains the state needed by clients to resume TLS
@@ -190,107 +175,107 @@ type ClientSessionState struct {
 // Config结构类型用于配置TLS客户端或服务端。在本类型的值提供给TLS函数后，就不应
 // 再修改该值。Config类型值可能被重用；tls包也不会修改它。
 type Config struct {
-    // Rand provides the source of entropy for nonces and RSA blinding.
-    // If Rand is nil, TLS uses the cryptographic random reader in package
-    // crypto/rand.
-    // The Reader must be safe for use by multiple goroutines.
-    Rand io.Reader
+	// Rand provides the source of entropy for nonces and RSA blinding.
+	// If Rand is nil, TLS uses the cryptographic random reader in package
+	// crypto/rand.
+	// The Reader must be safe for use by multiple goroutines.
+	Rand io.Reader
 
-    // Time returns the current time as the number of seconds since the epoch.
-    // If Time is nil, TLS uses time.Now.
-    Time func() time.Time
+	// Time returns the current time as the number of seconds since the epoch.
+	// If Time is nil, TLS uses time.Now.
+	Time func() time.Time
 
-    // Certificates contains one or more certificate chains
-    // to present to the other side of the connection.
-    // Server configurations must include at least one certificate.
-    Certificates []Certificate
+	// Certificates contains one or more certificate chains
+	// to present to the other side of the connection.
+	// Server configurations must include at least one certificate.
+	Certificates []Certificate
 
-    // NameToCertificate maps from a certificate name to an element of
-    // Certificates. Note that a certificate name can be of the form
-    // '*.example.com' and so doesn't have to be a domain name as such.
-    // See Config.BuildNameToCertificate
-    // The nil value causes the first element of Certificates to be used
-    // for all connections.
-    NameToCertificate map[string]*Certificate
+	// NameToCertificate maps from a certificate name to an element of
+	// Certificates. Note that a certificate name can be of the form
+	// '*.example.com' and so doesn't have to be a domain name as such.
+	// See Config.BuildNameToCertificate
+	// The nil value causes the first element of Certificates to be used
+	// for all connections.
+	NameToCertificate map[string]*Certificate
 
-    // GetCertificate returns a Certificate based on the given
-    // ClientHelloInfo. If GetCertificate is nil or returns nil, then the
-    // certificate is retrieved from NameToCertificate. If
-    // NameToCertificate is nil, the first element of Certificates will be
-    // used.
-    GetCertificate func(clientHello *ClientHelloInfo) (*Certificate, error)
+	// GetCertificate returns a Certificate based on the given
+	// ClientHelloInfo. If GetCertificate is nil or returns nil, then the
+	// certificate is retrieved from NameToCertificate. If
+	// NameToCertificate is nil, the first element of Certificates will be
+	// used.
+	GetCertificate func(clientHello *ClientHelloInfo) (*Certificate, error)
 
-    // RootCAs defines the set of root certificate authorities
-    // that clients use when verifying server certificates.
-    // If RootCAs is nil, TLS uses the host's root CA set.
-    RootCAs *x509.CertPool
+	// RootCAs defines the set of root certificate authorities
+	// that clients use when verifying server certificates.
+	// If RootCAs is nil, TLS uses the host's root CA set.
+	RootCAs *x509.CertPool
 
-    // NextProtos is a list of supported, application level protocols.
-    NextProtos []string
+	// NextProtos is a list of supported, application level protocols.
+	NextProtos []string
 
-    // ServerName is used to verify the hostname on the returned
-    // certificates unless InsecureSkipVerify is given. It is also included
-    // in the client's handshake to support virtual hosting.
-    ServerName string
+	// ServerName is used to verify the hostname on the returned
+	// certificates unless InsecureSkipVerify is given. It is also included
+	// in the client's handshake to support virtual hosting.
+	ServerName string
 
-    // ClientAuth determines the server's policy for
-    // TLS Client Authentication. The default is NoClientCert.
-    ClientAuth ClientAuthType
+	// ClientAuth determines the server's policy for
+	// TLS Client Authentication. The default is NoClientCert.
+	ClientAuth ClientAuthType
 
-    // ClientCAs defines the set of root certificate authorities
-    // that servers use if required to verify a client certificate
-    // by the policy in ClientAuth.
-    ClientCAs *x509.CertPool
+	// ClientCAs defines the set of root certificate authorities
+	// that servers use if required to verify a client certificate
+	// by the policy in ClientAuth.
+	ClientCAs *x509.CertPool
 
-    // InsecureSkipVerify controls whether a client verifies the
-    // server's certificate chain and host name.
-    // If InsecureSkipVerify is true, TLS accepts any certificate
-    // presented by the server and any host name in that certificate.
-    // In this mode, TLS is susceptible to man-in-the-middle attacks.
-    // This should be used only for testing.
-    InsecureSkipVerify bool
+	// InsecureSkipVerify controls whether a client verifies the
+	// server's certificate chain and host name.
+	// If InsecureSkipVerify is true, TLS accepts any certificate
+	// presented by the server and any host name in that certificate.
+	// In this mode, TLS is susceptible to man-in-the-middle attacks.
+	// This should be used only for testing.
+	InsecureSkipVerify bool
 
-    // CipherSuites is a list of supported cipher suites. If CipherSuites
-    // is nil, TLS uses a list of suites supported by the implementation.
-    CipherSuites []uint16
+	// CipherSuites is a list of supported cipher suites. If CipherSuites
+	// is nil, TLS uses a list of suites supported by the implementation.
+	CipherSuites []uint16
 
-    // PreferServerCipherSuites controls whether the server selects the
-    // client's most preferred ciphersuite, or the server's most preferred
-    // ciphersuite. If true then the server's preference, as expressed in
-    // the order of elements in CipherSuites, is used.
-    PreferServerCipherSuites bool
+	// PreferServerCipherSuites controls whether the server selects the
+	// client's most preferred ciphersuite, or the server's most preferred
+	// ciphersuite. If true then the server's preference, as expressed in
+	// the order of elements in CipherSuites, is used.
+	PreferServerCipherSuites bool
 
-    // SessionTicketsDisabled may be set to true to disable session ticket
-    // (resumption) support.
-    SessionTicketsDisabled bool
+	// SessionTicketsDisabled may be set to true to disable session ticket
+	// (resumption) support.
+	SessionTicketsDisabled bool
 
-    // SessionTicketKey is used by TLS servers to provide session
-    // resumption. See RFC 5077. If zero, it will be filled with
-    // random data before the first server handshake.
-    //
-    // If multiple servers are terminating connections for the same host
-    // they should all have the same SessionTicketKey. If the
-    // SessionTicketKey leaks, previously recorded and future TLS
-    // connections using that key are compromised.
-    SessionTicketKey [32]byte
+	// SessionTicketKey is used by TLS servers to provide session
+	// resumption. See RFC 5077. If zero, it will be filled with
+	// random data before the first server handshake.
+	//
+	// If multiple servers are terminating connections for the same host
+	// they should all have the same SessionTicketKey. If the
+	// SessionTicketKey leaks, previously recorded and future TLS
+	// connections using that key are compromised.
+	SessionTicketKey [32]byte
 
-    // SessionCache is a cache of ClientSessionState entries for TLS session
-    // resumption.
-    ClientSessionCache ClientSessionCache
+	// SessionCache is a cache of ClientSessionState entries for TLS session
+	// resumption.
+	ClientSessionCache ClientSessionCache
 
-    // MinVersion contains the minimum SSL/TLS version that is acceptable.
-    // If zero, then SSLv3 is taken as the minimum.
-    MinVersion uint16
+	// MinVersion contains the minimum SSL/TLS version that is acceptable.
+	// If zero, then SSLv3 is taken as the minimum.
+	MinVersion uint16
 
-    // MaxVersion contains the maximum SSL/TLS version that is acceptable.
-    // If zero, then the maximum version supported by this package is used,
-    // which is currently TLS 1.2.
-    MaxVersion uint16
+	// MaxVersion contains the maximum SSL/TLS version that is acceptable.
+	// If zero, then the maximum version supported by this package is used,
+	// which is currently TLS 1.2.
+	MaxVersion uint16
 
-    // CurvePreferences contains the elliptic curves that will be used in
-    // an ECDHE handshake, in preference order. If empty, the default will
-    // be used.
-    CurvePreferences []CurveID
+	// CurvePreferences contains the elliptic curves that will be used in
+	// an ECDHE handshake, in preference order. If empty, the default will
+	// be used.
+	CurvePreferences []CurveID
 }
 
 // A Conn represents a secured connection.
@@ -304,23 +289,23 @@ type Conn struct {
 
 // ConnectionState类型记录连接的基本TLS细节。
 type ConnectionState struct {
-    Version                    uint16                // TLS version used by the connection (e.g. VersionTLS12)
-    HandshakeComplete          bool                  // TLS handshake is complete
-    DidResume                  bool                  // connection resumes a previous TLS connection
-    CipherSuite                uint16                // cipher suite in use (TLS_RSA_WITH_RC4_128_SHA, ...)
-    NegotiatedProtocol         string                // negotiated next protocol (from Config.NextProtos)
-    NegotiatedProtocolIsMutual bool                  // negotiated protocol was advertised by server
-    ServerName                 string                // server name requested by client, if any (server side only)
-    PeerCertificates           []*x509.Certificate   // certificate chain presented by remote peer
-    VerifiedChains             [][]*x509.Certificate // verified chains built from PeerCertificates
+	Version                    uint16                // TLS version used by the connection (e.g. VersionTLS12)
+	HandshakeComplete          bool                  // TLS handshake is complete
+	DidResume                  bool                  // connection resumes a previous TLS connection
+	CipherSuite                uint16                // cipher suite in use (TLS_RSA_WITH_RC4_128_SHA, ...)
+	NegotiatedProtocol         string                // negotiated next protocol (from Config.NextProtos)
+	NegotiatedProtocolIsMutual bool                  // negotiated protocol was advertised by server
+	ServerName                 string                // server name requested by client, if any (server side only)
+	PeerCertificates           []*x509.Certificate   // certificate chain presented by remote peer
+	VerifiedChains             [][]*x509.Certificate // verified chains built from PeerCertificates
 
-    // TLSUnique contains the "tls-unique" channel binding value (see RFC
-    // 5929, section 3). For resumed sessions this value will be nil
-    // because resumption does not include enough context (see
-    // https://secure-resumption.com/#channelbindings). This will change in
-    // future versions of Go once the TLS master-secret fix has been
-    // standardized and implemented.
-    TLSUnique []byte
+	// TLSUnique contains the "tls-unique" channel binding value (see RFC
+	// 5929, section 3). For resumed sessions this value will be nil
+	// because resumption does not include enough context (see
+	// https://secure-resumption.com/#channelbindings). This will change in
+	// future versions of Go once the TLS master-secret fix has been
+	// standardized and implemented.
+	TLSUnique []byte
 }
 
 // CurveID is the type of a TLS identifier for an elliptic curve. See
@@ -328,19 +313,9 @@ type ConnectionState struct {
 //
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
 
-// CurveID是TLS椭圆曲线的标识符的类型。
-//
-// 参见：
-//
-//
+// CurveID是TLS椭圆曲线的标识符的类型。参见：
 //
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
-//
-//     const (
-//         CurveP256 CurveID = 23
-//         CurveP384 CurveID = 24
-//         CurveP521 CurveID = 25
-//     )
 type CurveID uint16
 
 // Client returns a new TLS client side connection
@@ -513,4 +488,3 @@ func (*Conn) VerifyHostname(host string) error
 
 // Write将数据写入连接，可设置超时，参见SetDeadline和SetWriteDeadline。
 func (*Conn) Write(b []byte) (int, error)
-

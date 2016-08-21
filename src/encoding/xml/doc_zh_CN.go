@@ -13,47 +13,45 @@
 package xml
 
 import (
-    "bufio"
-    "bytes"
-    "encoding"
-    "errors"
-    "fmt"
-    "io"
-    "reflect"
-    "strconv"
-    "strings"
-    "sync"
-    "unicode"
-    "unicode/utf8"
+	"bufio"
+	"bytes"
+	"encoding"
+	"errors"
+	"fmt"
+	"io"
+	"reflect"
+	"strconv"
+	"strings"
+	"sync"
+	"unicode"
+	"unicode/utf8"
 )
 
 const (
-    // A generic XML header suitable for use with the output of Marshal.
-    // This is not automatically added to any output of this package,
-    // it is provided as a convenience.
-    Header = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
+	// A generic XML header suitable for use with the output of Marshal.
+	// This is not automatically added to any output of this package,
+	// it is provided as a convenience.
+	Header = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 )
 
 // HTMLAutoClose is the set of HTML elements that
 // should be considered to close automatically.
 
 // HTMLAutoClose是应当考虑到自动关闭的HTML元素的集合。
-//
-//     var HTMLEntity = htmlEntity
-//
-// HTMLEntity是标准HTML entity字符到其翻译的映射。
 var HTMLAutoClose = htmlAutoClose
 
 // HTMLEntity is an entity map containing translations for the standard HTML
 // entity characters.
+
+// HTMLEntity是标准HTML entity字符到其翻译的映射。
 var HTMLEntity = htmlEntity
 
 // An Attr represents an attribute in an XML element (Name=Value).
 
 // Attr代表一个XML元素的一条属性（Name=Value）
 type Attr struct {
-    Name  Name
-    Value string
+	Name  Name
+	Value string
 }
 
 // A CharData represents XML character data (raw text),
@@ -76,56 +74,56 @@ type Comment []byte
 // Decoder代表一个XML解析器，可以读取输入流的部分数据，该解析器假定输入是utf-8编
 // 码的。
 type Decoder struct {
-    // Strict defaults to true, enforcing the requirements
-    // of the XML specification.
-    // If set to false, the parser allows input containing common
-    // mistakes:
-    //	* If an element is missing an end tag, the parser invents
-    //	  end tags as necessary to keep the return values from Token
-    //	  properly balanced.
-    //	* In attribute values and character data, unknown or malformed
-    //	  character entities (sequences beginning with &) are left alone.
-    //
-    // Setting:
-    //
-    //	d.Strict = false;
-    //	d.AutoClose = HTMLAutoClose;
-    //	d.Entity = HTMLEntity
-    //
-    // creates a parser that can handle typical HTML.
-    //
-    // Strict mode does not enforce the requirements of the XML name spaces TR.
-    // In particular it does not reject name space tags using undefined prefixes.
-    // Such tags are recorded with the unknown prefix as the name space URL.
-    Strict bool
+	// Strict defaults to true, enforcing the requirements
+	// of the XML specification.
+	// If set to false, the parser allows input containing common
+	// mistakes:
+	//	* If an element is missing an end tag, the parser invents
+	//	  end tags as necessary to keep the return values from Token
+	//	  properly balanced.
+	//	* In attribute values and character data, unknown or malformed
+	//	  character entities (sequences beginning with &) are left alone.
+	//
+	// Setting:
+	//
+	//	d.Strict = false;
+	//	d.AutoClose = HTMLAutoClose;
+	//	d.Entity = HTMLEntity
+	//
+	// creates a parser that can handle typical HTML.
+	//
+	// Strict mode does not enforce the requirements of the XML name spaces TR.
+	// In particular it does not reject name space tags using undefined prefixes.
+	// Such tags are recorded with the unknown prefix as the name space URL.
+	Strict bool
 
-    // When Strict == false, AutoClose indicates a set of elements to
-    // consider closed immediately after they are opened, regardless
-    // of whether an end element is present.
-    AutoClose []string
+	// When Strict == false, AutoClose indicates a set of elements to
+	// consider closed immediately after they are opened, regardless
+	// of whether an end element is present.
+	AutoClose []string
 
-    // Entity can be used to map non-standard entity names to string replacements.
-    // The parser behaves as if these standard mappings are present in the map,
-    // regardless of the actual map content:
-    //
-    //	"lt": "<",
-    //	"gt": ">",
-    //	"amp": "&",
-    //	"apos": "'",
-    //	"quot": `"`,
-    Entity map[string]string
+	// Entity can be used to map non-standard entity names to string replacements.
+	// The parser behaves as if these standard mappings are present in the map,
+	// regardless of the actual map content:
+	//
+	//	"lt": "<",
+	//	"gt": ">",
+	//	"amp": "&",
+	//	"apos": "'",
+	//	"quot": `"`,
+	Entity map[string]string
 
-    // CharsetReader, if non-nil, defines a function to generate
-    // charset-conversion readers, converting from the provided
-    // non-UTF-8 charset into UTF-8. If CharsetReader is nil or
-    // returns an error, parsing stops with an error. One of the
-    // the CharsetReader's result values must be non-nil.
-    CharsetReader func(charset string, input io.Reader) (io.Reader, error)
+	// CharsetReader, if non-nil, defines a function to generate
+	// charset-conversion readers, converting from the provided
+	// non-UTF-8 charset into UTF-8. If CharsetReader is nil or
+	// returns an error, parsing stops with an error. One of the
+	// the CharsetReader's result values must be non-nil.
+	CharsetReader func(charset string, input io.Reader) (io.Reader, error)
 
-    // DefaultSpace sets the default name space used for unadorned tags,
-    // as if the entire XML stream were wrapped in an element containing
-    // the attribute xmlns="DefaultSpace".
-    DefaultSpace string
+	// DefaultSpace sets the default name space used for unadorned tags,
+	// as if the entire XML stream were wrapped in an element containing
+	// the attribute xmlns="DefaultSpace".
+	DefaultSpace string
 }
 
 // A Directive represents an XML directive of the form <!text>.
@@ -144,7 +142,7 @@ type Encoder struct {
 
 // EndElement代表一个XML结束元素。
 type EndElement struct {
-    Name Name
+	Name Name
 }
 
 // Marshaler is the interface implemented by objects that can marshal
@@ -173,7 +171,7 @@ type EndElement struct {
 // 略是重复调用e.EncodeToken来一次一个token的生成XML输出。编码后的token必须组成
 // 零或多个XML元素。
 type Marshaler interface {
-    MarshalXML(e *Encoder, start StartElement) error
+	MarshalXML(e *Encoder, start StartElement) error
 }
 
 // MarshalerAttr is the interface implemented by objects that can marshal
@@ -193,7 +191,7 @@ type Marshaler interface {
 // MarshalXMLAttr返回一个零值属性Attr{}，将不会生成属性输出。MarshalXMLAttr只用
 // 于有标签且标签有"attr"选项的结构体字段。
 type MarshalerAttr interface {
-    MarshalXMLAttr(name Name) (Attr, error)
+	MarshalXMLAttr(name Name) (Attr, error)
 }
 
 // A Name represents an XML name (Local) annotated
@@ -205,7 +203,7 @@ type MarshalerAttr interface {
 // Name代表一个XML名称（Local字段），并指定名字空间（Space）。Decoder.Token方法
 // 返回的Token中，Space标识符是典型的URL而不是被解析的文档里的短前缀。
 type Name struct {
-    Space, Local string
+	Space, Local string
 }
 
 // A ProcInst represents an XML processing instruction of the form <?target
@@ -213,24 +211,24 @@ type Name struct {
 
 // ProcInst代表XML处理指令，格式为<?target inst?>。
 type ProcInst struct {
-    Target string
-    Inst   []byte
+	Target string
+	Inst   []byte
 }
 
 // A StartElement represents an XML start element.
 
 // StartElement代表一个XML起始元素。
 type StartElement struct {
-    Name Name
-    Attr []Attr
+	Name Name
+	Attr []Attr
 }
 
 // A SyntaxError represents a syntax error in the XML input stream.
 
 // SyntaxError代表XML输入流的格式错误。
 type SyntaxError struct {
-    Msg  string
-    Line int
+	Msg  string
+	Line int
 }
 
 // A TagPathError represents an error in the unmarshalling process
@@ -238,9 +236,9 @@ type SyntaxError struct {
 
 // 反序列化时，如果字段标签的路径有冲突，就会返回TagPathError。
 type TagPathError struct {
-    Struct       reflect.Type
-    Field1, Tag1 string
-    Field2, Tag2 string
+	Struct       reflect.Type
+	Field1, Tag1 string
+	Field2, Tag2 string
 }
 
 // A Token is an interface holding one of the token types:
@@ -279,7 +277,7 @@ type UnmarshalError string
 // UnmarshalXML的调用者。另一个常用的策略是使用d.Token一次一个token的处理XML对象
 // 。UnmarshalXML通常不使用d.RawToken。
 type Unmarshaler interface {
-    UnmarshalXML(d *Decoder, start StartElement) error
+	UnmarshalXML(d *Decoder, start StartElement) error
 }
 
 // UnmarshalerAttr is the interface implemented by objects that can unmarshal
@@ -297,7 +295,7 @@ type Unmarshaler interface {
 // 止执行并返回该错误。UnmarshalXMLAttr只有在结构体字段的标签有"attr"选项时才被
 // 使用。
 type UnmarshalerAttr interface {
-    UnmarshalXMLAttr(attr Attr) error
+	UnmarshalXMLAttr(attr Attr) error
 }
 
 // A MarshalXMLError is returned when Marshal encounters a type
@@ -305,7 +303,7 @@ type UnmarshalerAttr interface {
 
 // 当序列化时，如果遇到不能转化为XML的类型，就会返回UnsupportedTypeError。
 type UnsupportedTypeError struct {
-    Type reflect.Type
+	Type reflect.Type
 }
 
 // CopyToken returns a copy of a Token.
@@ -711,4 +709,3 @@ func (StartElement) Copy() StartElement
 func (StartElement) End() EndElement
 
 func (UnmarshalError) Error() string
-

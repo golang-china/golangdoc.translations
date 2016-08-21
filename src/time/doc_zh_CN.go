@@ -12,11 +12,11 @@
 package time
 
 import (
-    "errors"
-    "internal/syscall/windows/registry"
-    "runtime"
-    "sync"
-    "syscall"
+	"errors"
+	"internal/syscall/windows/registry"
+	"runtime"
+	"sync"
+	"syscall"
 )
 
 // These are predefined layouts for use in Time.Format and Time.Parse. The
@@ -104,37 +104,37 @@ import (
 //     Z0700  Z or ±hhmm
 //     Z07:00 Z or ±hh:mm
 const (
-    ANSIC       = "Mon Jan _2 15:04:05 2006"
-    UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
-    RubyDate    = "Mon Jan 02 15:04:05 -0700 2006"
-    RFC822      = "02 Jan 06 15:04 MST"
-    RFC822Z     = "02 Jan 06 15:04 -0700" // RFC822 with numeric zone
-    RFC850      = "Monday, 02-Jan-06 15:04:05 MST"
-    RFC1123     = "Mon, 02 Jan 2006 15:04:05 MST"
-    RFC1123Z    = "Mon, 02 Jan 2006 15:04:05 -0700" // RFC1123 with numeric zone
-    RFC3339     = "2006-01-02T15:04:05Z07:00"
-    RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
-    Kitchen     = "3:04PM"
-    // Handy time stamps.
-    Stamp      = "Jan _2 15:04:05"
-    StampMilli = "Jan _2 15:04:05.000"
-    StampMicro = "Jan _2 15:04:05.000000"
-    StampNano  = "Jan _2 15:04:05.000000000"
+	ANSIC       = "Mon Jan _2 15:04:05 2006"
+	UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
+	RubyDate    = "Mon Jan 02 15:04:05 -0700 2006"
+	RFC822      = "02 Jan 06 15:04 MST"
+	RFC822Z     = "02 Jan 06 15:04 -0700" // RFC822 with numeric zone
+	RFC850      = "Monday, 02-Jan-06 15:04:05 MST"
+	RFC1123     = "Mon, 02 Jan 2006 15:04:05 MST"
+	RFC1123Z    = "Mon, 02 Jan 2006 15:04:05 -0700" // RFC1123 with numeric zone
+	RFC3339     = "2006-01-02T15:04:05Z07:00"
+	RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
+	Kitchen     = "3:04PM"
+	// Handy time stamps.
+	Stamp      = "Jan _2 15:04:05"
+	StampMilli = "Jan _2 15:04:05.000"
+	StampMicro = "Jan _2 15:04:05.000000"
+	StampNano  = "Jan _2 15:04:05.000000000"
 )
 
 const (
-    January Month = 1 + iota
-    February
-    March
-    April
-    May
-    June
-    July
-    August
-    September
-    October
-    November
-    December
+	January Month = 1 + iota
+	February
+	March
+	April
+	May
+	June
+	July
+	August
+	September
+	October
+	November
+	December
 )
 
 // Common durations.  There is no definition for units of Day or larger
@@ -148,63 +148,6 @@ const (
 //     seconds := 10
 //     fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
 
-// Common durations. There is no definition for units of Day or larger to avoid
-// confusion across daylight savings time zone transitions.
-//
-// To count the number of units in a Duration, divide:
-//
-//     second := time.Second
-//     fmt.Print(int64(second/time.Millisecond)) // prints 1000
-//
-// To convert an integer number of units to a Duration, multiply:
-//
-//     seconds := 10
-//     fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
-const (
-    Nanosecond  Duration = 1
-    Microsecond          = 1000 * Nanosecond
-    Millisecond          = 1000 * Microsecond
-    Second               = 1000 * Millisecond
-    Minute               = 60 * Second
-    Hour                 = 60 * Minute
-)
-
-const (
-    Sunday Weekday = iota
-    Monday
-    Tuesday
-    Wednesday
-    Thursday
-    Friday
-    Saturday
-)
-
-const (
-    _ = iota
-)
-
-// Local represents the system's local time zone.
-var Local *Location = &localLoc
-
-// UTC represents Universal Coordinated Time (UTC).
-var UTC *Location = &utcLoc
-
-// A Duration represents the elapsed time between two instants
-// as an int64 nanosecond count.  The representation limits the
-// largest representable duration to approximately 290 years.
-
-// Duration类型代表两个时间点之间经过的时间，以纳秒为单位。可表示的最长时间段大
-// 约290年。
-//
-//     const (
-//         Nanosecond  Duration = 1
-//         Microsecond          = 1000 * Nanosecond
-//         Millisecond          = 1000 * Microsecond
-//         Second               = 1000 * Millisecond
-//         Minute               = 60 * Second
-//         Hour                 = 60 * Minute
-//     )
-//
 // 常用的时间段。没有定义一天或超过一天的单元，以避免夏时制的时区切换的混乱。
 //
 // 要将Duration类型值表示为某时间单元的个数，用除法：
@@ -216,53 +159,69 @@ var UTC *Location = &utcLoc
 //
 //     seconds := 10
 //     fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
+const (
+	Nanosecond  Duration = 1
+	Microsecond          = 1000 * Nanosecond
+	Millisecond          = 1000 * Microsecond
+	Second               = 1000 * Millisecond
+	Minute               = 60 * Second
+	Hour                 = 60 * Minute
+)
+
+const (
+	Sunday Weekday = iota
+	Monday
+	Tuesday
+	Wednesday
+	Thursday
+	Friday
+	Saturday
+)
+
+const (
+	_ = iota
+)
+
+// Local represents the system's local time zone.
+
+// Local代表系统本地，对应本地时区。
+var Local *Location = &localLoc
+
+// UTC represents Universal Coordinated Time (UTC).
+
+// UTC代表通用协调时间，对应零时区。
+var UTC *Location = &utcLoc
+
+// A Duration represents the elapsed time between two instants
+// as an int64 nanosecond count.  The representation limits the
+// largest representable duration to approximately 290 years.
+
+// Duration类型代表两个时间点之间经过的时间，以纳秒为单位。可表示的最长时间段大
+// 约290年。
 type Duration int64
 
 // A Location maps time instants to the zone in use at that time.
 // Typically, the Location represents the collection of time offsets
 // in use in a geographical area, such as CEST and CET for central Europe.
 
-// Location代表一个（关联到某个时间点的）地点，以及该地点所在的时区。
-//
-//     var Local *Location = &localLoc
-//
-// Local代表系统本地，对应本地时区。
-//
-//     var UTC *Location = &utcLoc
-//
-// UTC代表通用协调时间，对应零时区。
+// Location 代表一个（关联到某个时间点的）地点，以及该地点所在的时区。
 type Location struct {
 }
 
 // A Month specifies a month of the year (January = 1, ...).
 
 // Month代表一年的某个月。
-//
-//     const (
-//         January Month = 1 + iota
-//         February
-//         March
-//         April
-//         May
-//         June
-//         July
-//         August
-//         September
-//         October
-//         November
-//         December
-//     )
 type Month int
 
 // ParseError describes a problem parsing a time string.
 
 // ParseError描述解析时间字符串时出现的错误。
 type ParseError struct {
-    Layout     string
-    Value      string
-    LayoutElem string
-    ValueElem  string
-    Message    string
+	Layout     string
+	Value      string
+	LayoutElem string
+	ValueElem  string
+	Message    string
 }
 
 // A Ticker holds a channel that delivers `ticks' of a clock
@@ -270,7 +229,7 @@ type ParseError struct {
 
 // Ticker保管一个通道，并每隔一段时间向其传递"tick"。
 type Ticker struct {
-    C <-chan Time // The channel on which the ticks are delivered.
+	C <-chan Time // The channel on which the ticks are delivered.
 
 }
 
@@ -327,22 +286,12 @@ type Time struct {
 // Timer类型代表单次时间事件。当Timer到期时，当时的时间会被发送给C，除非Timer是
 // 被AfterFunc函数创建的。
 type Timer struct {
-    C <-chan Time
+	C <-chan Time
 }
 
 // A Weekday specifies a day of the week (Sunday = 0, ...).
 
 // Weekday代表一周的某一天。
-//
-//     const (
-//         Sunday Weekday = iota
-//         Monday
-//         Tuesday
-//         Wednesday
-//         Thursday
-//         Friday
-//         Saturday
-//     )
 type Weekday int
 
 // After waits for the duration to elapse and then sends the current time
@@ -350,7 +299,7 @@ type Weekday int
 // It is equivalent to NewTimer(d).C.
 
 // After会在另一线程经过时间段d后向返回值发送当时的时间。等价于NewTimer(d).C。
-func After(d Duration) (<-chan Time)
+func After(d Duration) <-chan Time
 
 // AfterFunc waits for the duration to elapse and then calls f
 // in its own goroutine. It returns a Timer that can
@@ -559,7 +508,7 @@ func Sleep(d Duration)
 
 // Tick是NewTicker的封装，只提供对Ticker的通道的访问。如果不需要关闭Ticker，本函
 // 数就很方便。
-func Tick(d Duration) (<-chan Time)
+func Tick(d Duration) <-chan Time
 
 // Unix returns the local Time corresponding to the given Unix time,
 // sec seconds and nsec nanoseconds since January 1, 1970 UTC.
@@ -819,4 +768,3 @@ func (Time) Zone() (name string, offset int)
 
 // String返回该日（周几）的英文名（"Sunday"、"Monday"，……）
 func (Weekday) String() string
-

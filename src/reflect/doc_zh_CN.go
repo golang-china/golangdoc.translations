@@ -26,119 +26,83 @@
 package reflect
 
 import (
-    "math"
-    "runtime"
-    "strconv"
-    "sync"
-    "unsafe"
+	"math"
+	"runtime"
+	"strconv"
+	"sync"
+	"unsafe"
 )
 
 const (
-    Invalid Kind = iota
-    Bool
-    Int
-    Int8
-    Int16
-    Int32
-    Int64
-    Uint
-    Uint8
-    Uint16
-    Uint32
-    Uint64
-    Uintptr
-    Float32
-    Float64
-    Complex64
-    Complex128
-    Array
-    Chan
-    Func
-    Interface
-    Map
-    Ptr
-    Slice
-    String
-    Struct
-    UnsafePointer
+	Invalid Kind = iota
+	Bool
+	Int
+	Int8
+	Int16
+	Int32
+	Int64
+	Uint
+	Uint8
+	Uint16
+	Uint32
+	Uint64
+	Uintptr
+	Float32
+	Float64
+	Complex64
+	Complex128
+	Array
+	Chan
+	Func
+	Interface
+	Map
+	Ptr
+	Slice
+	String
+	Struct
+	UnsafePointer
 )
 
 const (
-    RecvDir ChanDir             = 1 << iota // <-chan
-    SendDir                                 // chan<-
-    BothDir = RecvDir | SendDir             // chan
+	RecvDir ChanDir             = 1 << iota // <-chan
+	SendDir                                 // chan<-
+	BothDir = RecvDir | SendDir             // chan
 )
 
 const (
-    _             SelectDir = iota
-    SelectSend              // case Chan <- Send
-    SelectRecv              // case <-Chan:
-    SelectDefault           // default
+	_             SelectDir = iota
+	SelectSend              // case Chan <- Send
+	SelectRecv              // case <-Chan:
+	SelectDefault           // default
 )
 
 // ChanDir represents a channel type's direction.
 
 // ChanDir表示通道类型的方向。
-//
-//     const (
-//         RecvDir ChanDir             = 1 << iota // <-chan
-//         SendDir                                 // chan<-
-//         BothDir = RecvDir | SendDir             // chan
-//     )
 type ChanDir int
 
 // A Kind represents the specific kind of type that a Type represents.
 // The zero Kind is not a valid kind.
 
 // Kind代表Type类型值表示的具体分类。零值表示非法分类。
-//
-//     const (
-//         Invalid Kind = iota
-//         Bool
-//         Int
-//         Int8
-//         Int16
-//         Int32
-//         Int64
-//         Uint
-//         Uint8
-//         Uint16
-//         Uint32
-//         Uint64
-//         Uintptr
-//         Float32
-//         Float64
-//         Complex64
-//         Complex128
-//         Array
-//         Chan
-//         Func
-//         Interface
-//         Map
-//         Ptr
-//         Slice
-//         String
-//         Struct
-//         UnsafePointer
-//     )
 type Kind uint
 
 // Method represents a single method.
 
 // Method代表一个方法。
 type Method struct {
-    // Name is the method name.
-    // PkgPath is the package path that qualifies a lower case (unexported)
-    // method name.  It is empty for upper case (exported) method names.
-    // The combination of PkgPath and Name uniquely identifies a method
-    // in a method set.
-    // See http://golang.org/ref/spec#Uniqueness_of_identifiers
-    Name    string
-    PkgPath string
+	// Name is the method name.
+	// PkgPath is the package path that qualifies a lower case (unexported)
+	// method name.  It is empty for upper case (exported) method names.
+	// The combination of PkgPath and Name uniquely identifies a method
+	// in a method set.
+	// See http://golang.org/ref/spec#Uniqueness_of_identifiers
+	Name    string
+	PkgPath string
 
-    Type  Type  // method type
-    Func  Value // func with receiver as first argument
-    Index int   // index for Type.Method
+	Type  Type  // method type
+	Func  Value // func with receiver as first argument
+	Index int   // index for Type.Method
 }
 
 // A SelectCase describes a single case in a select operation. The kind of case
@@ -172,9 +136,9 @@ type Method struct {
 // ，而Send必须是一个Value零值。如果Chan是Value零值，该条case会被忽略，但Send字
 // 段仍需是Value零值。当该条case被执行时，接收到的值会被Select返回。
 type SelectCase struct {
-    Dir  SelectDir // direction of case
-    Chan Value     // channel to use (for send or receive)
-    Send Value     // value to send (for send)
+	Dir  SelectDir // direction of case
+	Chan Value     // channel to use (for send or receive)
+	Send Value     // value to send (for send)
 }
 
 // A SelectDir describes the communication direction of a select case.
@@ -193,9 +157,9 @@ type SelectDir int
 // 来的版本里也可能会改变。而且，Data字段也不能保证它指向的数据不会被当成垃圾收
 // 集，因此程序必须维护一个独立的、类型正确的指向底层数据的指针。
 type SliceHeader struct {
-    Data uintptr
-    Len  int
-    Cap  int
+	Data uintptr
+	Len  int
+	Cap  int
 }
 
 // StringHeader is the runtime representation of a string.
@@ -209,26 +173,26 @@ type SliceHeader struct {
 // 在未来的版本里也可能会改变。而且，Data字段也不能保证它指向的数据不会被当成垃
 // 圾收集，因此程序必须维护一个独立的、类型正确的指向底层数据的指针。
 type StringHeader struct {
-    Data uintptr
-    Len  int
+	Data uintptr
+	Len  int
 }
 
 // A StructField describes a single field in a struct.
 
 // StructField类型描述结构体中的一个字段的信息。
 type StructField struct {
-    // Name is the field name.
-    // PkgPath is the package path that qualifies a lower case (unexported)
-    // field name.  It is empty for upper case (exported) field names.
-    // See http://golang.org/ref/spec#Uniqueness_of_identifiers
-    Name    string
-    PkgPath string
+	// Name is the field name.
+	// PkgPath is the package path that qualifies a lower case (unexported)
+	// field name.  It is empty for upper case (exported) field names.
+	// See http://golang.org/ref/spec#Uniqueness_of_identifiers
+	Name    string
+	PkgPath string
 
-    Type      Type      // field type
-    Tag       StructTag // field tag string
-    Offset    uintptr   // offset within struct, in bytes
-    Index     []int     // index sequence for Type.FieldByIndex
-    Anonymous bool      // is an embedded field
+	Type      Type      // field type
+	Tag       StructTag // field tag string
+	Offset    uintptr   // offset within struct, in bytes
+	Index     []int     // index sequence for Type.FieldByIndex
+	Anonymous bool      // is an embedded field
 }
 
 // A StructTag is the tag string in a struct field.
@@ -262,149 +226,149 @@ type StructTag string
 // 法会导致运行时的panic。
 type Type interface {
 
-    // Align returns the alignment in bytes of a value of
-    // this type when allocated in memory.
-    Align() int
+	// Align returns the alignment in bytes of a value of
+	// this type when allocated in memory.
+	Align() int
 
-    // FieldAlign returns the alignment in bytes of a value of
-    // this type when used as a field in a struct.
-    FieldAlign() int
+	// FieldAlign returns the alignment in bytes of a value of
+	// this type when used as a field in a struct.
+	FieldAlign() int
 
-    // Method returns the i'th method in the type's method set.
-    // It panics if i is not in the range [0, NumMethod()).
-    //
-    // For a non-interface type T or *T, the returned Method's Type and Func
-    // fields describe a function whose first argument is the receiver.
-    //
-    // For an interface type, the returned Method's Type field gives the
-    // method signature, without a receiver, and the Func field is nil.
-    Method(int) Method
+	// Method returns the i'th method in the type's method set.
+	// It panics if i is not in the range [0, NumMethod()).
+	//
+	// For a non-interface type T or *T, the returned Method's Type and Func
+	// fields describe a function whose first argument is the receiver.
+	//
+	// For an interface type, the returned Method's Type field gives the
+	// method signature, without a receiver, and the Func field is nil.
+	Method(int) Method
 
-    // MethodByName returns the method with that name in the type's
-    // method set and a boolean indicating if the method was found.
-    //
-    // For a non-interface type T or *T, the returned Method's Type and Func
-    // fields describe a function whose first argument is the receiver.
-    //
-    // For an interface type, the returned Method's Type field gives the
-    // method signature, without a receiver, and the Func field is nil.
-    MethodByName(string) (Method, bool)
+	// MethodByName returns the method with that name in the type's
+	// method set and a boolean indicating if the method was found.
+	//
+	// For a non-interface type T or *T, the returned Method's Type and Func
+	// fields describe a function whose first argument is the receiver.
+	//
+	// For an interface type, the returned Method's Type field gives the
+	// method signature, without a receiver, and the Func field is nil.
+	MethodByName(string) (Method, bool)
 
-    // NumMethod returns the number of methods in the type's method set.
-    NumMethod() int
+	// NumMethod returns the number of methods in the type's method set.
+	NumMethod() int
 
-    // Name returns the type's name within its package.
-    // It returns an empty string for unnamed types.
-    Name() string
+	// Name returns the type's name within its package.
+	// It returns an empty string for unnamed types.
+	Name() string
 
-    // PkgPath returns a named type's package path, that is, the import path
-    // that uniquely identifies the package, such as "encoding/base64".
-    // If the type was predeclared (string, error) or unnamed (*T, struct{}, []int),
-    // the package path will be the empty string.
-    PkgPath() string
+	// PkgPath returns a named type's package path, that is, the import path
+	// that uniquely identifies the package, such as "encoding/base64".
+	// If the type was predeclared (string, error) or unnamed (*T, struct{}, []int),
+	// the package path will be the empty string.
+	PkgPath() string
 
-    // Size returns the number of bytes needed to store
-    // a value of the given type; it is analogous to unsafe.Sizeof.
-    Size() uintptr
+	// Size returns the number of bytes needed to store
+	// a value of the given type; it is analogous to unsafe.Sizeof.
+	Size() uintptr
 
-    // String returns a string representation of the type.
-    // The string representation may use shortened package names
-    // (e.g., base64 instead of "encoding/base64") and is not
-    // guaranteed to be unique among types.  To test for equality,
-    // compare the Types directly.
-    String() string
+	// String returns a string representation of the type.
+	// The string representation may use shortened package names
+	// (e.g., base64 instead of "encoding/base64") and is not
+	// guaranteed to be unique among types.  To test for equality,
+	// compare the Types directly.
+	String() string
 
-    // Kind returns the specific kind of this type.
-    Kind() Kind
+	// Kind returns the specific kind of this type.
+	Kind() Kind
 
-    // Implements returns true if the type implements the interface type u.
-    Implements(u Type) bool
+	// Implements returns true if the type implements the interface type u.
+	Implements(u Type) bool
 
-    // AssignableTo returns true if a value of the type is assignable to type u.
-    AssignableTo(u Type) bool
+	// AssignableTo returns true if a value of the type is assignable to type u.
+	AssignableTo(u Type) bool
 
-    // ConvertibleTo returns true if a value of the type is convertible to type u.
-    ConvertibleTo(u Type) bool
+	// ConvertibleTo returns true if a value of the type is convertible to type u.
+	ConvertibleTo(u Type) bool
 
-    // Comparable returns true if values of this type are comparable.
-    Comparable() bool
+	// Comparable returns true if values of this type are comparable.
+	Comparable() bool
 
-    // Bits returns the size of the type in bits.
-    // It panics if the type's Kind is not one of the
-    // sized or unsized Int, Uint, Float, or Complex kinds.
-    Bits() int
+	// Bits returns the size of the type in bits.
+	// It panics if the type's Kind is not one of the
+	// sized or unsized Int, Uint, Float, or Complex kinds.
+	Bits() int
 
-    // ChanDir returns a channel type's direction.
-    // It panics if the type's Kind is not Chan.
-    ChanDir() ChanDir
+	// ChanDir returns a channel type's direction.
+	// It panics if the type's Kind is not Chan.
+	ChanDir() ChanDir
 
-    // IsVariadic returns true if a function type's final input parameter
-    // is a "..." parameter.  If so, t.In(t.NumIn() - 1) returns the parameter's
-    // implicit actual type []T.
-    //
-    // For concreteness, if t represents func(x int, y ... float64), then
-    //
-    //	t.NumIn() == 2
-    //	t.In(0) is the reflect.Type for "int"
-    //	t.In(1) is the reflect.Type for "[]float64"
-    //	t.IsVariadic() == true
-    //
-    // IsVariadic panics if the type's Kind is not Func.
-    IsVariadic() bool
+	// IsVariadic returns true if a function type's final input parameter
+	// is a "..." parameter.  If so, t.In(t.NumIn() - 1) returns the parameter's
+	// implicit actual type []T.
+	//
+	// For concreteness, if t represents func(x int, y ... float64), then
+	//
+	//	t.NumIn() == 2
+	//	t.In(0) is the reflect.Type for "int"
+	//	t.In(1) is the reflect.Type for "[]float64"
+	//	t.IsVariadic() == true
+	//
+	// IsVariadic panics if the type's Kind is not Func.
+	IsVariadic() bool
 
-    // Elem returns a type's element type.
-    // It panics if the type's Kind is not Array, Chan, Map, Ptr, or Slice.
-    Elem() Type
+	// Elem returns a type's element type.
+	// It panics if the type's Kind is not Array, Chan, Map, Ptr, or Slice.
+	Elem() Type
 
-    // Field returns a struct type's i'th field.
-    // It panics if the type's Kind is not Struct.
-    // It panics if i is not in the range [0, NumField()).
-    Field(i int) StructField
+	// Field returns a struct type's i'th field.
+	// It panics if the type's Kind is not Struct.
+	// It panics if i is not in the range [0, NumField()).
+	Field(i int) StructField
 
-    // FieldByIndex returns the nested field corresponding
-    // to the index sequence.  It is equivalent to calling Field
-    // successively for each index i.
-    // It panics if the type's Kind is not Struct.
-    FieldByIndex(index []int) StructField
+	// FieldByIndex returns the nested field corresponding
+	// to the index sequence.  It is equivalent to calling Field
+	// successively for each index i.
+	// It panics if the type's Kind is not Struct.
+	FieldByIndex(index []int) StructField
 
-    // FieldByName returns the struct field with the given name
-    // and a boolean indicating if the field was found.
-    FieldByName(name string) (StructField, bool)
+	// FieldByName returns the struct field with the given name
+	// and a boolean indicating if the field was found.
+	FieldByName(name string) (StructField, bool)
 
-    // FieldByNameFunc returns the first struct field with a name
-    // that satisfies the match function and a boolean indicating if
-    // the field was found.
-    FieldByNameFunc(match func(string) bool) (StructField, bool)
+	// FieldByNameFunc returns the first struct field with a name
+	// that satisfies the match function and a boolean indicating if
+	// the field was found.
+	FieldByNameFunc(match func(string) bool) (StructField, bool)
 
-    // In returns the type of a function type's i'th input parameter.
-    // It panics if the type's Kind is not Func.
-    // It panics if i is not in the range [0, NumIn()).
-    In(i int) Type
+	// In returns the type of a function type's i'th input parameter.
+	// It panics if the type's Kind is not Func.
+	// It panics if i is not in the range [0, NumIn()).
+	In(i int) Type
 
-    // Key returns a map type's key type.
-    // It panics if the type's Kind is not Map.
-    Key() Type
+	// Key returns a map type's key type.
+	// It panics if the type's Kind is not Map.
+	Key() Type
 
-    // Len returns an array type's length.
-    // It panics if the type's Kind is not Array.
-    Len() int
+	// Len returns an array type's length.
+	// It panics if the type's Kind is not Array.
+	Len() int
 
-    // NumField returns a struct type's field count.
-    // It panics if the type's Kind is not Struct.
-    NumField() int
+	// NumField returns a struct type's field count.
+	// It panics if the type's Kind is not Struct.
+	NumField() int
 
-    // NumIn returns a function type's input parameter count.
-    // It panics if the type's Kind is not Func.
-    NumIn() int
+	// NumIn returns a function type's input parameter count.
+	// It panics if the type's Kind is not Func.
+	NumIn() int
 
-    // NumOut returns a function type's output parameter count.
-    // It panics if the type's Kind is not Func.
-    NumOut() int
+	// NumOut returns a function type's output parameter count.
+	// It panics if the type's Kind is not Func.
+	NumOut() int
 
-    // Out returns the type of a function type's i'th output parameter.
-    // It panics if the type's Kind is not Func.
-    // It panics if i is not in the range [0, NumOut()).
-    Out(i int) Type
+	// Out returns the type of a function type's i'th output parameter.
+	// It panics if the type's Kind is not Func.
+	// It panics if i is not in the range [0, NumOut()).
+	Out(i int) Type
 }
 
 // Value is the reflection interface to a Go value.
@@ -452,8 +416,8 @@ type Value struct {
 // 当一个Value类型值调用它不支持的方法时，将导致ValueError。具体情况参见各个方法
 // 。
 type ValueError struct {
-    Method string
-    Kind   Kind
+	Method string
+	Kind   Kind
 }
 
 // Append appends the values x to a slice s and returns the resulting slice. As
@@ -1042,4 +1006,3 @@ func (Value) Uint() uint64
 // UnsafeAddr returns a pointer to v's data. It is for advanced clients that
 // also import the "unsafe" package. It panics if v is not addressable.
 func (Value) UnsafeAddr() uintptr
-
