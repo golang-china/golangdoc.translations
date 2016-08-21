@@ -1,12 +1,15 @@
-// Copyright 2014 The Go Authors. All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // +build ingore
 
-package atomic
+package atomic // import "runtime/internal/atomic"
 
-import "unsafe"
+import (
+    "runtime/internal/sys"
+    "unsafe"
+)
 
 // go:noescape
 func And8(ptr *uint8, val uint8)
@@ -27,8 +30,7 @@ func Casuintptr(ptr *uintptr, old, new uintptr) bool
 // go:noinline
 func Load(ptr *uint32) uint32
 
-// go:nosplit
-// go:noinline
+// go:noescape
 func Load64(ptr *uint64) uint64
 
 // go:noescape
@@ -53,11 +55,8 @@ func Store(ptr *uint32, val uint32)
 // go:noescape
 func Store64(ptr *uint64, val uint64)
 
-// StorepNoWB performs *ptr = val atomically and without a write
-// barrier.
-//
 // NO go:noescape annotation; see atomic_pointer.go.
-func StorepNoWB(ptr unsafe.Pointer, val unsafe.Pointer)
+func Storep1(ptr unsafe.Pointer, val unsafe.Pointer)
 
 // go:noescape
 func Storeuintptr(ptr *uintptr, new uintptr)
@@ -65,7 +64,7 @@ func Storeuintptr(ptr *uintptr, new uintptr)
 // go:noescape
 func Xadd(ptr *uint32, delta int32) uint32
 
-// go:noescape
+// go:nosplit
 func Xadd64(ptr *uint64, delta int64) uint64
 
 // go:noescape
@@ -77,7 +76,7 @@ func Xadduintptr(ptr *uintptr, delta uintptr) uintptr
 // go:noescape
 func Xchg(ptr *uint32, new uint32) uint32
 
-// go:noescape
+// go:nosplit
 func Xchg64(ptr *uint64, new uint64) uint64
 
 // go:noescape

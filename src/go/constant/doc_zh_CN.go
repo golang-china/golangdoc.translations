@@ -19,7 +19,7 @@
 // is unknown due to an error. Operations on unknown
 // values produce unknown values unless specified
 // otherwise.
-package constant
+package constant // import "go/constant"
 
 import (
     "fmt"
@@ -27,45 +27,45 @@ import (
     "math"
     "math/big"
     "strconv"
+    "strings"
+    "testing"
     "unicode/utf8"
 )
 
-
 const (
-	// unknown values
-	Unknown Kind = iota
-	// non-numeric values
-	Bool
-	String
-	// numeric values
-	Int
-	Float
-	Complex
-)
+    // unknown values
+    Unknown Kind = iota
 
+    // non-numeric values
+    Bool
+    String
+
+    // numeric values
+    Int
+    Float
+    Complex
+)
 
 // Kind specifies the kind of value represented by a Value.
 type Kind int
 
-
 // A Value represents the value of a Go constant.
 type Value interface {
-	// Kind returns the value kind.
-	Kind() Kind
+    // Kind returns the value kind.
+    Kind() Kind
 
-	// String returns a short, human-readable form of the value.
-	// For numeric values, the result may be an approximation;
-	// for String values the result may be a shortened string.
-	// Use ExactString for a string representing a value exactly.
-	String() string
+    // String returns a short, human-readable form of the value.
+    // For numeric values, the result may be an approximation;
+    // for String values the result may be a shortened string.
+    // Use ExactString for a string representing a value exactly.
+    String() string
 
-	// ExactString returns an exact, printable form of the value.
-	ExactString() string
+    // ExactString returns an exact, printable form of the value.
+    ExactString() string
 
-	// Prevent external implementations.
-	implementsValue()
+    // Prevent external implementations.
+    implementsValue()
 }
-
 
 // BinaryOp returns the result of the binary expression x op y.
 // The operation must be defined for the operands. If one of the
@@ -119,8 +119,6 @@ func Imag(x Value) Value
 func Int64Val(x Value) (int64, bool)
 
 // MakeBool returns the Bool value for x.
-
-// MakeBool returns the Bool value for b.
 func MakeBool(b bool) Value
 
 // MakeFloat64 returns the Float value for x.
@@ -136,12 +134,6 @@ func MakeFromBytes(bytes []byte) Value
 // tok value must be one of token.INT, token.FLOAT, toke.IMAG, token.
 // CHAR, or token.STRING. The final argument must be zero.
 // If the literal string syntax is invalid, the result is an Unknown.
-
-// MakeFromLiteral returns the corresponding integer, floating-point,
-// imaginary, character, or string value for a Go literal string. The
-// tok value must be one of token.INT, token.FLOAT, token.IMAG,
-// token.CHAR, or token.STRING. The final argument must be zero.
-// If the literal string syntax is invalid, the result is an Unknown.
 func MakeFromLiteral(lit string, tok token.Token, zero uint) Value
 
 // MakeImag returns the Complex value x*i;
@@ -153,8 +145,6 @@ func MakeImag(x Value) Value
 func MakeInt64(x int64) Value
 
 // MakeString returns the String value for x.
-
-// MakeString returns the String value for s.
 func MakeString(s string) Value
 
 // MakeUint64 returns the Int value for x.
@@ -186,6 +176,16 @@ func Sign(x Value) int
 // StringVal returns the Go string value of x, which must be a String or an
 // Unknown. If x is Unknown, the result is "".
 func StringVal(x Value) string
+
+func TestBytes(t *testing.T)
+
+func TestFractions(t *testing.T)
+
+func TestOps(t *testing.T)
+
+func TestString(t *testing.T)
+
+func TestUnknown(t *testing.T)
 
 // ToComplex converts x to a Complex value if x is representable as a Complex.
 // Otherwise it returns an Unknown.

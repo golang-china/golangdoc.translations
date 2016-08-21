@@ -1,105 +1,77 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // +build ingore
 
-package big
+package big // import "cmd/compile/internal/big"
 
 import (
     "bytes"
-    "encoding/binary"
+    "encoding/hex"
     "errors"
+    "flag"
     "fmt"
     "io"
     "math"
     "math/rand"
+    "runtime"
+    "sort"
     "strconv"
     "strings"
     "sync"
+    "testing"
+    "testing/quick"
+    "time"
 )
 
 // Constants describing the Accuracy of a Float.
 const (
-	Below Accuracy = -1
-	Exact Accuracy = 0
-	Above Accuracy = +1
+    Below Accuracy = -1
+    Exact Accuracy = 0
+    Above Accuracy = +1
 )
-
 
 // MaxBase is the largest number base accepted for string conversions.
 const MaxBase = 'z' - 'a' + 10 + 1
 
-
 // Exponent and precision limits.
 const (
-	MaxExp  = math.MaxInt32  // largest supported exponent
-	MinExp  = math.MinInt32  // smallest supported exponent
-	MaxPrec = math.MaxUint32 // largest (theoretically) supported precision; likely memory-limited
-
+    MaxExp  = math.MaxInt32  // largest supported exponent
+    MinExp  = math.MinInt32  // smallest supported exponent
+    MaxPrec = math.MaxUint32 // largest (theoretically) supported precision; likely memory-limited
 )
-
 
 // These constants define supported rounding modes.
 const (
-	ToNearestEven RoundingMode = iota // == IEEE 754-2008 roundTiesToEven
-	ToNearestAway                     // == IEEE 754-2008 roundTiesToAway
-	ToZero                            // == IEEE 754-2008 roundTowardZero
-	AwayFromZero                      // no IEEE 754-2008 equivalent
-	ToNegativeInf                     // == IEEE 754-2008 roundTowardNegative
-	ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive
-
+    ToNearestEven RoundingMode = iota // == IEEE 754-2008 roundTiesToEven
+    ToNearestAway                     // == IEEE 754-2008 roundTiesToAway
+    ToZero                            // == IEEE 754-2008 roundTowardZero
+    AwayFromZero                      // no IEEE 754-2008 equivalent
+    ToNegativeInf                     // == IEEE 754-2008 roundTowardNegative
+    ToPositiveInf                     // == IEEE 754-2008 roundTowardPositive
 )
-
 
 // Accuracy describes the rounding error produced by the most recent
 // operation that generated a Float value, relative to the exact value.
 type Accuracy int8
 
+// A Bits value b represents a finite floating-point number x of the form
+//
+//     x = 2**b[0] + 2**b[1] + ... 2**b[len(b)-1]
+//
+// The order of slice elements is not significant. Negative elements may be
+// used to form fractions. A Bits value is normalized if each b[i] occurs at
+// most once. For instance Bits{0, 0, 1} is not normalized but represents the
+// same floating-point number as Bits{2}, which is normalized. The zero (nil)
+// value of Bits is a ready to use Bits value and represents the value 0.
+type Bits []int
 
 // An ErrNaN panic is raised by a Float operation that would lead to
 // a NaN under IEEE-754 rules. An ErrNaN implements the error interface.
 type ErrNaN struct {
-	msg string
+    msg string
 }
-
-
-// A nonzero finite Float represents a multi-precision floating point number
-//
-//   sign × mantissa × 2**exponent
-//
-// with 0.5 <= mantissa < 1.0, and MinExp <= exponent <= MaxExp.
-// A Float may also be zero (+0, -0) or infinite (+Inf, -Inf).
-// All Floats are ordered, and the ordering of two Floats x and y
-// is defined by x.Cmp(y).
-//
-// Each Float value also has a precision, rounding mode, and accuracy.
-// The precision is the maximum number of mantissa bits available to
-// represent the value. The rounding mode specifies how a result should
-// be rounded to fit into the mantissa bits, and accuracy describes the
-// rounding error with respect to the exact result.
-//
-// Unless specified otherwise, all operations (including setters) that
-// specify a *Float variable for the result (usually via the receiver
-// with the exception of MantExp), round the numeric result according
-// to the precision and rounding mode of the result variable.
-//
-// If the provided result precision is 0 (see below), it is set to the
-// precision of the argument with the largest precision value before any
-// rounding takes place, and the rounding mode remains unchanged. Thus,
-// uninitialized Floats provided as result arguments will have their
-// precision set to a reasonable value determined by the operands and
-// their mode is the zero value for RoundingMode (ToNearestEven).
-//
-// By setting the desired precision to 24 or 53 and using matching rounding
-// mode (typically ToNearestEven), Float operations produce the same results
-// as the corresponding float32 or float64 IEEE-754 arithmetic for operands
-// that correspond to normal (i.e., not denormal) float32 or float64 numbers.
-// Exponent underflow and overflow lead to a 0 or an Infinity for different
-// values than IEEE-754 because Float exponents have a much larger range.
-//
-// The zero (uninitialized) value for a Float is ready to use and represents
-// the number +0.0 exactly, with precision 0 and rounding mode ToNearestEven.
 
 // A nonzero finite Float represents a multi-precision floating point number
 //
@@ -138,47 +110,337 @@ type ErrNaN struct {
 // The zero (uninitialized) value for a Float is ready to use and represents
 // the number +0.0 exactly, with precision 0 and rounding mode ToNearestEven.
 type Float struct {
-	prec uint32
-	mode RoundingMode
-	acc  Accuracy
-	form form
-	neg  bool
-	mant nat
-	exp  int32
+    prec uint32
+    mode RoundingMode
+    acc  Accuracy
+    form form
+    neg  bool
+    mant nat
+    exp  int32
 }
-
 
 // An Int represents a signed multi-precision integer.
 // The zero value for an Int represents the value 0.
 type Int struct {
-	neg bool // sign
-	abs nat  // absolute value of the integer
+    neg bool // sign
+    abs nat  // absolute value of the integer
 }
-
 
 // A Rat represents a quotient a/b of arbitrary precision.
 // The zero value for a Rat represents the value 0.
 type Rat struct {
-	// To make zero values for Rat work w/o initialization,
-	// a zero value of b (len(b) == 0) acts like b == 1.
-	// a.neg determines the sign of the Rat, b.neg is ignored.
-	a, b Int
+    // To make zero values for Rat work w/o initialization,
+    // a zero value of b (len(b) == 0) acts like b == 1.
+    // a.neg determines the sign of the Rat, b.neg is ignored.
+    a, b Int
 }
-
 
 // RoundingMode determines how a Float value is rounded to the
 // desired precision. Rounding may change the Float value; the
 // rounding error is described by the Float's Accuracy.
 type RoundingMode byte
 
+type StringTest struct {
+    in, out string
+    ok      bool
+}
 
 // A Word represents a single digit of a multi-precision unsigned integer.
 type Word uintptr
 
+func BenchmarkAddMulVVW_1(b *testing.B)
+
+func BenchmarkAddMulVVW_1e1(b *testing.B)
+
+func BenchmarkAddMulVVW_1e2(b *testing.B)
+
+func BenchmarkAddMulVVW_1e3(b *testing.B)
+
+func BenchmarkAddMulVVW_1e4(b *testing.B)
+
+func BenchmarkAddMulVVW_1e5(b *testing.B)
+
+func BenchmarkAddMulVVW_2(b *testing.B)
+
+func BenchmarkAddMulVVW_3(b *testing.B)
+
+func BenchmarkAddMulVVW_4(b *testing.B)
+
+func BenchmarkAddMulVVW_5(b *testing.B)
+
+func BenchmarkAddVV_1(b *testing.B)
+
+func BenchmarkAddVV_1e1(b *testing.B)
+
+func BenchmarkAddVV_1e2(b *testing.B)
+
+func BenchmarkAddVV_1e3(b *testing.B)
+
+func BenchmarkAddVV_1e4(b *testing.B)
+
+func BenchmarkAddVV_1e5(b *testing.B)
+
+func BenchmarkAddVV_2(b *testing.B)
+
+func BenchmarkAddVV_3(b *testing.B)
+
+func BenchmarkAddVV_4(b *testing.B)
+
+func BenchmarkAddVV_5(b *testing.B)
+
+func BenchmarkAddVW_1(b *testing.B)
+
+func BenchmarkAddVW_1e1(b *testing.B)
+
+func BenchmarkAddVW_1e2(b *testing.B)
+
+func BenchmarkAddVW_1e3(b *testing.B)
+
+func BenchmarkAddVW_1e4(b *testing.B)
+
+func BenchmarkAddVW_1e5(b *testing.B)
+
+func BenchmarkAddVW_2(b *testing.B)
+
+func BenchmarkAddVW_3(b *testing.B)
+
+func BenchmarkAddVW_4(b *testing.B)
+
+func BenchmarkAddVW_5(b *testing.B)
+
+func BenchmarkBinomial(b *testing.B)
+
+// Individual bitLen tests.  Numbers chosen to examine both sides
+// of powers-of-two boundaries.
+func BenchmarkBitLen0(b *testing.B)
+
+func BenchmarkBitLen1(b *testing.B)
+
+func BenchmarkBitLen16(b *testing.B)
+
+func BenchmarkBitLen17(b *testing.B)
+
+func BenchmarkBitLen2(b *testing.B)
+
+func BenchmarkBitLen3(b *testing.B)
+
+func BenchmarkBitLen31(b *testing.B)
+
+func BenchmarkBitLen4(b *testing.B)
+
+func BenchmarkBitLen5(b *testing.B)
+
+func BenchmarkBitLen8(b *testing.B)
+
+func BenchmarkBitLen9(b *testing.B)
+
+func BenchmarkBitset(b *testing.B)
+
+func BenchmarkBitsetNeg(b *testing.B)
+
+func BenchmarkBitsetNegOrig(b *testing.B)
+
+func BenchmarkBitsetOrig(b *testing.B)
+
+func BenchmarkDecimalConversion(b *testing.B)
+
+func BenchmarkExp3Power0x10(b *testing.B)
+
+func BenchmarkExp3Power0x100(b *testing.B)
+
+func BenchmarkExp3Power0x1000(b *testing.B)
+
+func BenchmarkExp3Power0x10000(b *testing.B)
+
+func BenchmarkExp3Power0x100000(b *testing.B)
+
+func BenchmarkExp3Power0x40(b *testing.B)
+
+func BenchmarkExp3Power0x400(b *testing.B)
+
+func BenchmarkExp3Power0x4000(b *testing.B)
+
+func BenchmarkExp3Power0x40000(b *testing.B)
+
+func BenchmarkExp3Power0x400000(b *testing.B)
+
+func BenchmarkFibo(b *testing.B)
+
+func BenchmarkGCD100000x100000(b *testing.B)
+
+func BenchmarkGCD10000x10000(b *testing.B)
+
+func BenchmarkGCD10000x100000(b *testing.B)
+
+func BenchmarkGCD1000x1000(b *testing.B)
+
+func BenchmarkGCD1000x10000(b *testing.B)
+
+func BenchmarkGCD1000x100000(b *testing.B)
+
+func BenchmarkGCD100x100(b *testing.B)
+
+func BenchmarkGCD100x1000(b *testing.B)
+
+func BenchmarkGCD100x10000(b *testing.B)
+
+func BenchmarkGCD100x100000(b *testing.B)
+
+func BenchmarkGCD10x10(b *testing.B)
+
+func BenchmarkGCD10x100(b *testing.B)
+
+func BenchmarkGCD10x1000(b *testing.B)
+
+func BenchmarkGCD10x10000(b *testing.B)
+
+func BenchmarkGCD10x100000(b *testing.B)
+
+func BenchmarkHilbert(b *testing.B)
+
+func BenchmarkLeafSize0(b *testing.B)
+
+func BenchmarkLeafSize1(b *testing.B)
+
+func BenchmarkLeafSize10(b *testing.B)
+
+func BenchmarkLeafSize11(b *testing.B)
+
+func BenchmarkLeafSize12(b *testing.B)
+
+func BenchmarkLeafSize13(b *testing.B)
+
+func BenchmarkLeafSize14(b *testing.B)
+
+func BenchmarkLeafSize15(b *testing.B)
+
+func BenchmarkLeafSize16(b *testing.B)
+
+func BenchmarkLeafSize2(b *testing.B)
+
+func BenchmarkLeafSize3(b *testing.B)
+
+func BenchmarkLeafSize32(b *testing.B)
+
+func BenchmarkLeafSize4(b *testing.B)
+
+func BenchmarkLeafSize5(b *testing.B)
+
+func BenchmarkLeafSize6(b *testing.B)
+
+func BenchmarkLeafSize64(b *testing.B)
+
+func BenchmarkLeafSize7(b *testing.B)
+
+func BenchmarkLeafSize8(b *testing.B)
+
+func BenchmarkLeafSize9(b *testing.B)
+
+func BenchmarkModSqrt224_3Mod4(b *testing.B)
+
+func BenchmarkModSqrt225_Tonelli(b *testing.B)
+
+func BenchmarkModSqrt5430_3Mod4(b *testing.B)
+
+func BenchmarkModSqrt5430_Tonelli(b *testing.B)
+
+func BenchmarkMul(b *testing.B)
+
+func BenchmarkParseFloatLargeExp(b *testing.B)
+
+func BenchmarkParseFloatSmallExp(b *testing.B)
+
+func BenchmarkScan100000Base10(b *testing.B)
+
+func BenchmarkScan100000Base16(b *testing.B)
+
+func BenchmarkScan100000Base2(b *testing.B)
+
+func BenchmarkScan100000Base8(b *testing.B)
+
+func BenchmarkScan10000Base10(b *testing.B)
+
+func BenchmarkScan10000Base16(b *testing.B)
+
+func BenchmarkScan10000Base2(b *testing.B)
+
+func BenchmarkScan10000Base8(b *testing.B)
+
+func BenchmarkScan1000Base10(b *testing.B)
+
+func BenchmarkScan1000Base16(b *testing.B)
+
+func BenchmarkScan1000Base2(b *testing.B)
+
+func BenchmarkScan1000Base8(b *testing.B)
+
+func BenchmarkScan100Base10(b *testing.B)
+
+func BenchmarkScan100Base16(b *testing.B)
+
+func BenchmarkScan100Base2(b *testing.B)
+
+func BenchmarkScan100Base8(b *testing.B)
+
+func BenchmarkScan10Base10(b *testing.B)
+
+func BenchmarkScan10Base16(b *testing.B)
+
+func BenchmarkScan10Base2(b *testing.B)
+
+func BenchmarkScan10Base8(b *testing.B)
+
+func BenchmarkScanPi(b *testing.B)
+
+func BenchmarkString100000Base10(b *testing.B)
+
+func BenchmarkString100000Base16(b *testing.B)
+
+func BenchmarkString100000Base2(b *testing.B)
+
+func BenchmarkString100000Base8(b *testing.B)
+
+func BenchmarkString10000Base10(b *testing.B)
+
+func BenchmarkString10000Base16(b *testing.B)
+
+func BenchmarkString10000Base2(b *testing.B)
+
+func BenchmarkString10000Base8(b *testing.B)
+
+func BenchmarkString1000Base10(b *testing.B)
+
+func BenchmarkString1000Base16(b *testing.B)
+
+func BenchmarkString1000Base2(b *testing.B)
+
+func BenchmarkString1000Base8(b *testing.B)
+
+func BenchmarkString100Base10(b *testing.B)
+
+func BenchmarkString100Base16(b *testing.B)
+
+func BenchmarkString100Base2(b *testing.B)
+
+func BenchmarkString100Base8(b *testing.B)
+
+func BenchmarkString10Base10(b *testing.B)
+
+func BenchmarkString10Base16(b *testing.B)
+
+func BenchmarkString10Base2(b *testing.B)
+
+func BenchmarkString10Base8(b *testing.B)
+
+func BenchmarkStringPiParallel(b *testing.B)
+
+func ExpHelper(b *testing.B, x, y Word)
 
 // Jacobi returns the Jacobi symbol (x/y), either +1, -1, or 0.
 // The y argument must be an odd integer.
 func Jacobi(x, y *Int) int
+
+func LeafSizeHelper(b *testing.B, base, size int)
 
 // NewFloat allocates and returns a new Float set to x,
 // with precision 53 and rounding mode ToNearestEven.
@@ -194,6 +456,322 @@ func NewRat(a, b int64) *Rat
 // ParseFloat is like f.Parse(s, base) with f set to the given precision
 // and rounding mode.
 func ParseFloat(s string, base int, prec uint, mode RoundingMode) (f *Float, b int, err error)
+
+func ScanHelper(b *testing.B, base int, x, y Word)
+
+func StringHelper(b *testing.B, base int, x, y Word)
+
+func TestAbsZ(t *testing.T)
+
+func TestAppendText(t *testing.T)
+
+func TestBinomial(t *testing.T)
+
+func TestBit(t *testing.T)
+
+func TestBitLen(t *testing.T)
+
+func TestBitSet(t *testing.T)
+
+func TestBits(t *testing.T)
+
+func TestBitwise(t *testing.T)
+
+func TestBytes(t *testing.T)
+
+func TestCalibrate(t *testing.T)
+
+func TestCmp(t *testing.T)
+
+func TestDecimalInit(t *testing.T)
+
+func TestDecimalRounding(t *testing.T)
+
+func TestDecimalString(t *testing.T)
+
+func TestDivisionSigns(t *testing.T)
+
+func TestExp(t *testing.T)
+
+func TestExpNN(t *testing.T)
+
+func TestFibo(t *testing.T)
+
+func TestFloat32Distribution(t *testing.T)
+
+func TestFloat32SpecialCases(t *testing.T)
+
+func TestFloat64Distribution(t *testing.T)
+
+func TestFloat64SpecialCases(t *testing.T)
+
+func TestFloat64Text(t *testing.T)
+
+func TestFloatAbs(t *testing.T)
+
+// TestFloatAdd tests Float.Add/Sub by comparing the result of a "manual"
+// addition/subtraction of arguments represented by Bits values with the
+// respective Float addition/subtraction for a variety of precisions
+// and rounding modes.
+func TestFloatAdd(t *testing.T)
+
+// TestFloatAdd32 tests that Float.Add/Sub of numbers with
+// 24bit mantissa behaves like float32 addition/subtraction
+// (excluding denormal numbers).
+func TestFloatAdd32(t *testing.T)
+
+// TestFloatAdd64 tests that Float.Add/Sub of numbers with
+// 53bit mantissa behaves like float64 addition/subtraction.
+func TestFloatAdd64(t *testing.T)
+
+func TestFloatArithmeticOverflow(t *testing.T)
+
+// For rounding modes ToNegativeInf and ToPositiveInf, rounding is affected
+// by the sign of the value to be rounded. Test that rounding happens after
+// the sign of a result has been set.
+// This test uses specific values that are known to fail if rounding is
+// "factored" out before setting the result sign.
+func TestFloatArithmeticRounding(t *testing.T)
+
+// TestFloatArithmeticSpecialValues tests that Float operations produce the
+// correct results for combinations of zero (±0), finite (±1 and ±2.71828),
+// and infinite (±Inf) operands.
+func TestFloatArithmeticSpecialValues(t *testing.T)
+
+// TestFloatCmpSpecialValues tests that Cmp produces the correct results for
+// combinations of zero (±0), finite (±1 and ±2.71828), and infinite (±Inf)
+// operands.
+func TestFloatCmpSpecialValues(t *testing.T)
+
+func TestFloatFloat32(t *testing.T)
+
+func TestFloatFloat64(t *testing.T)
+
+func TestFloatFormat(t *testing.T)
+
+func TestFloatInc(t *testing.T)
+
+func TestFloatInt(t *testing.T)
+
+func TestFloatInt64(t *testing.T)
+
+func TestFloatIsInt(t *testing.T)
+
+func TestFloatMantExp(t *testing.T)
+
+func TestFloatMantExpAliasing(t *testing.T)
+
+func TestFloatMinPrec(t *testing.T)
+
+// TestFloatMul tests Float.Mul/Quo by comparing the result of a "manual"
+// multiplication/division of arguments represented by Bits values with the
+// respective Float multiplication/division for a variety of precisions
+// and rounding modes.
+func TestFloatMul(t *testing.T)
+
+// TestFloatMul64 tests that Float.Mul/Quo of numbers with
+// 53bit mantissa behaves like float64 multiplication/division.
+func TestFloatMul64(t *testing.T)
+
+func TestFloatNeg(t *testing.T)
+
+func TestFloatPredicates(t *testing.T)
+
+func TestFloatQuo(t *testing.T)
+
+// TestFloatQuoSmoke tests all divisions x/y for values x, y in the range [-n,
+// +n]; it serves as a smoke test for basic correctness of division.
+func TestFloatQuoSmoke(t *testing.T)
+
+func TestFloatRat(t *testing.T)
+
+// TestFloatRound tests basic rounding.
+func TestFloatRound(t *testing.T)
+
+// TestFloatRound24 tests that rounding a float64 to 24 bits
+// matches IEEE-754 rounding to nearest when converting a
+// float64 to a float32 (excluding denormal numbers).
+func TestFloatRound24(t *testing.T)
+
+func TestFloatSetFloat64(t *testing.T)
+
+func TestFloatSetFloat64String(t *testing.T)
+
+func TestFloatSetInf(t *testing.T)
+
+func TestFloatSetInt(t *testing.T)
+
+func TestFloatSetInt64(t *testing.T)
+
+func TestFloatSetMantExp(t *testing.T)
+
+func TestFloatSetPrec(t *testing.T)
+
+func TestFloatSetRat(t *testing.T)
+
+func TestFloatSetUint64(t *testing.T)
+
+func TestFloatSign(t *testing.T)
+
+func TestFloatString(t *testing.T)
+
+func TestFloatText(t *testing.T)
+
+func TestFloatUint64(t *testing.T)
+
+func TestFloatZeroValue(t *testing.T)
+
+func TestFormat(t *testing.T)
+
+func TestFromBits(t *testing.T)
+
+func TestFunNN(t *testing.T)
+
+func TestFunVV(t *testing.T)
+
+func TestFunVW(t *testing.T)
+
+func TestFunVWW(t *testing.T)
+
+func TestFunWW(t *testing.T)
+
+func TestGcd(t *testing.T)
+
+func TestGetString(t *testing.T)
+
+func TestHilbert(t *testing.T)
+
+func TestInt64(t *testing.T)
+
+func TestIntText(t *testing.T)
+
+func TestIsFinite(t *testing.T)
+
+func TestIsInt(t *testing.T)
+
+func TestIssue2379(t *testing.T)
+
+func TestIssue2607(t *testing.T)
+
+func TestIssue3521(t *testing.T)
+
+func TestIssue6866(t *testing.T)
+
+func TestIssue820(t *testing.T)
+
+func TestJacobi(t *testing.T)
+
+func TestJacobiPanic(t *testing.T)
+
+func TestLsh(t *testing.T)
+
+func TestLshRsh(t *testing.T)
+
+func TestLshSelf(t *testing.T)
+
+func TestModInverse(t *testing.T)
+
+func TestModSqrt(t *testing.T)
+
+func TestModW(t *testing.T)
+
+func TestMontgomery(t *testing.T)
+
+func TestMul(t *testing.T)
+
+func TestMulAddWWW(t *testing.T)
+
+func TestMulBits(t *testing.T)
+
+func TestMulRangeN(t *testing.T)
+
+func TestMulRangeZ(t *testing.T)
+
+// TestMulUnbalanced tests that multiplying numbers of different lengths
+// does not cause deep recursion and in turn allocate too much memory.
+// Test case for issue 3807.
+func TestMulUnbalanced(t *testing.T)
+
+func TestMulWW(t *testing.T)
+
+func TestNLZ(t *testing.T)
+
+func TestNormBits(t *testing.T)
+
+func TestNot(t *testing.T)
+
+func TestProbablyPrime(t *testing.T)
+
+func TestProdZZ(t *testing.T)
+
+func TestQuo(t *testing.T)
+
+func TestQuoStepD6(t *testing.T)
+
+func TestRatAbs(t *testing.T)
+
+func TestRatBin(t *testing.T)
+
+func TestRatCmp(t *testing.T)
+
+func TestRatInv(t *testing.T)
+
+func TestRatNeg(t *testing.T)
+
+func TestRatScan(t *testing.T)
+
+func TestRatSetFrac64Rat(t *testing.T)
+
+func TestRatSetString(t *testing.T)
+
+func TestRatSign(t *testing.T)
+
+func TestRsh(t *testing.T)
+
+func TestRshSelf(t *testing.T)
+
+func TestScan(t *testing.T)
+
+func TestScanBase(t *testing.T)
+
+// Test case for BenchmarkScanPi.
+func TestScanPi(t *testing.T)
+
+func TestScanPiParallel(t *testing.T)
+
+func TestSet(t *testing.T)
+
+func TestSetBytes(t *testing.T)
+
+// TestSetFloat64NonFinite checks that SetFloat64 of a non-finite value
+// returns nil.
+func TestSetFloat64NonFinite(t *testing.T)
+
+func TestSetString(t *testing.T)
+
+func TestSetZ(t *testing.T)
+
+func TestShiftLeft(t *testing.T)
+
+func TestShiftRight(t *testing.T)
+
+func TestSignZ(t *testing.T)
+
+func TestSticky(t *testing.T)
+
+func TestString(t *testing.T)
+
+func TestStringPowers(t *testing.T)
+
+func TestSumZZ(t *testing.T)
+
+func TestTrailingZeroBits(t *testing.T)
+
+func TestUint64(t *testing.T)
+
+func TestWordBitLen(t *testing.T)
+
+func TestZeroRat(t *testing.T)
 
 // Abs sets z to the (possibly rounded) value |x| (the absolute value of x)
 // and returns z.
@@ -253,16 +831,6 @@ func (*Float) Float64() (float64, Accuracy)
 // '+' and ' ' for sign control, '0' for space or zero padding,
 // and '-' for left or right justification. See the fmt package
 // for details.
-
-// Format implements fmt.Formatter. It accepts all the regular
-// formats for floating-point numbers ('b', 'e', 'E', 'f', 'F',
-// 'g', 'G') as well as 'p' and 'v'. See (*Float).Text for the
-// interpretation of 'p'. The 'v' format is handled like 'g'.
-// Format also supports specification of the minimum precision
-// in digits, the output field width, as well as the format flags
-// '+' and ' ' for sign control, '0' for space or zero padding,
-// and '-' for left or right justification. See the fmt package
-// for details.
 func (*Float) Format(s fmt.State, format rune)
 
 // Int returns the result of truncating x towards zero;
@@ -303,11 +871,6 @@ func (*Float) IsInt() bool
 // x and mant may be the same in which case x is set to its
 // mantissa value.
 func (*Float) MantExp(mant *Float) (exp int)
-
-// MarshalText implements the encoding.TextMarshaler interface.
-// Only the Float value is marshaled (in full precision), other
-// attributes such as precision or accuracy are ignored.
-func (*Float) MarshalText() (text []byte, err error)
 
 // MinPrec returns the minimum precision required to represent x exactly
 // (i.e., the smallest prec before x.SetPrec(prec) would start rounding x).
@@ -477,18 +1040,44 @@ func (*Float) Sub(x, y *Float) *Float
 // Text converts the floating-point number x to a string according to the given
 // format and precision prec. The format is one of:
 //
-//     'e'	-d.dddde±dd, decimal exponent, at least two (possibly 0) exponent digits
-//     'E'	-d.ddddE±dd, decimal exponent, at least two (possibly 0) exponent digits
-//     'f'	-ddddd.dddd, no exponent
-//     'g'	like 'e' for large exponents, like 'f' otherwise
-//     'G'	like 'E' for large exponents, like 'f' otherwise
-//     'b'	-ddddddp±dd, binary exponent
-//     'p'	-0x.dddp±dd, binary exponent, hexadecimal mantissa
+//     'e'    -d.dddde±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'E'    -d.ddddE±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'f'    -ddddd.dddd, no exponent
+//     'g'    like 'e' for large exponents, like 'f' otherwise
+//     'G'    like 'E' for large exponents, like 'f' otherwise
+//     'b'    -ddddddp±dd, binary exponent
+//     'p'    -0x.dddp±dd, binary exponent, hexadecimal mantissa
 //
 // For the binary exponent formats, the mantissa is printed in normalized form:
 //
-//     'b'	decimal integer mantissa using x.Prec() bits, or -0
-//     'p'	hexadecimal fraction with 0.5 <= 0.mantissa < 1.0, or -0
+//     'b'    decimal integer mantissa using x.Prec() bits, or -0
+//     'p'    hexadecimal fraction with 0.5 <= 0.mantissa < 1.0, or -0
+//
+// If format is a different character, Text returns a "%" followed by the
+// unrecognized format character.
+//
+// The precision prec controls the number of digits (excluding the exponent)
+// printed by the 'e', 'E', 'f', 'g', and 'G' formats. For 'e', 'E', and 'f' it
+// is the number of digits after the decimal point. For 'g' and 'G' it is the
+// total number of digits. A negative precision selects the smallest number of
+// decimal digits necessary to identify the value x uniquely using x.Prec()
+// mantissa bits. The prec value is ignored for the 'b' or 'p' format.
+
+// Text converts the floating-point number x to a string according to the given
+// format and precision prec. The format is one of:
+//
+//     'e'    -d.dddde±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'E'    -d.ddddE±dd, decimal exponent, at least two (possibly 0) exponent digits
+//     'f'    -ddddd.dddd, no exponent
+//     'g'    like 'e' for large exponents, like 'f' otherwise
+//     'G'    like 'E' for large exponents, like 'f' otherwise
+//     'b'    -ddddddp±dd, binary exponent
+//     'p'    -0x.dddp±dd, binary exponent, hexadecimal mantissa
+//
+// For the binary exponent formats, the mantissa is printed in normalized form:
+//
+//     'b'    decimal integer mantissa using x.Prec() bits, or -0
+//     'p'    hexadecimal fraction with 0.5 <= 0.mantissa < 1.0, or -0
 //
 // If format is a different character, Text returns a "%" followed by the
 // unrecognized format character.
@@ -507,12 +1096,6 @@ func (*Float) Text(format byte, prec int) string
 // The result is (0, Above) for x < 0, and (math.MaxUint64, Below)
 // for x > math.MaxUint64.
 func (*Float) Uint64() (uint64, Accuracy)
-
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
-// The result is rounded per the precision and rounding mode of z.
-// If z's precision is 0, it is changed to 64 before rounding takes
-// effect.
-func (*Float) UnmarshalText(text []byte) error
 
 // Abs sets z to |x| (the absolute value of x) and returns z.
 func (*Int) Abs(x *Int) *Int
@@ -594,17 +1177,6 @@ func (*Int) Exp(x, y, m *Int) *Int
 // respectively, specification of minimum digits precision,
 // output field width, space or zero padding, and left or
 // right justification.
-
-// Format implements fmt.Formatter. It accepts the formats
-// 'b' (binary), 'o' (octal), 'd' (decimal), 'x' (lowercase
-// hexadecimal), and 'X' (uppercase hexadecimal).
-// Also supported are the full suite of package fmt's format
-// flags for integral types, including '+' and ' ' for sign
-// control, '#' for leading zero in octal and for hexadecimal,
-// a leading "0x" or "0X" for "%#x" and "%#X" respectively,
-// specification of minimum digits precision, output field
-// width, space or zero padding, and '-' for left or right
-// justification.
 func (*Int) Format(s fmt.State, ch rune)
 
 // GCD sets z to the greatest common divisor of a and b, which both must
@@ -613,24 +1185,12 @@ func (*Int) Format(s fmt.State, ch rune)
 // If either a or b is <= 0, GCD sets z = x = y = 0.
 func (*Int) GCD(x, y, a, b *Int) *Int
 
-// GobDecode implements the gob.GobDecoder interface.
-func (*Int) GobDecode(buf []byte) error
-
-// GobEncode implements the gob.GobEncoder interface.
-func (*Int) GobEncode() ([]byte, error)
-
 // Int64 returns the int64 representation of x.
 // If x cannot be represented in an int64, the result is undefined.
 func (*Int) Int64() int64
 
 // Lsh sets z = x << n and returns z.
 func (*Int) Lsh(x *Int, n uint) *Int
-
-// MarshalJSON implements the json.Marshaler interface.
-func (*Int) MarshalJSON() ([]byte, error)
-
-// MarshalText implements the encoding.TextMarshaler interface.
-func (*Int) MarshalText() (text []byte, err error)
 
 // Mod sets z to the modulus x%y for y != 0 and returns z.
 // If y == 0, a division-by-zero run-time panic occurs.
@@ -764,12 +1324,6 @@ func (*Int) Text(base int) string
 // If x cannot be represented in a uint64, the result is undefined.
 func (*Int) Uint64() uint64
 
-// UnmarshalJSON implements the json.Unmarshaler interface.
-func (*Int) UnmarshalJSON(text []byte) error
-
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (*Int) UnmarshalText(text []byte) error
-
 // Xor sets z = x ^ y and returns z.
 func (*Int) Xor(x, y *Int) *Int
 
@@ -808,20 +1362,11 @@ func (*Rat) Float64() (f float64, exact bool)
 // nearest, with halves rounded away from zero.
 func (*Rat) FloatString(prec int) string
 
-// GobDecode implements the gob.GobDecoder interface.
-func (*Rat) GobDecode(buf []byte) error
-
-// GobEncode implements the gob.GobEncoder interface.
-func (*Rat) GobEncode() ([]byte, error)
-
 // Inv sets z to 1/x and returns z.
 func (*Rat) Inv(x *Rat) *Rat
 
 // IsInt reports whether the denominator of x is 1.
 func (*Rat) IsInt() bool
-
-// MarshalText implements the encoding.TextMarshaler interface.
-func (*Rat) MarshalText() (text []byte, err error)
 
 // Mul sets z to the product x*y and returns z.
 func (*Rat) Mul(x, y *Rat) *Rat
@@ -886,10 +1431,12 @@ func (*Rat) String() string
 // Sub sets z to the difference x-y and returns z.
 func (*Rat) Sub(x, y *Rat) *Rat
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (*Rat) UnmarshalText(text []byte) error
-
 func (Accuracy) String() string
+
+// Float returns the *Float z of the smallest possible precision such that
+// z = sum(2**bits[i]), with i = range bits. If multiple bits[i] are equal,
+// they are added: Bits{0, 1, 0}.Float() == 2**0 + 2**1 + 2**0 = 4.
+func (Bits) Float() *Float
 
 func (ErrNaN) Error() string
 

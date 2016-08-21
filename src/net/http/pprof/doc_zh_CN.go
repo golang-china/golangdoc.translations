@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -62,7 +62,7 @@
 // 增加"net/http"和"log"包到你的imports中，然后增加下面的方法到你的main函数中。
 //
 //     go func() {
-//     	log.Println(http.ListenAndServe("localhost:6060", nil))
+//         log.Println(http.ListenAndServe("localhost:6060", nil))
 //     }()
 //
 // 然后使用pprof工具查看heap统计：
@@ -119,8 +119,8 @@ func Handler(name string) http.Handler
 // Index responds to a request for "/debug/pprof/" with an HTML page
 // listing the available profiles.
 
-// Index 返回请求处理中格式化的pprof的统计数据。
-// 例如，“/debug/pprof/heap” 展示的是“heap”统计信息。
+// Index 返回请求处理中格式化的pprof的统计数据。 例如，“/debug/pprof/heap”
+// 展示的是“heap”统计信息。
 // Index对请求“/debug/pprof/”返回一个HTML页面，这个页面展示了所有可见的统计。
 func Index(w http.ResponseWriter, r *http.Request)
 
@@ -139,9 +139,4 @@ func Profile(w http.ResponseWriter, r *http.Request)
 // 返回的是一个程序计数器和函数名字的映射表。
 // 这个包的初始化函数将这个函数注册为/debug/pprof/symbol的处理函数。
 func Symbol(w http.ResponseWriter, r *http.Request)
-
-// Trace responds with the execution trace in binary form. Tracing lasts for
-// duration specified in seconds GET parameter, or for 1 second if not
-// specified. The package initialization registers it as /debug/pprof/trace.
-func Trace(w http.ResponseWriter, r *http.Request)
 

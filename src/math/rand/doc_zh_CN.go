@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -21,8 +21,6 @@
 // Source， 它会在每次程序运行时产生一系列确定的值。若每次运行都需要不同的行为，
 // 需使用 Seed 函数来初始化默认的 Source。对于多Go程并发来说，默认的 Source 是安
 // 全的。
-//
-// 对于适用于安全性要求较高的随机数，见 crypto/rand 包。
 package rand
 
 import (
@@ -32,79 +30,63 @@ import (
 
 // A Rand is a source of random numbers.
 type Rand struct {
-	src Source
 }
 
-
-// A Source represents a source of uniformly-distributed
-// pseudo-random int64 values in the range [0, 1<<63).
+// A Source represents a source of uniformly-distributed pseudo-random int64
+// values in the range [0, 1<<63).
 type Source interface {
-	Int63() int64
-	Seed(seed int64)
+    Int63() int64
+    Seed(seed int64)
 }
-
 
 // A Zipf generates Zipf distributed variates.
 
 // Zipf 生成齐夫分布变量。
 type Zipf struct {
-	r            *Rand
-	imax         float64
-	v            float64
-	q            float64
-	s            float64
-	oneminusQ    float64
-	oneminusQinv float64
-	hxm          float64
-	hx0minusHxm  float64
 }
 
-
-// ExpFloat64 returns an exponentially distributed float64 in the range
-// (0, +math.MaxFloat64] with an exponential distribution whose rate parameter
-// (lambda) is 1 and whose mean is 1/lambda (1) from the default Source.
-// To produce a distribution with a different rate parameter,
-// callers can adjust the output using:
+// ExpFloat64 returns an exponentially distributed float64 in the range (0,
+// +math.MaxFloat64] with an exponential distribution whose rate parameter
+// (lambda) is 1 and whose mean is 1/lambda (1) from the default Source. To
+// produce a distribution with a different rate parameter, callers can adjust
+// the output using:
 //
-//  sample = ExpFloat64() / desiredRateParameter
+//     sample = ExpFloat64() / desiredRateParameter
 func ExpFloat64() float64
 
-// Float32 returns, as a float32, a pseudo-random number in [0.0,1.0)
-// from the default Source.
+// Float32 returns, as a float32, a pseudo-random number in [0.0,1.0) from the
+// default Source.
 func Float32() float32
 
-// Float64 returns, as a float64, a pseudo-random number in [0.0,1.0)
-// from the default Source.
+// Float64 returns, as a float64, a pseudo-random number in [0.0,1.0) from the
+// default Source.
 func Float64() float64
 
 // Int returns a non-negative pseudo-random int from the default Source.
 func Int() int
 
-// Int31 returns a non-negative pseudo-random 31-bit integer as an int32
-// from the default Source.
+// Int31 returns a non-negative pseudo-random 31-bit integer as an int32 from
+// the default Source.
 func Int31() int32
 
 // Int31n returns, as an int32, a non-negative pseudo-random number in [0,n)
-// from the default Source.
-// It panics if n <= 0.
+// from the default Source. It panics if n <= 0.
 func Int31n(n int32) int32
 
-// Int63 returns a non-negative pseudo-random 63-bit integer as an int64
-// from the default Source.
+// Int63 returns a non-negative pseudo-random 63-bit integer as an int64 from
+// the default Source.
 func Int63() int64
 
 // Int63n returns, as an int64, a non-negative pseudo-random number in [0,n)
-// from the default Source.
-// It panics if n <= 0.
+// from the default Source. It panics if n <= 0.
 func Int63n(n int64) int64
 
-// Intn returns, as an int, a non-negative pseudo-random number in [0,n)
-// from the default Source.
-// It panics if n <= 0.
+// Intn returns, as an int, a non-negative pseudo-random number in [0,n) from
+// the default Source. It panics if n <= 0.
 func Intn(n int) int
 
-// New returns a new Rand that uses random values from src
-// to generate other random values.
+// New returns a new Rand that uses random values from src to generate other
+// random values.
 func New(src Source) *Rand
 
 // NewSource returns a new pseudo-random Source seeded with the given value.
@@ -114,38 +96,30 @@ func NewSource(seed int64) Source
 // The generator generates values k ∈ [0, imax]
 // such that P(k) is proportional to (v + k) ** (-s).
 // Requirements: s > 1 and v >= 1.
+
+// NewZipf returns a Zipf generating variates p(k) on [0, imax] proportional to
+// (v+k)**(-s) where s>1 and k>=0, and v>=1.
 func NewZipf(r *Rand, s float64, v float64, imax uint64) *Zipf
 
 // NormFloat64 returns a normally distributed float64 in the range
-// [-math.MaxFloat64, +math.MaxFloat64] with
-// standard normal distribution (mean = 0, stddev = 1)
-// from the default Source.
-// To produce a different normal distribution, callers can
-// adjust the output using:
+// [-math.MaxFloat64, +math.MaxFloat64] with standard normal distribution (mean
+// = 0, stddev = 1) from the default Source. To produce a different normal
+// distribution, callers can adjust the output using:
 //
-//  sample = NormFloat64() * desiredStdDev + desiredMean
+//     sample = NormFloat64() * desiredStdDev + desiredMean
 func NormFloat64() float64
 
 // Perm returns, as a slice of n ints, a pseudo-random permutation of the
 // integers [0,n) from the default Source.
 func Perm(n int) []int
 
-// Read generates len(p) random bytes from the default Source and
-// writes them into p. It always returns len(p) and a nil error.
-func Read(p []byte) (n int, err error)
-
 // Seed uses the provided seed value to initialize the default Source to a
-// deterministic state. If Seed is not called, the generator behaves as
-// if seeded by Seed(1).
-
-// Seed uses the provided seed value to initialize the default Source to a
-// deterministic state. If Seed is not called, the generator behaves as
-// if seeded by Seed(1). Only uses the bottom 31 bits of seed; the top 33
-// bits are ignored.
+// deterministic state. If Seed is not called, the generator behaves as if
+// seeded by Seed(1).
 func Seed(seed int64)
 
-// Uint32 returns a pseudo-random 32-bit value as a uint32
-// from the default Source.
+// Uint32 returns a pseudo-random 32-bit value as a uint32 from the default
+// Source.
 func Uint32() uint32
 
 // ExpFloat64 returns an exponentially distributed float64 in the range
@@ -156,9 +130,9 @@ func Uint32() uint32
 //
 //  sample = ExpFloat64() / desiredRateParameter
 
-// ExpFloat64 按照率参数（lambda）为 1，均值为 1/lambda (1) 来返回一个在区间
-// (0, +math.MaxFloat64] 内程指数分布的 float64。要以不同的率参数产生一个分布，
-// 调用者只需通过：
+// ExpFloat64 按照率参数（lambda）为 1，均值为 1/lambda (1) 来返回一个在区间 (0,
+// +math.MaxFloat64] 内程指数分布的 float64。要以不同的率参数产生一个分布， 调用
+// 者只需通过：
 //
 //     范例 = ExpFloat64() / 所需的率参数
 //
@@ -177,19 +151,19 @@ func (*Rand) Int() int
 // Int31 returns a non-negative pseudo-random 31-bit integer as an int32.
 func (*Rand) Int31() int32
 
-// Int31n returns, as an int32, a non-negative pseudo-random number in [0,n).
-// It panics if n <= 0.
+// Int31n returns, as an int32, a non-negative pseudo-random number in [0,n). It
+// panics if n <= 0.
 func (*Rand) Int31n(n int32) int32
 
 // Int63 returns a non-negative pseudo-random 63-bit integer as an int64.
 func (*Rand) Int63() int64
 
-// Int63n returns, as an int64, a non-negative pseudo-random number in [0,n).
-// It panics if n <= 0.
+// Int63n returns, as an int64, a non-negative pseudo-random number in [0,n). It
+// panics if n <= 0.
 func (*Rand) Int63n(n int64) int64
 
-// Intn returns, as an int, a non-negative pseudo-random number in [0,n).
-// It panics if n <= 0.
+// Intn returns, as an int, a non-negative pseudo-random number in [0,n). It
+// panics if n <= 0.
 func (*Rand) Intn(n int) int
 
 // NormFloat64 returns a normally distributed float64 in the range
@@ -200,9 +174,9 @@ func (*Rand) Intn(n int) int
 //
 //  sample = NormFloat64() * desiredStdDev + desiredMean
 
-// NormFloat64 按照标准正态分布（均值 = 0，标准差 = 1）来返回一个在区间
-// (0, +math.MaxFloat64] 内程正态分布的 float64。要产生一个不同的正态分布，
-// 调用者只需通过：
+// NormFloat64 按照标准正态分布（均值 = 0，标准差 = 1）来返回一个在区间 (0,
+// +math.MaxFloat64] 内程正态分布的 float64。要产生一个不同的正态分布， 调用者只
+// 需通过：
 //
 //     范例 = NormFloat64() * 所需的标准差 + 所需的均值
 //
@@ -213,10 +187,6 @@ func (*Rand) NormFloat64() float64
 // integers [0,n).
 func (*Rand) Perm(n int) []int
 
-// Read generates len(p) random bytes and writes them into p. It
-// always returns len(p) and a nil error.
-func (*Rand) Read(p []byte) (n int, err error)
-
 // Seed uses the provided seed value to initialize the generator to a
 // deterministic state.
 func (*Rand) Seed(seed int64)
@@ -224,7 +194,7 @@ func (*Rand) Seed(seed int64)
 // Uint32 returns a pseudo-random 32-bit value as a uint32.
 func (*Rand) Uint32() uint32
 
-// Uint64 returns a value drawn from the Zipf distribution described
-// by the Zipf object.
+// Uint64 returns a value drawn from the Zipf distribution described by the Zipf
+// object.
 func (*Zipf) Uint64() uint64
 

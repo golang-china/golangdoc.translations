@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors. All rights reserved.
+// Copyright 2015 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -43,7 +43,7 @@
 //
 // The numbers n and c, when they follow a code, are encoded as varints using
 // the same encoding as encoding/binary's Uvarint.
-package gcprog
+package gcprog // import "cmd/internal/gcprog"
 
 import (
     "fmt"
@@ -56,15 +56,14 @@ import (
 // make a sequence of Ptr, Advance, Repeat, and Append calls
 // to describe the data type, and then finally call End.
 type Writer struct {
-	writeByte func(byte)
-	symoff    int
-	index     int64
-	b         [progMaxLiteral]byte
-	nb        int
-	debug     io.Writer
-	debugBuf  []byte
+    writeByte func(byte)
+    symoff    int
+    index     int64
+    b         [progMaxLiteral]byte
+    nb        int
+    debug     io.Writer
+    debugBuf  []byte
 }
-
 
 // Append emits the given GC program into the current output.
 // The caller asserts that the program emits n bits (describes n words),
@@ -86,10 +85,10 @@ func (*Writer) End()
 // by calling writeByte for each byte in the program.
 func (*Writer) Init(writeByte func(byte))
 
-// Ptr emits a 1 into the bit stream at the given bit index.
-// that is, it records that the index'th word in the object memory is a pointer.
-// Any bits between the current index and the new index
-// are set to zero, meaning the corresponding words are scalars.
+// Ptr emits a 1 into the bit stream at the given bit index. that is, it records
+// that the index'th word in the object memory is a pointer. Any bits between
+// the current index and the new index are set to zero, meaning the
+// corresponding words are scalars.
 func (*Writer) Ptr(index int64)
 
 // Repeat emits an instruction to repeat the description of the last n words c

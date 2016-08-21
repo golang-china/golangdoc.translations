@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors. All rights reserved.
+// Copyright 2013 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,26 +9,37 @@
 
 // Package singleflight provides a duplicate function call suppression
 // mechanism.
-package singleflight
+package singleflight // import "internal/singleflight"
 
-import "sync"
+import (
+    "errors"
+    "fmt"
+    "sync"
+    "sync/atomic"
+    "testing"
+    "time"
+)
 
 // Group represents a class of work and forms a namespace in
 // which units of work can be executed with duplicate suppression.
 type Group struct {
-	mu sync.Mutex       // protects m
-	m  map[string]*call // lazily initialized
+    mu  sync.Mutex       // protects m
+    m   map[string]*call // lazily initialized
 }
-
 
 // Result holds the results of Do, so they can be passed
 // on a channel.
 type Result struct {
-	Val    interface{}
-	Err    error
-	Shared bool
+    Val    interface{}
+    Err    error
+    Shared bool
 }
 
+func TestDo(t *testing.T)
+
+func TestDoDupSuppress(t *testing.T)
+
+func TestDoErr(t *testing.T)
 
 // Do executes and returns the results of the given function, making
 // sure that only one execution is in-flight for a given key at a

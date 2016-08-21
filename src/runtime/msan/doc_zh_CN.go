@@ -4,7 +4,7 @@
 
 // +build ingore
 
-package msan
+package msan // import "runtime/msan"
 
 import "C"
 

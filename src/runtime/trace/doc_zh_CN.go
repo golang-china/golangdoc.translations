@@ -17,7 +17,7 @@
 // them to an io.Writer in a compact form. A precise nanosecond-precision
 // timestamp and a stack trace is captured for most events. A trace can be
 // analyzed later with 'go tool trace' command.
-package trace
+package trace // import "runtime/trace"
 
 import (
     "io"

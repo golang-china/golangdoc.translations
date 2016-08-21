@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 //
 // Values containing the types defined in this package should not be copied.
 
-// sync 包提供了互斥锁这类的基本的同步原语.
-// 除 Once 和 WaitGroup 之外的类型大多用于底层库的例程。
+// sync 包提供了互斥锁这类的基本的同步原语. 除 Once 和 WaitGroup
+// 之外的类型大多用于底层库的例程。
 // 更高级的同步操作通过信道与通信进行。
 //
 // 在此包中定义的类型中包含的值不应当被复制。
@@ -36,54 +36,39 @@ import (
 // A Cond can be created as part of other structures.
 // A Cond must not be copied after first use.
 
-// Cond 实现了条件变量，即Go程等待的汇合点或宣布一个事件的发生。
+// Cond
+// 实现了条件变量，即Go程等待的汇合点或宣布一个事件的发生。
 //
 // 每个 Cond 都有一个与其相关联的 Locker L（一般是 *Mutex 或 *RWMutex），
 // 在改变该条件或调用 Wait 方法时，它必须保持不变。
 type Cond struct {
-	noCopy noCopy
-
-	// L is held while observing or changing the condition
-	// L 在观测或更改条件时保持不变
-	L Locker
-
-	notify  notifyList
-	checker copyChecker
+    // L is held while observing or changing the condition
+    L Locker
 }
-
 
 // A Locker represents an object that can be locked and unlocked.
 
 // Locker 表示可被锁定并解锁的对象。
 type Locker interface {
-	Lock()
-	Unlock()
+    Lock()
+    Unlock()
 }
-
 
 // A Mutex is a mutual exclusion lock.
 // Mutexes can be created as part of other structures;
 // the zero value for a Mutex is an unlocked mutex.
 
-// Mutex 是一个互斥锁。
-// Mutex 可作为其它结构的一部分来创建；Mutex 的零值即为已解锁的互斥体。
-//
-// Mutex 在第一次使用后必须不能被复制。
+// Mutex 是一个互斥锁。 Mutex
+// 可作为其它结构的一部分来创建；Mutex 的零值即为已解锁的互斥体。
 type Mutex struct {
-	state int32
-	sema  uint32
 }
-
 
 // Once is an object that will perform exactly one action.
 
 // Once 是只执行一个动作的对象。
 type Once struct {
-	m    Mutex
-	done uint32
 }
 
-
 // A Pool is a set of temporary objects that may be individually saved and
 // retrieved.
 //
@@ -98,63 +83,26 @@ type Once struct {
 // build efficient, thread-safe free lists. However, it is not suitable for all
 // free lists.
 //
-// An appropriate use of a Pool is to manage a group of temporary items
-// silently shared among and potentially reused by concurrent independent
-// clients of a package. Pool provides a way to amortize allocation overhead
-// across many clients.
+// An appropriate use of a Pool is to manage a group of temporary items silently
+// shared among and potentially reused by concurrent independent clients of a
+// package. Pool provides a way to amortize allocation overhead across many
+// clients.
 //
 // An example of good use of a Pool is in the fmt package, which maintains a
 // dynamically-sized store of temporary output buffers. The store scales under
-// load (when many goroutines are actively printing) and shrinks when
-// quiescent.
+// load (when many goroutines are actively printing) and shrinks when quiescent.
 //
 // On the other hand, a free list maintained as part of a short-lived object is
 // not a suitable use for a Pool, since the overhead does not amortize well in
 // that scenario. It is more efficient to have such objects implement their own
 // free list.
-
-// A Pool is a set of temporary objects that may be individually saved and
-// retrieved.
-//
-// Any item stored in the Pool may be removed automatically at any time without
-// notification. If the Pool holds the only reference when this happens, the
-// item might be deallocated.
-//
-// A Pool is safe for use by multiple goroutines simultaneously.
-//
-// Pool's purpose is to cache allocated but unused items for later reuse,
-// relieving pressure on the garbage collector. That is, it makes it easy to
-// build efficient, thread-safe free lists. However, it is not suitable for all
-// free lists.
-//
-// An appropriate use of a Pool is to manage a group of temporary items
-// silently shared among and potentially reused by concurrent independent
-// clients of a package. Pool provides a way to amortize allocation overhead
-// across many clients.
-//
-// An example of good use of a Pool is in the fmt package, which maintains a
-// dynamically-sized store of temporary output buffers. The store scales under
-// load (when many goroutines are actively printing) and shrinks when
-// quiescent.
-//
-// On the other hand, a free list maintained as part of a short-lived object is
-// not a suitable use for a Pool, since the overhead does not amortize well in
-// that scenario. It is more efficient to have such objects implement their own
-// free list.
-//
-// A Pool must not be copied after first use.
 type Pool struct {
-	noCopy noCopy
 
-	local     unsafe.Pointer // local fixed-size per-P pool, actual type is [P]poolLocal
-	localSize uintptr        // size of the local array
-
-	// New optionally specifies a function to generate
-	// a value when Get would otherwise return nil.
-	// It may not be changed concurrently with calls to Get.
-	New func() interface{}
+    // New optionally specifies a function to generate
+    // a value when Get would otherwise return nil.
+    // It may not be changed concurrently with calls to Get.
+    New func() interface{}
 }
-
 
 // An RWMutex is a reader/writer mutual exclusion lock.
 // The lock can be held by an arbitrary number of readers
@@ -163,18 +111,11 @@ type Pool struct {
 // structures; the zero value for a RWMutex is
 // an unlocked mutex.
 
-// RWMutex 是一个读写互斥锁。 该说可被任意多个读取器或单个写入器所持有。RWMutex
+// RWMutex 是一个读写互斥锁。
+// 该说可被任意多个读取器或单个写入器所持有。RWMutex
 // 可作为其它结构的一部分来创建； RWMutex 的零值即为已解锁的互斥体。
-//
-// RWMutex 在第一次使用后必须不能被复制。
 type RWMutex struct {
-	w           Mutex  // held if there are pending writers // 若还有正在等待的写入器就保持不变
-	writerSem   uint32 // semaphore for writers to wait for completing readers // 等待读取器完成的写入器的信号
-	readerSem   uint32 // semaphore for readers to wait for completing writers // 等待写入器完成的读取器的信号
-	readerCount int32  // number of pending readers   // 等待的读取器
-	readerWait  int32  // number of departing readers // 离开的读取器
 }
-
 
 // A WaitGroup waits for a collection of goroutines to finish.
 // The main goroutine calls Add to set the number of
@@ -185,19 +126,8 @@ type RWMutex struct {
 // WaitGroup 等待一组Go程的结束。 主Go程调用 Add 来设置等待的Go程数。然后该组中
 // 的每个Go程都会运行，并在结束时调用 Done。同时，Wait 可被用于阻塞，直到所有Go
 // 程都结束。
-//
-// WaitGroup 在第一次使用后必须不能被复制。
 type WaitGroup struct {
-	noCopy noCopy
-
-	// 64-bit value: high 32 bits are counter, low 32 bits are waiter count.
-	// 64-bit atomic operations require 64-bit alignment, but 32-bit
-	// compilers do not ensure it. So we allocate 12 bytes and then use
-	// the aligned 8 bytes in them as state.
-	state1 [12]byte
-	sema   uint32
 }
-
 
 // NewCond returns a new Cond with Locker l.
 
@@ -269,10 +199,11 @@ func (*Mutex) Lock()
 // It is allowed for one goroutine to lock a Mutex and then
 // arrange for another goroutine to unlock it.
 
-// Unlock 用于解锁 m。
-// 若 m 在进入 Unlock 前并未锁定，就会引发一个运行时错误。
+// Unlock 用于解锁 m。 若 m 在进入 Unlock
+// 前并未锁定，就会引发一个运行时错误。
 //
-// 已锁定的 Mutex 并不与特定的Go程相关联，这样便可让一个Go程锁定
+// 已锁定的 Mutex
+// 并不与特定的Go程相关联，这样便可让一个Go程锁定
 // Mutex，然后安排其它Go程来解锁。
 func (*Mutex) Unlock()
 
@@ -316,14 +247,13 @@ func (*Mutex) Unlock()
 // 调用 f。
 func (*Once) Do(f func())
 
-// Get selects an arbitrary item from the Pool, removes it from the
-// Pool, and returns it to the caller.
-// Get may choose to ignore the pool and treat it as empty.
-// Callers should not assume any relation between values passed to Put and
-// the values returned by Get.
+// Get selects an arbitrary item from the Pool, removes it from the Pool, and
+// returns it to the caller. Get may choose to ignore the pool and treat it as
+// empty. Callers should not assume any relation between values passed to Put
+// and the values returned by Get.
 //
-// If Get would otherwise return nil and p.New is non-nil, Get returns
-// the result of calling p.New.
+// If Get would otherwise return nil and p.New is non-nil, Get returns the
+// result of calling p.New.
 func (*Pool) Get() interface{}
 
 // Put adds x to the pool.
@@ -338,7 +268,8 @@ func (*Pool) Put(x interface{})
 
 // Lock 为 rw 的写入将其锁定。
 // 若该锁已经为读取或写入而锁定，Lock 就会阻塞直到该锁可用。
-// 为确保该锁最终可用，已阻塞的 Lock 调用会从获得的锁中排除新的读取器。
+// 为确保该锁最终可用，已阻塞的 Lock
+// 调用会从获得的锁中排除新的读取器。
 func (*RWMutex) Lock()
 
 // RLock locks rw for reading.
@@ -349,7 +280,7 @@ func (*RWMutex) RLock()
 // RLocker returns a Locker interface that implements
 // the Lock and Unlock methods by calling rw.RLock and rw.RUnlock.
 
-// RLocker 返回一个 Locker 接口，该接口通过调用  rw.RLock 和 rw.RUnlock 实现了
+// RLocker 返回一个 Locker 接口，该接口通过调用 rw.RLock 和 rw.RUnlock 实现了
 // Lock 和 Unlock 方法。
 func (*RWMutex) RLocker() Locker
 
@@ -358,8 +289,8 @@ func (*RWMutex) RLocker() Locker
 // It is a run-time error if rw is not locked for reading
 // on entry to RUnlock.
 
-// RUnlock 撤销单次 RLock 调用，它对于其它同时存在的读取器则没有效果。
-// 若 rw 并没有为读取而锁定，调用 RUnlock 就会引发一个运行时错误。
+// RUnlock 撤销单次 RLock 调用，它对于其它同时存在的读取器则没有效果。 若 rw 并
+// 没有为读取而锁定，调用 RUnlock 就会引发一个运行时错误。
 func (*RWMutex) RUnlock()
 
 // Unlock unlocks rw for writing.  It is a run-time error if rw is
@@ -369,14 +300,14 @@ func (*RWMutex) RUnlock()
 // goroutine.  One goroutine may RLock (Lock) an RWMutex and then
 // arrange for another goroutine to RUnlock (Unlock) it.
 
-// Unlock 为 rw 的写入将其解锁。
-// 若 rw 并没有为写入而锁定，调用 Unlock 就会引发一个运行时错误。
+// Unlock 为 rw 的写入将其解锁。 若 rw 并没有为写入而锁定，调用 Unlock 就会引发
+// 一个运行时错误。
 //
 // As with Mutexes, a locked RWMutex is not associated with a particular
-// goroutine.  One goroutine may RLock (Lock) an RWMutex and then
-// arrange for another goroutine to RUnlock (Unlock) it.
-// 正如 Mutex 一样，已锁定的 RWMutex 并不与特定的Go程相关联。一个Go程可
-// RLock（Lock）一个 RWMutex，然后安排其它Go程来 RUnlock（Unlock）它。
+// goroutine. One goroutine may RLock (Lock) an RWMutex and then arrange for
+// another goroutine to RUnlock (Unlock) it. 正如 Mutex 一样，已锁定的 RWMutex
+// 并不与特定的Go程相关联。一个Go程可 RLock（Lock）一个 RWMutex，然后安排其它Go
+// 程来 RUnlock（Unlock）它。
 func (*RWMutex) Unlock()
 
 // Add adds delta, which may be negative, to the WaitGroup counter.
@@ -393,15 +324,14 @@ func (*RWMutex) Unlock()
 // new Add calls must happen after all previous Wait calls have returned.
 // See the WaitGroup example.
 
-// Add 添加 delta，对于 WaitGroup 的 counter 来说，它可能为负数。
-// 若 counter 变为零，在 Wait() 被释放后所有Go程就会阻塞。
-// 若 counter 变为负数，Add 就会引发Panic。
+// Add 添加 delta，对于 WaitGroup 的 counter 来说，它可能为负数。 若 counter 变
+// 为零，在 Wait() 被释放后所有Go程就会阻塞。 若 counter 变为负数，Add 就会引发
+// Panic。
 //
-// 注意，当 counter 为零时，用正整数的 delta 调用它必须发生在调用 Wait 之前。
-// 用负整数的 delta 调用它，或在 counter 大于零时开始用正整数的 delta 调用它，
-// 那么它可以在任何时候发生。
-// 一般来说，这意味着对 Add 的调用应当在该语句创建Go程，或等待其它事件之前执行。
-// 具体见 WaitGroup 的示例。
+// 注意，当 counter 为零时，用正整数的 delta 调用它必须发生在调用 Wait 之前。 用
+// 负整数的 delta 调用它，或在 counter 大于零时开始用正整数的 delta 调用它， 那
+// 么它可以在任何时候发生。 一般来说，这意味着对 Add 的调用应当在该语句创建Go程
+// ，或等待其它事件之前执行。 具体见 WaitGroup 的示例。
 func (*WaitGroup) Add(delta int)
 
 // Done decrements the WaitGroup counter.

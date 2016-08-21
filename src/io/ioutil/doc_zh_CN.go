@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -26,15 +26,6 @@ import (
 // Discard 是一个 io.Writer，对它进行的任何 Write 调用都将无条件成功。
 var Discard io.Writer = devNull(0)
 
-
-// devNull implements ReaderFrom as an optimization so io.Copy to
-// ioutil.Discard can avoid doing unnecessary work.
-
-// devNull 为优化实现了 ReaderFrom，因此 io.Copy 到 ioutil.Discard 避免了不必要
-// 的工作。
-var _ io.ReaderFrom = devNull(0)
-
-
 // NopCloser returns a ReadCloser with a no-op Close method wrapping
 // the provided Reader r.
 
@@ -46,15 +37,16 @@ func NopCloser(r io.Reader) io.ReadCloser
 // defined to read from src until EOF, it does not treat an EOF from Read
 // as an error to be reported.
 
-// ReadAll 从 r 中读取，直至遇到错误或EOF，然后返回它所读取的数据。
-// 一次成功的调用应当返回 err == nil，而非 err == 因为 ReadAll 被定义为从 src
-// 进行读取直至遇到EOF，它并不会将来自 Read 的EOF视作错误来报告。
+// ReadAll 从 r 中读取，直至遇到错误或EOF，然后返回它所读取的数据。 一次成功的调
+// 用应当返回 err == nil，而非 err == 因为 ReadAll 被定义为从 src 进行读取直至遇
+// 到EOF，它并不会将来自 Read 的EOF视作错误来报告。
 func ReadAll(r io.Reader) ([]byte, error)
 
 // ReadDir reads the directory named by dirname and returns
 // a list of directory entries sorted by filename.
 
-// ReadDir 读取名为 dirname 的目录并返回一个按文件名排序的目录项列表。
+// ReadDir 读取名为 dirname
+// 的目录并返回一个已排序的目录项列表。
 func ReadDir(dirname string) ([]os.FileInfo, error)
 
 // ReadFile reads the file named by filename and returns the contents.
@@ -93,9 +85,9 @@ func TempDir(dir, prefix string) (name string, err error)
 
 // TempFile 在目录 dir 中创建一个名字以 prefix 开头的新的临时文件，打开该文件以
 // 用于读写， 并返回其结果 *os.File。若 dir 为空字符串，TempFile 就会为临时文件
-// 使用默认的目录（见 os.TempDir）。多程序同时调用 TempFile 将不会选择相同的文
-// 件。调用者可使用 f.Name() 来查找该文件的路径名 pathname。当该文件不再被需要
-// 时，调用者应负责将其移除。
+// 使用默认的目录（见 os.TempDir）。多程序同时调用 TempFile 将不会选择相同的文件
+// 。调用者可使用 f.Name() 来查找该文件的路径名 pathname。当该文件不再被需要时，
+// 调用者应负责将其移除。
 func TempFile(dir, prefix string) (f *os.File, err error)
 
 // WriteFile writes data to a file named by filename.

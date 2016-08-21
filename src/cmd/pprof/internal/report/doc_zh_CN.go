@@ -29,52 +29,43 @@ import (
 
 // Output formats.
 const (
-	Proto = iota
-	Dot
-	Tags
-	Tree
-	Text
-	Raw
-	Dis
-	List
-	WebList
-	Callgrind
+    Proto = iota
+    Dot
+    Tags
+    Tree
+    Text
+    Raw
+    Dis
+    List
+    WebList
+    Callgrind
 )
-
-
-// Options are the formatting and filtering options used to generate a
-// profile.
 
 // Options are the formatting and filtering options used to generate a profile.
 type Options struct {
-	OutputFormat int
+    OutputFormat int
 
-	CumSort        bool
-	CallTree       bool
-	PrintAddresses bool
-	DropNegative   bool
-	Ratio          float64
+    CumSort        bool
+    CallTree       bool
+    PrintAddresses bool
+    DropNegative   bool
+    Ratio          float64
 
-	NodeCount    int
-	NodeFraction float64
-	EdgeFraction float64
+    NodeCount    int
+    NodeFraction float64
+    EdgeFraction float64
 
-	SampleType string
-	SampleUnit string // Unit for the sample data from the profile.
-	OutputUnit string // Units for data formatting in report.
+    SampleType string
+    SampleUnit string // Unit for the sample data from the profile.
+    OutputUnit string // Units for data formatting in report.
 
-	Symbol *regexp.Regexp // Symbols to include on disassembly report.
+    Symbol *regexp.Regexp // Symbols to include on disassembly report.
 }
-
-
-// Report contains the data and associated routines to extract a
-// report from a profile.
 
 // Report contains the data and associated routines to extract a report from a
 // profile.
 type Report struct {
 }
-
 
 // Generate generates a report as directed by the Report.
 func Generate(w io.Writer, rpt *Report, obj plugin.ObjTool) error

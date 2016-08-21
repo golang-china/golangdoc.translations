@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -57,27 +57,27 @@
 //     package server
 //
 //     type Args struct {
-//     	A, B int
+//         A, B int
 //     }
 //
 //     type Quotient struct {
-//     	Quo, Rem int
+//         Quo, Rem int
 //     }
 //
 //     type Arith int
 //
 //     func (t *Arith) Multiply(args *Args, reply *int) error {
-//     	*reply = args.A * args.B
-//     	return nil
+//         *reply = args.A * args.B
+//         return nil
 //     }
 //
 //     func (t *Arith) Divide(args *Args, quo *Quotient) error {
-//     	if args.B == 0 {
-//     		return errors.New("divide by zero")
-//     	}
-//     	quo.Quo = args.A / args.B
-//     	quo.Rem = args.A % args.B
-//     	return nil
+//         if args.B == 0 {
+//             return errors.New("divide by zero")
+//         }
+//         quo.Quo = args.A / args.B
+//         quo.Rem = args.A % args.B
+//         return nil
 //     }
 //
 // The server calls (for HTTP service):
@@ -87,7 +87,7 @@
 //     rpc.HandleHTTP()
 //     l, e := net.Listen("tcp", ":1234")
 //     if e != nil {
-//     	log.Fatal("listen error:", e)
+//         log.Fatal("listen error:", e)
 //     }
 //     go http.Serve(l, nil)
 //
@@ -97,7 +97,7 @@
 //
 //     client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
 //     if err != nil {
-//     	log.Fatal("dialing:", err)
+//         log.Fatal("dialing:", err)
 //     }
 //
 // Then it can make a remote call:
@@ -107,7 +107,7 @@
 //     var reply int
 //     err = client.Call("Arith.Multiply", args, &reply)
 //     if err != nil {
-//     	log.Fatal("arith error:", err)
+//         log.Fatal("arith error:", err)
 //     }
 //     fmt.Printf("Arith: %d*%d=%d", args.A, args.B, reply)
 //
@@ -116,7 +116,7 @@
 //     // Asynchronous call
 //     quotient := new(Quotient)
 //     divCall := client.Go("Arith.Divide", args, quotient, nil)
-//     replyCall := <-divCall.Done	// will be equal to divCall
+//     replyCall := <-divCall.Done    // will be equal to divCall
 //     // check errors, print, etc.
 //
 // A server implementation will often provide a simple, type-safe wrapper for
@@ -163,27 +163,27 @@
 //     package server
 //
 //     type Args struct {
-//     	A, B int
+//         A, B int
 //     }
 //
 //     type Quotient struct {
-//     	Quo, Rem int
+//         Quo, Rem int
 //     }
 //
 //     type Arith int
 //
 //     func (t *Arith) Multiply(args *Args, reply *int) error {
-//     	*reply = args.A * args.B
-//     	return nil
+//         *reply = args.A * args.B
+//         return nil
 //     }
 //
 //     func (t *Arith) Divide(args *Args, quo *Quotient) error {
-//     	if args.B == 0 {
-//     		return errors.New("divide by zero")
-//     	}
-//     	quo.Quo = args.A / args.B
-//     	quo.Rem = args.A % args.B
-//     	return nil
+//         if args.B == 0 {
+//             return errors.New("divide by zero")
+//         }
+//         quo.Quo = args.A / args.B
+//         quo.Rem = args.A % args.B
+//         return nil
 //     }
 //
 // 服务端调用（使用HTTP服务）：
@@ -193,7 +193,7 @@
 //     rpc.HandleHTTP()
 //     l, e := net.Listen("tcp", ":1234")
 //     if e != nil {
-//     	log.Fatal("listen error:", e)
+//         log.Fatal("listen error:", e)
 //     }
 //     go http.Serve(l, nil)
 //
@@ -202,7 +202,7 @@
 //
 //     client, err := rpc.DialHTTP("tcp", serverAddress + ":1234")
 //     if err != nil {
-//     	log.Fatal("dialing:", err)
+//         log.Fatal("dialing:", err)
 //     }
 //
 // 当它要调用远程服务的时候：
@@ -212,7 +212,7 @@
 //     var reply int
 //     err = client.Call("Arith.Multiply", args, &reply)
 //     if err != nil {
-//     	log.Fatal("arith error:", err)
+//         log.Fatal("arith error:", err)
 //     }
 //     fmt.Printf("Arith: %d*%d=%d", args.A, args.B, reply)
 //
@@ -221,7 +221,7 @@
 //     // Asynchronous call
 //     quotient := new(Quotient)
 //     divCall := client.Go("Arith.Divide", args, quotient, nil)
-//     replyCall := <-divCall.Done	// will be equal to divCall
+//     replyCall := <-divCall.Done    // will be equal to divCall
 //     // check errors, print, etc.
 //
 // 服务端的实现需要为客户端提供一个简单的，类型安全服务。
@@ -245,35 +245,29 @@ import (
     "unicode/utf8"
 )
 
-
 const (
-	// Defaults used by HandleHTTP  //默认被HandleHTPP使用
-	DefaultRPCPath   = "/_goRPC_"
-	DefaultDebugPath = "/debug/rpc"
+    // Defaults used by HandleHTTP
+    DefaultRPCPath   = "/_goRPC_"
+    DefaultDebugPath = "/debug/rpc"
 )
-
 
 // DefaultServer is the default instance of *Server.
 
 // DefaultServer是默认的*Server实例。
 var DefaultServer = NewServer()
 
-
-
 var ErrShutdown = errors.New("connection is shut down")
-
 
 // Call represents an active RPC.
 
 // Call 代表一个活跃的RPC
 type Call struct {
-	ServiceMethod string      // The name of the service and method to call.  // 要调用的服务名字和方法
-	Args          interface{} // The argument to the function (*struct).  // 方法的参数（*struct）
-	Reply         interface{} // The reply from the function (*struct).  // 方法的返回值(*struct)
-	Error         error       // After completion, the error status.  // 完成之后返回的error
-	Done          chan *Call  // Strobes when call is complete.  // 调用完成的信号
+    ServiceMethod string      // The name of the service and method to call.
+    Args          interface{} // The argument to the function (*struct).
+    Reply         interface{} // The reply from the function (*struct).
+    Error         error       // After completion, the error status.
+    Done          chan *Call  // Strobes when call is complete.
 }
-
 
 // Client represents an RPC Client.
 // There may be multiple outstanding Calls associated
@@ -283,18 +277,7 @@ type Call struct {
 // Client代表一个RPC客户端。
 // 一个客户端可以有多个调用，并且一个客户端可以被多个goroutine同时使用
 type Client struct {
-	codec ClientCodec
-
-	reqMutex sync.Mutex // protects following
-	request  Request
-
-	mutex    sync.Mutex // protects following // 保护下列状态
-	seq      uint64
-	pending  map[uint64]*Call
-	closing  bool // user has called Close
-	shutdown bool // server has told us to stop
 }
-
 
 // A ClientCodec implements writing of RPC requests and
 // reading of RPC responses for the client side of an RPC session.
@@ -310,27 +293,25 @@ type Client struct {
 // 来读取RPC返回。当结束连接的时候 客户端调用Close。ReadResponseBody可以使用一个
 // nil参数，来读取RPC回复，然后丢弃信息。
 type ClientCodec interface {
-	// WriteRequest must be safe for concurrent use by multiple goroutines.
-	WriteRequest(*Request, interface{}) error
-	ReadResponseHeader(*Response) error
-	ReadResponseBody(interface{}) error
+    // WriteRequest must be safe for concurrent use by multiple goroutines.
+    WriteRequest(*Request, interface{}) error
+    ReadResponseHeader(*Response) error
+    ReadResponseBody(interface{}) error
 
-	Close() error
+    Close() error
 }
-
 
 // Request is a header written before every RPC call.  It is used internally
 // but documented here as an aid to debugging, such as when analyzing
 // network traffic.
 
-// Request是在每个RPC调用之前使用的header。它是内部使用的，写在这里是为了调试
-// 用，例如分析网络的流量等。
+// Request是在每个RPC调用之前使用的header。它是内部使用的，写在这里是为了调试用
+// ，例如分析网络的流量等。
 type Request struct {
-	ServiceMethod string   // format: "Service.Method"  // 格式：“Service.Method”
-	Seq           uint64   // sequence number chosen by client  // 客户端序列化的数
-	next          *Request // for free list in Server // 给服务端的request list使用
-}
+    ServiceMethod string // format: "Service.Method"
+    Seq           uint64 // sequence number chosen by client
 
+}
 
 // Response is a header written before every RPC return.  It is used internally
 // but documented here as an aid to debugging, such as when analyzing
@@ -339,25 +320,17 @@ type Request struct {
 // Response是在每个RPC回复之前被写在头里面的。它是内部使用的，写在这里是为了调试
 // 用，例如分析网络的流量等。
 type Response struct {
-	ServiceMethod string    // echoes that of the Request  // 每个Request的相应方法
-	Seq           uint64    // echoes that of the request  // 每个request的相应
-	Error         string    // error, if any.  // 如果有的话，表示错误
-	next          *Response // for free list in Server  // 个服务端的response list使用
-}
+    ServiceMethod string // echoes that of the Request
+    Seq           uint64 // echoes that of the request
+    Error         string // error, if any.
 
+}
 
 // Server represents an RPC Server.
 
 // Server代表一个RPC服务。
 type Server struct {
-	mu         sync.RWMutex // protects the serviceMap  // 保护serviceMap
-	serviceMap map[string]*service
-	reqLock    sync.Mutex // protects freeReq  // 保护freeReq
-	freeReq    *Request
-	respLock   sync.Mutex // protects freeResp  // 保护freeResp
-	freeResp   *Response
 }
-
 
 // A ServerCodec implements reading of RPC requests and writing of
 // RPC responses for the server side of an RPC session.
@@ -372,21 +345,19 @@ type Server struct {
 // 写回复。服务端当结束连接的时候调用Close。ReadRequestBody可能会调用一个nil参数
 // 来强迫 读取请求内容并忽略。
 type ServerCodec interface {
-	ReadRequestHeader(*Request) error
-	ReadRequestBody(interface{}) error
-	// WriteResponse must be safe for concurrent use by multiple goroutines.
-	WriteResponse(*Response, interface{}) error
+    ReadRequestHeader(*Request) error
+    ReadRequestBody(interface{}) error
+    // WriteResponse must be safe for concurrent use by multiple goroutines.
+    WriteResponse(*Response, interface{}) error
 
-	Close() error
+    Close() error
 }
-
 
 // ServerError represents an error that has been returned from
 // the remote side of the RPC connection.
 
 // ServerError 代表从远程RPC连接另一端返回的错误
 type ServerError string
-
 
 // Accept accepts connections on the listener and serves requests
 // to DefaultServer for each incoming connection.
@@ -418,19 +389,18 @@ func DialHTTPPath(network, address, path string) (*Client, error)
 // on DefaultRPCPath and a debugging handler on DefaultDebugPath.
 // It is still necessary to invoke http.Serve(), typically in a go statement.
 
-// HandleHTTP在DefaultRPCPath上为RPC消息注册了一个HTTP的处理器到DefaultServer
-// 上，并且在 DefaultDebugPath上注册了一个debuggin处理器。 它仍然需要调用
+// HandleHTTP在DefaultRPCPath上为RPC消息注册了一个HTTP的处理器到DefaultServer上
+// ，并且在 DefaultDebugPath上注册了一个debuggin处理器。 它仍然需要调用
 // http.Serve()，一般是在go语句中。
 func HandleHTTP()
 
-// NewClient returns a new Client to handle requests to the
-// set of services at the other end of the connection.
-// It adds a buffer to the write side of the connection so
-// the header and payload are sent as a unit.
+// NewClient returns a new Client to handle requests to the set of services at
+// the other end of the connection. It adds a buffer to the write side of the
+// connection so the header and payload are sent as a unit.
 func NewClient(conn io.ReadWriteCloser) *Client
 
-// NewClientWithCodec is like NewClient but uses the specified
-// codec to encode requests and decode responses.
+// NewClientWithCodec is like NewClient but uses the specified codec to encode
+// requests and decode responses.
 func NewClientWithCodec(codec ClientCodec) *Client
 
 // NewServer returns a new Server.
@@ -497,8 +467,8 @@ func (*Client) Go(serviceMethod string, args interface{}, reply interface{}, don
 // returns a non-nil error. The caller typically invokes Accept in a
 // go statement.
 
-// Accept 接收连接，为每个连接监听和服务请求。Accept 阻塞到监听器返回一个非 nil
-// 错误为止。 调用者一般在 go 语句中使用它。
+// Accept接收连接，为每个连接监听和服务请求。Accept是阻塞的，调用者一般在go语句
+// 中使用它。
 func (*Server) Accept(lis net.Listener)
 
 // HandleHTTP registers an HTTP handler for RPC messages on rpcPath,

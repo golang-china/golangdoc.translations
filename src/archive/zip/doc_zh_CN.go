@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -51,18 +51,15 @@ import (
 
 // 预定义压缩算法。
 const (
-	Store   uint16 = 0
-	Deflate uint16 = 8
+    Store   uint16 = 0
+    Deflate uint16 = 8
 )
-
-
 
 var (
-	ErrFormat    = errors.New("zip: not a valid zip file")
-	ErrAlgorithm = errors.New("zip: unsupported compression algorithm")
-	ErrChecksum  = errors.New("zip: checksum error")
+    ErrFormat    = errors.New("zip: not a valid zip file")
+    ErrAlgorithm = errors.New("zip: unsupported compression algorithm")
+    ErrChecksum  = errors.New("zip: checksum error")
 )
-
 
 // A Compressor returns a new compressing writer, writing to w.
 // The WriteCloser's Close method must be used to flush pending data to w.
@@ -70,11 +67,9 @@ var (
 // simultaneously, but each returned writer will be used only by
 // one goroutine at a time.
 
-// Compressor 返回一个新的压缩写入器，写入到 w 中。WriteCloser 的 Close 方法必须
-// 必须被用于将等待的数据刷新到 w 中。Compressor 在多个Go程被同步调用时， 其自身
-// 必须保证安全，但每个返回的写入器一次只会被一个Go程使用。
-type Compressor func(w io.Writer) (io.WriteCloser, error)
-
+// Compressor函数类型会返回一个io.WriteCloser，该接口会将数据压缩后写入提供的接
+// 口。 关闭时，应将缓冲中的数据刷新到下层接口中。
+type Compressor func(io.Writer) (io.WriteCloser, error)
 
 // A Decompressor returns a new decompressing reader, reading from r.
 // The ReadCloser's Close method must be used to release associated resources.
@@ -82,75 +77,57 @@ type Compressor func(w io.Writer) (io.WriteCloser, error)
 // simultaneously, but each returned reader will be used only by
 // one goroutine at a time.
 
-// Decompressor 返回一个新的解压读取器，从 r 中读取。ReadCloser 的 Close
-// 方法必须被用于释放相关的资源。Decompressor 在多个Go程被同步调用时，
-// 其自身必须保证安全，但每个返回的读取器一次只会被一个Go程使用。
-type Decompressor func(r io.Reader) io.ReadCloser
-
-
+// Decompressor函数类型会把一个io.Reader包装成具有decompressing特性的io.Reader.
+// Decompressor函数类型会返回一个io.ReadCloser，
+// 该接口的Read方法会将读取自提供的接口的数据提前解压缩。
+// 程序员有责任在读取结束时关闭该io.ReadCloser。
+type Decompressor func(io.Reader) io.ReadCloser
 
 type File struct {
-	zip          *Reader
-	zipr         io.ReaderAt
-	zipsize      int64
-	headerOffset int64
+    FileHeader
 }
-
 
 // FileHeader describes a file within a zip file.
 // See the zip spec for details.
 
-// FileHeader描述zip文件中的一个文件。
-// 参见zip的定义获取细节。
+// FileHeader描述zip文件中的一个文件。 参见zip的定义获取细节。
 type FileHeader struct {
+    // Name is the name of the file.
+    // It must be a relative path: it must not start with a drive
+    // letter (e.g. C:) or leading slash, and only forward slashes
+    // are allowed.
+    Name string
 
-	// Name是文件名，它必须是相对路径，
-	// 不能以设备或斜杠开始，只接受'/'作为路径分隔符
-	Name string
-
-	CreatorVersion     uint16
-	ReaderVersion      uint16
-	Flags              uint16
-	Method             uint16
-	ModifiedTime       uint16 // MS-DOS time // MS-DOS时间
-	ModifiedDate       uint16 // MS-DOS date // MS-DOS日期
-	CRC32              uint32
-	CompressedSize     uint32 // Deprecated: Use CompressedSize64 instead. // 已弃用；请使用CompressedSize64
-	UncompressedSize   uint32 // Deprecated: Use UncompressedSize64 instead. // 已弃用；请使用UncompressedSize64
-	CompressedSize64   uint64
-	UncompressedSize64 uint64
-	Extra              []byte
-	ExternalAttrs      uint32 // Meaning depends on CreatorVersion // 其含义依赖于CreatorVersion
-	Comment            string
+    CreatorVersion     uint16
+    ReaderVersion      uint16
+    Flags              uint16
+    Method             uint16
+    ModifiedTime       uint16 // MS-DOS time
+    ModifiedDate       uint16 // MS-DOS date
+    CRC32              uint32
+    CompressedSize     uint32 // deprecated; use CompressedSize64
+    UncompressedSize   uint32 // deprecated; use UncompressedSize64
+    CompressedSize64   uint64
+    UncompressedSize64 uint64
+    Extra              []byte
+    ExternalAttrs      uint32 // Meaning depends on CreatorVersion
+    Comment            string
 }
-
-
 
 type ReadCloser struct {
-	f *os.File
+    Reader
 }
-
-
 
 type Reader struct {
-	r             io.ReaderAt
-	File          []*File
-	Comment       string
-	decompressors map[uint16]Decompressor
+    File    []*File
+    Comment string
 }
-
 
 // Writer implements a zip file writer.
 
 // Writer类型实现了zip文件的写入器。
 type Writer struct {
-	cw          *countWriter
-	dir         []*header
-	last        *fileWriter
-	closed      bool
-	compressors map[uint16]Compressor
 }
-
 
 // FileInfoHeader creates a partially-populated FileHeader from an
 // os.FileInfo.
@@ -190,8 +167,7 @@ func RegisterCompressor(method uint16, comp Compressor)
 // The common methods Store and Deflate are built in.
 
 // RegisterDecompressor使用指定的方法ID注册一个Decompressor类型函数。
-// 通用方法 Store 和 Deflate 是内建的。
-func RegisterDecompressor(method uint16, dcomp Decompressor)
+func RegisterDecompressor(method uint16, d Decompressor)
 
 // DataOffset returns the offset of the file's possibly-compressed
 // data, relative to the beginning of the zip file.
@@ -208,7 +184,7 @@ func (*File) DataOffset() (offset int64, err error)
 
 // Open方法返回一个io.ReadCloser接口，提供读取文件内容的方法。
 // 可以同时读取多个文件。
-func (*File) Open() (io.ReadCloser, error)
+func (*File) Open() (rc io.ReadCloser, err error)
 
 // FileInfo returns an os.FileInfo for the FileHeader.
 
@@ -242,11 +218,6 @@ func (*FileHeader) SetMode(mode os.FileMode)
 // Close关闭zip文件，使它不能用于I/O。
 func (*ReadCloser) Close() error
 
-// RegisterDecompressor registers or overrides a custom decompressor for a
-// specific method ID. If a decompressor for a given method is not found,
-// Reader will default to looking up the decompressor at the package level.
-func (*Reader) RegisterDecompressor(method uint16, dcomp Decompressor)
-
 // Close finishes writing the zip file by writing the central directory.
 // It does not (and can not) close the underlying writer.
 
@@ -276,25 +247,12 @@ func (*Writer) Create(name string) (io.Writer, error)
 // call to Create, CreateHeader, or Close. The provided FileHeader fh
 // must not be modified after a call to CreateHeader.
 
-// CreateHeader 使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。
+// 使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。
 // 本方法返回一个io.Writer接口（用于写入新添加文件的内容）。
-//
 // 新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。
-// 提供的 FileHeader fh 在调用 CreateHeader 后决不能修改。
 func (*Writer) CreateHeader(fh *FileHeader) (io.Writer, error)
 
-// Flush flushes any buffered data to the underlying writer.
-// Calling Flush is not normally necessary; calling Close is sufficient.
+// Flush flushes any buffered data to the underlying writer. Calling Flush is
+// not normally necessary; calling Close is sufficient.
 func (*Writer) Flush() error
-
-// RegisterCompressor registers or overrides a custom compressor for a specific
-// method ID. If a compressor for a given method is not found, Writer will
-// default to looking up the compressor at the package level.
-func (*Writer) RegisterCompressor(method uint16, comp Compressor)
-
-// SetOffset sets the offset of the beginning of the zip data within the
-// underlying writer. It should be used when the zip data is appended to an
-// existing file, such as a binary executable.
-// It must be called before any data is written.
-func (*Writer) SetOffset(n int64)
 

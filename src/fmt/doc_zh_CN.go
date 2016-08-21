@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,49 +14,49 @@
 //
 // General:
 //
-//     %v	the value in a default format
-//     	when printing structs, the plus flag (%+v) adds field names
-//     %#v	a Go-syntax representation of the value
-//     %T	a Go-syntax representation of the type of the value
-//     %%	a literal percent sign; consumes no value
+//     %v    the value in a default format
+//         when printing structs, the plus flag (%+v) adds field names
+//     %#v    a Go-syntax representation of the value
+//     %T    a Go-syntax representation of the type of the value
+//     %%    a literal percent sign; consumes no value
 //
 // Boolean:
 //
-//     %t	the word true or false
+//     %t    the word true or false
 //
 // Integer:
 //
-//     %b	base 2
-//     %c	the character represented by the corresponding Unicode code point
-//     %d	base 10
-//     %o	base 8
-//     %q	a single-quoted character literal safely escaped with Go syntax.
-//     %x	base 16, with lower-case letters for a-f
-//     %X	base 16, with upper-case letters for A-F
-//     %U	Unicode format: U+1234; same as "U+%04X"
+//     %b    base 2
+//     %c    the character represented by the corresponding Unicode code point
+//     %d    base 10
+//     %o    base 8
+//     %q    a single-quoted character literal safely escaped with Go syntax.
+//     %x    base 16, with lower-case letters for a-f
+//     %X    base 16, with upper-case letters for A-F
+//     %U    Unicode format: U+1234; same as "U+%04X"
 //
 // Floating-point and complex constituents:
 //
-//     %b	decimalless scientific notation with exponent a power of two,
-//     	in the manner of strconv.FormatFloat with the 'b' format,
-//     	e.g. -123456p-78
-//     %e	scientific notation, e.g. -1.234456e+78
-//     %E	scientific notation, e.g. -1.234456E+78
-//     %f	decimal point but no exponent, e.g. 123.456
-//     %F	synonym for %f
-//     %g	%e for large exponents, %f otherwise
-//     %G	%E for large exponents, %F otherwise
+//     %b    decimalless scientific notation with exponent a power of two,
+//         in the manner of strconv.FormatFloat with the 'b' format,
+//         e.g. -123456p-78
+//     %e    scientific notation, e.g. -1.234456e+78
+//     %E    scientific notation, e.g. -1.234456E+78
+//     %f    decimal point but no exponent, e.g. 123.456
+//     %F    synonym for %f
+//     %g    %e for large exponents, %f otherwise
+//     %G    %E for large exponents, %F otherwise
 //
 // String and slice of bytes (treated equivalently with these verbs):
 //
-//     %s	the uninterpreted bytes of the string or slice
-//     %q	a double-quoted string safely escaped with Go syntax
-//     %x	base 16, lower-case, two characters per byte
-//     %X	base 16, upper-case, two characters per byte
+//     %s    the uninterpreted bytes of the string or slice
+//     %q    a double-quoted string safely escaped with Go syntax
+//     %x    base 16, lower-case, two characters per byte
+//     %X    base 16, upper-case, two characters per byte
 //
 // Pointer:
 //
-//     %p	base 16 notation, with leading 0x
+//     %p    base 16 notation, with leading 0x
 //
 // There is no 'u' flag. Integers are printed unsigned if they have unsigned
 // type. Similarly, there is no need to specify the size of the operand (int8,
@@ -119,18 +119,18 @@
 //
 // Other flags:
 //
-//     +	always print a sign for numeric values;
-//     	guarantee ASCII-only output for %q (%+q)
-//     -	pad with spaces on the right rather than the left (left-justify the field)
-//     #	alternate format: add leading 0 for octal (%#o), 0x for hex (%#x);
-//     	0X for hex (%#X); suppress 0x for %p (%#p);
-//     	for %q, print a raw (backquoted) string if strconv.CanBackquote
-//     	returns true;
-//     	write e.g. U+0078 'x' if the character is printable for %U (%#U).
-//     ' '	(space) leave a space for elided sign in numbers (% d);
-//     	put spaces between bytes printing strings or slices in hex (% x, % X)
-//     0	pad with leading zeros rather than spaces;
-//     	for numbers, this moves the padding after the sign
+//     +    always print a sign for numeric values;
+//         guarantee ASCII-only output for %q (%+q)
+//     -    pad with spaces on the right rather than the left (left-justify the field)
+//     #    alternate format: add leading 0 for octal (%#o), 0x for hex (%#x);
+//         0X for hex (%#X); suppress 0x for %p (%#p);
+//         for %q, print a raw (backquoted) string if strconv.CanBackquote
+//         returns true;
+//         write e.g. U+0078 'x' if the character is printable for %U (%#U).
+//     ' '    (space) leave a space for elided sign in numbers (% d);
+//         put spaces between bytes printing strings or slices in hex (% x, % X)
+//     0    pad with leading zeros rather than spaces;
+//         for numbers, this moves the padding after the sign
 //
 // Flags are ignored by verbs that do not expect them. For example there is no
 // alternate decimal format, so %#d and %d behave identically.
@@ -230,17 +230,17 @@
 // examples:
 //
 //     Wrong type or unknown verb: %!verb(type=value)
-//     	Printf("%d", hi):          %!d(string=hi)
+//         Printf("%d", hi):          %!d(string=hi)
 //     Too many arguments: %!(EXTRA type=value)
-//     	Printf("hi", "guys"):      hi%!(EXTRA string=guys)
+//         Printf("hi", "guys"):      hi%!(EXTRA string=guys)
 //     Too few arguments: %!verb(MISSING)
-//     	Printf("hi%d"):            hi %!d(MISSING)
+//         Printf("hi%d"):            hi %!d(MISSING)
 //     Non-int for width or precision: %!(BADWIDTH) or %!(BADPREC)
-//     	Printf("%*s", 4.5, "hi"):  %!(BADWIDTH)hi
-//     	Printf("%.*s", 4.5, "hi"): %!(BADPREC)hi
+//         Printf("%*s", 4.5, "hi"):  %!(BADWIDTH)hi
+//         Printf("%.*s", 4.5, "hi"): %!(BADPREC)hi
 //     Invalid or invalid use of argument index: %!(BADINDEX)
-//     	Printf("%*[2]d", 7):       %!d(BADINDEX)
-//     	Printf("%.[2]d", 7):       %!d(BADINDEX)
+//         Printf("%*[2]d", 7):       %!d(BADINDEX)
+//         Printf("%.[2]d", 7):       %!d(BADINDEX)
 //
 // All errors begin with the string "%!" followed sometimes by a single
 // character (the verb) and end with a parenthesized description.
@@ -339,46 +339,46 @@
 //
 // 一般：
 //
-//     %v	相应值的默认格式。在打印结构体时，“加号”标记（%+v）会添加字段名
-//     %#v	相应值的Go语法表示
-//     %T	相应值的类型的Go语法表示
-//     %%	字面上的百分号，并非值的占位符
+//     %v    相应值的默认格式。在打印结构体时，“加号”标记（%+v）会添加字段名
+//     %#v    相应值的Go语法表示
+//     %T    相应值的类型的Go语法表示
+//     %%    字面上的百分号，并非值的占位符
 //
 // 布尔：
 //
-//     %t	单词 true 或 false。
+//     %t    单词 true 或 false。
 //
 // 整数：
 //
-//     %b	二进制表示
-//     %c	相应Unicode码点所表示的字符
-//     %d	十进制表示
-//     %o	八进制表示
-//     %q	单引号围绕的字符字面值，由Go语法安全地转义
-//     %x	十六进制表示，字母形式为小写 a-f
-//     %X	十六进制表示，字母形式为大写 A-F
-//     %U	Unicode格式：U+1234，等同于 "U+%04X"
+//     %b    二进制表示
+//     %c    相应Unicode码点所表示的字符
+//     %d    十进制表示
+//     %o    八进制表示
+//     %q    单引号围绕的字符字面值，由Go语法安全地转义
+//     %x    十六进制表示，字母形式为小写 a-f
+//     %X    十六进制表示，字母形式为大写 A-F
+//     %U    Unicode格式：U+1234，等同于 "U+%04X"
 //
 // 浮点数及其复合构成：
 //
-//     %b	无小数部分的，指数为二的幂的科学计数法，与 strconv.FormatFloat
-//     	的 'b' 转换格式一致。例如 -123456p-78
-//     %e	科学计数法，例如 -1234.456e+78
-//     %E	科学计数法，例如 -1234.456E+78
-//     %f	有小数点而无指数，例如 123.456
-//     %g	根据情况选择 %e 或 %f 以产生更紧凑的（无末尾的0）输出
-//     %G	根据情况选择 %E 或 %f 以产生更紧凑的（无末尾的0）输出
+//     %b    无小数部分的，指数为二的幂的科学计数法，与 strconv.FormatFloat
+//         的 'b' 转换格式一致。例如 -123456p-78
+//     %e    科学计数法，例如 -1234.456e+78
+//     %E    科学计数法，例如 -1234.456E+78
+//     %f    有小数点而无指数，例如 123.456
+//     %g    根据情况选择 %e 或 %f 以产生更紧凑的（无末尾的0）输出
+//     %G    根据情况选择 %E 或 %f 以产生更紧凑的（无末尾的0）输出
 //
 // 字符串与字节切片：
 //
-//     %s	字符串或切片的无解译字节
-//     %q	双引号围绕的字符串，由Go语法安全地转义
-//     %x	十六进制，小写字母，每字节两个字符
-//     %X	十六进制，大写字母，每字节两个字符
+//     %s    字符串或切片的无解译字节
+//     %q    双引号围绕的字符串，由Go语法安全地转义
+//     %x    十六进制，小写字母，每字节两个字符
+//     %X    十六进制，大写字母，每字节两个字符
 //
 // 指针：
 //
-//     %p	十六进制表示，前缀 0x
+//     %p    十六进制表示，前缀 0x
 //
 // 这里没有 'u' 标记。若整数为无符号类型，他们就会被打印成无符号的。类似地， 这
 // 里也不需要指定操作数的大小（int8，int64）。
@@ -397,23 +397,23 @@
 //
 // 其它标记：
 //
-//     +	总打印数值的正负号；对于%q（%+q）保证只输出ASCII编码的字符。
-//     -	在右侧而非左侧填充空格（左对齐该区域）
-//     #	备用格式：为八进制添加前导 0（%#o），为十六进制添加前导 0x（%#x）或
-//     	0X（%#X），为 %p（%#p）去掉前导 0x；对于 %q，若 strconv.CanBackquote
-//     	返回 true，就会打印原始（即反引号围绕的）字符串；如果是可打印字符，
-//     	%U（%#U）会写出该字符的Unicode编码形式（如字符 x 会被打印成 U+0078 'x'）。
-//     ' '	（空格）为数值中省略的正负号留出空白（% d）；
-//     	以十六进制（% x, % X）打印字符串或切片时，在字节之间用空格隔开
-//     0	填充前导的0而非空格；
-//     	对于数字，这会将填充移到正负号之后
+//     +    总打印数值的正负号；对于%q（%+q）保证只输出ASCII编码的字符。
+//     -    在右侧而非左侧填充空格（左对齐该区域）
+//     #    备用格式：为八进制添加前导 0（%#o），为十六进制添加前导 0x（%#x）或
+//         0X（%#X），为 %p（%#p）去掉前导 0x；对于 %q，若 strconv.CanBackquote
+//         返回 true，就会打印原始（即反引号围绕的）字符串；如果是可打印字符，
+//         %U（%#U）会写出该字符的Unicode编码形式（如字符 x 会被打印成 U+0078 'x'）。
+//     ' '    （空格）为数值中省略的正负号留出空白（% d）；
+//         以十六进制（% x, % X）打印字符串或切片时，在字节之间用空格隔开
+//     0    填充前导的0而非空格；
+//         对于数字，这会将填充移到正负号之后
 //
 // 标记有事会被占位符忽略，所以不要指望它们。例如十进制没有备用格式，因此 %#d 与
 // %d 的行为相同。
 //
 // 对于每一个 Printf 类的函数，都有一个 Print 函数，该函数不接受任何格式化， 它
-// 等价于对每一个操作数都应用 %v。另一个变参函数 Println 会在操作数之间插入空
-// 白， 并在末尾追加一个换行符。
+// 等价于对每一个操作数都应用 %v。另一个变参函数 Println 会在操作数之间插入空白
+// ， 并在末尾追加一个换行符。
 //
 // 不考虑占位符的话，如果操作数是接口值，就会使用其内部的具体值，而非接口本身。
 // 因此：
@@ -449,17 +449,17 @@
 // 包含该问题的描述，如下例所示：
 //
 //     类型错误或占位符未知：%!verb(type=value)
-//     	Printf("%d", hi):          %!d(string=hi)
+//         Printf("%d", hi):          %!d(string=hi)
 //     实参太多：%!(EXTRA type=value)
-//     	Printf("hi", "guys"):      hi%!(EXTRA string=guys)
+//         Printf("hi", "guys"):      hi%!(EXTRA string=guys)
 //     实参太少： %!verb(MISSING)
-//     	Printf("hi%d"):            hi %!d(MISSING)
+//         Printf("hi%d"):            hi %!d(MISSING)
 //     宽度或精度不是int类型: %!(BADWIDTH) 或 %!(BADPREC)
-//     	Printf("%*s", 4.5, "hi"):  %!(BADWIDTH)hi
-//     	Printf("%.*s", 4.5, "hi"): %!(BADPREC)hi
+//         Printf("%*s", 4.5, "hi"):  %!(BADWIDTH)hi
+//         Printf("%.*s", 4.5, "hi"): %!(BADPREC)hi
 //
-// 所有错误都始于“%!”，有时紧跟着单个字符（占位符），并以小括号括住的描述结
-// 尾。
+// 所有错误都始于“%!”，有时紧跟着单个字符（占位符），并以小括号括住的描述结尾
+// 。
 //
 // 扫描
 //
@@ -480,8 +480,8 @@
 //     %s 和 %v 在扫描字符串时会将其中的空格作为分隔符
 //     标记 # 和 + 没有实现
 //
-// 在或使用 %v 占位符扫描整数时，可接受友好的进制前缀0（八进制）和0x（十六进制
-// ）。
+// 在或使用 %v 占位符扫描整数时，可接受友好的进制前缀0（八进制）和0x（十六进制）
+// 。
 //
 // 宽度被解释为输入的文本（%5s 意为最多从输入中读取5个符文来扫描成字符串）， 而
 // 扫描函数则没有精度的语法（没有 %5.2f，只有 %5f）。
@@ -499,8 +499,8 @@
 // 注意：Fscan 等函数会从输入中多读取一个字符（符文），因此，如果循环调用扫描函
 // 数， 可能会跳过输入中的某些数据。一般只有在输入的数据中没有空白符时该问题才会
 // 出现。 若提供给 Fscan 的读取器实现了 ReadRune，就会用该方法读取字符。若此读取
-// 器还实现了 UnreadRune 方法，就会用该方法保存字符，而连续的调用将不会丢失数
-// 据。若要为没有 ReadRune 和 UnreadRune 方法的读取器加上这些功能，需使用
+// 器还实现了 UnreadRune 方法，就会用该方法保存字符，而连续的调用将不会丢失数据
+// 。若要为没有 ReadRune 和 UnreadRune 方法的读取器加上这些功能，需使用
 // bufio.NewReader。
 package fmt
 
@@ -519,113 +519,91 @@ import (
 // The implementation of Format may call Sprint(f) or Fprint(f) etc.
 // to generate its output.
 
-// Formatter 接口由带有定制的格式化器的值所实现。
-// Format 的实现可调用 Sprintf 或 Fprintf(f) 等函数来生成其输出。
+// Formatter 接口由带有定制的格式化器的值所实现。 Format 的实现可调用 Sprintf 或
+// Fprintf(f) 等函数来生成其输出。
 type Formatter interface {
-	Format(f State, c rune)
+    Format(f State, c rune)
 }
-
 
 // GoStringer is implemented by any value that has a GoString method,
 // which defines the Go syntax for that value.
 // The GoString method is used to print values passed as an operand
 // to a %#v format.
 
-// GoStringer 接口由任何拥有 GoString 方法的值所实现，该方法定义了该值的Go语法格
-// 式。 GoString 方法用于打印作为操作数传至 %#v 进行格式化的值。
+// GoStringer 接口由任何拥有 GoString
+// 方法的值所实现，该方法定义了该值的Go语法格式。 GoString
+// 方法用于打印作为操作数传至 %#v 进行格式化的值。
 type GoStringer interface {
-	GoString() string
+    GoString() string
 }
-
 
 // ScanState represents the scanner state passed to custom scanners.
 // Scanners may do rune-at-a-time scanning or ask the ScanState
 // to discover the next space-delimited token.
 
-// ScanState 表示传递给定制扫描器的扫描状态。扫瞄器可一次扫描一个附文或请求
-// ScanState 发现下一个以空格分隔的标记。
+// ScanState
+// 表示传递给定制扫描器的扫描状态。扫瞄器可一次扫描一个附文或请求 ScanState
+// 发现下一个以空格分隔的标记。
 type ScanState interface {
-	// ReadRune reads the next rune (Unicode code point) from the input.
-	// If invoked during Scanln, Fscanln, or Sscanln, ReadRune() will
-	// return EOF after returning the first '\n' or when reading beyond
-	// the specified width.
-	//
-	// ReadRune 从输入中读取下一个符文（Unicode码点）。若它在 Scanln、Fscanln 或
-	// Sscanln 中被调用，ReadRune() 就会在返回第一个“\n”或读取至指定宽度后返回 EOF。
-	ReadRune() (r rune, size int, err error)
-	// UnreadRune causes the next call to ReadRune to return the same rune.
-	// UnreadRune 会使 ReadRune 的下一次调用返回相同的符文。
-	UnreadRune() error
-	// SkipSpace skips space in the input. Newlines are treated appropriately
-	// for the operation being performed; see the package documentation
-	// for more information.
-	//
-	// SkipSpace 跳过输入中的空格。换行符会根据所执行的操作被恰当地处理。
-	// 更多信息见包文档。
-	SkipSpace()
-	// Token skips space in the input if skipSpace is true, then returns the
-	// run of Unicode code points c satisfying f(c).  If f is nil,
-	// !unicode.IsSpace(c) is used; that is, the token will hold non-space
-	// characters. Newlines are treated appropriately for the operation being
-	// performed; see the package documentation for more information.
-	// The returned slice points to shared data that may be overwritten
-	// by the next call to Token, a call to a Scan function using the ScanState
-	// as input, or when the calling Scan method returns.
-	//
-	// Token 会在 skipSpace 为 true 时从输入中跳过空格，然后返回一系列满足 f(c)
-	// 的Unicode码点 c。若 f 为 nil，就会使用 !unicode.IsSpace(c)；
-	// 即，该标记会保留非空格字符。换行符会被视作空格，除非该扫描操作为 Scanln、
-	// Fscanln 或 Sscanln，否则在这种情况下，换行符会被视作 EOF。
-	// 所返回的指向共享数据的切片可能会在下次调用 Token 时被覆盖，Scan 函数的调用
-	// 会将 ScanState 用作输入，或当调用 Scan 方法返回时也会。
-	Token(skipSpace bool, f func(rune) bool) (token []byte, err error)
-	// Width returns the value of the width option and whether it has been set.
-	// The unit is Unicode code points.
-	// Width 返回宽度选项的值，并判断它是否被设置。其单元为Unicode码点。
-	Width() (wid int, ok bool)
-	// Because ReadRune is implemented by the interface, Read should never be
-	// called by the scanning routines and a valid implementation of
-	// ScanState may choose always to return an error from Read.
-	//
-	// 由于 ReadRune 被此接口实现，因此 Read 不应当被扫描功能调用，而 ScanState
-	// 的有效实现可选择总是从 Read 中返回错误。
-	Read(buf []byte) (n int, err error)
+    // ReadRune reads the next rune (Unicode code point) from the input.
+    // If invoked during Scanln, Fscanln, or Sscanln, ReadRune() will
+    // return EOF after returning the first '\n' or when reading beyond
+    // the specified width.
+    ReadRune() (r rune, size int, err error)
+    // UnreadRune causes the next call to ReadRune to return the same rune.
+    UnreadRune() error
+    // SkipSpace skips space in the input. Newlines are treated as space
+    // unless the scan operation is Scanln, Fscanln or Sscanln, in which case
+    // a newline is treated as EOF.
+    SkipSpace()
+    // Token skips space in the input if skipSpace is true, then returns the
+    // run of Unicode code points c satisfying f(c).  If f is nil,
+    // !unicode.IsSpace(c) is used; that is, the token will hold non-space
+    // characters.  Newlines are treated as space unless the scan operation
+    // is Scanln, Fscanln or Sscanln, in which case a newline is treated as
+    // EOF.  The returned slice points to shared data that may be overwritten
+    // by the next call to Token, a call to a Scan function using the ScanState
+    // as input, or when the calling Scan method returns.
+    Token(skipSpace bool, f func(rune) bool) (token []byte, err error)
+    // Width returns the value of the width option and whether it has been set.
+    // The unit is Unicode code points.
+    Width() (wid int, ok bool)
+    // Because ReadRune is implemented by the interface, Read should never be
+    // called by the scanning routines and a valid implementation of
+    // ScanState may choose always to return an error from Read.
+    Read(buf []byte) (n int, err error)
 }
-
 
 // Scanner is implemented by any value that has a Scan method, which scans
 // the input for the representation of a value and stores the result in the
 // receiver, which must be a pointer to be useful.  The Scan method is called
 // for any argument to Scan, Scanf, or Scanln that implements it.
 
-// Scanner 由任何拥有 Scan 方法的值实现，它将输入扫描成值的表示，并将其结果存储
-// 到接收者中， 该接收者必须为可用的指针。Scan 方法会被 Scan、Scanf 或 Scanln 的
-// 任何实现了它的实参所调用。
+// Scanner 由任何拥有 Scan
+// 方法的值实现，它将输入扫描成值的表示，并将其结果存储到接收者中，
+// 该接收者必须为可用的指针。Scan 方法会被 Scan、Scanf 或 Scanln
+// 的任何实现了它的实参所调用。
 type Scanner interface {
-	Scan(state ScanState, verb rune) error
+    Scan(state ScanState, verb rune) error
 }
-
 
 // State represents the printer state passed to custom formatters.
 // It provides access to the io.Writer interface plus information about
 // the flags and options for the operand's format specifier.
 
-// State 表示传递给格式化器的打印器的状态。
-// 它提供了访问 io.Writer 接口及关于标记的信息，以及操作数的格式说明符选项。
+// State 表示传递给格式化器的打印器的状态。 它提供了访问 io.Writer
+// 接口及关于标记的信息，以及操作数的格式说明符选项。
 type State interface {
-	// Write is the function to call to emit formatted output to be printed.
-	Write(b []byte) (n int, err error)
+    // Write is the function to call to emit formatted output to be printed.
+    Write(b []byte) (ret int, err error)
+    // Width returns the value of the width option and whether it has been set.
+    Width() (wid int, ok bool)
+    // Precision returns the value of the precision option and whether it has been set.
+    Precision() (prec int, ok bool)
 
-	// Width 返回宽度选项的值以及它是否已被设置。
-	Width() (wid int, ok bool)
-
-	// Precision 返回精度选项的值以及它是否已被设置。
-	Precision() (prec int, ok bool)
-
-	// Flag 返回标记 c（一个字符）是否已被设置。
-	Flag(c int) bool
+    // Flag reports whether the flag c, a character, has been set.
+    Flag(c int) bool
 }
-
 
 // Stringer is implemented by any value that has a String method,
 // which defines the ``native'' format for that value.
@@ -633,25 +611,27 @@ type State interface {
 // to any format that accepts a string or to an unformatted printer
 // such as Print.
 
-// Stringer 接口由任何拥有 String 方法的值所实现，该方法定义了该值的“原生”格
-// 式。 String 方法用于打印值，该值可作为操作数传至任何接受字符串的格式，或像
-// Print 这样的未格式化打印器。
+// Stringer 接口由任何拥有 String
+// 方法的值所实现，该方法定义了该值的“原生”格式。 String
+// 方法用于打印值，该值可作为操作数传至任何接受字符串的格式，或像 Print
+// 这样的未格式化打印器。
 type Stringer interface {
-	String() string
+    String() string
 }
-
 
 // Errorf formats according to a format specifier and returns the string
 // as a value that satisfies error.
 
-// Errorf 根据于格式说明符进行格式化并将字符串作为满足 error 的值返回。
+// Errorf
+// 根据于格式说明符进行格式化并将字符串作为满足 error 的值返回。
 func Errorf(format string, a ...interface{}) error
 
 // Fprint formats using the default formats for its operands and writes to w.
 // Spaces are added between operands when neither is a string.
 // It returns the number of bytes written and any write error encountered.
 
-// Fprint 使用其操作数的默认格式进行格式化并写入到 w。
+// Fprint
+// 使用其操作数的默认格式进行格式化并写入到 w。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 // 它返回写入的字节数以及任何遇到的错误。
 func Fprint(w io.Writer, a ...interface{}) (n int, err error)
@@ -667,7 +647,8 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error)
 // Spaces are always added between operands and a newline is appended.
 // It returns the number of bytes written and any write error encountered.
 
-// Fprintln 使用其操作数的默认格式进行格式化并写入到 w。
+// Fprintln
+// 使用其操作数的默认格式进行格式化并写入到 w。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 // 它返回写入的字节数以及任何遇到的错误。
 func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
@@ -677,7 +658,8 @@ func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
 // returns the number of items successfully scanned.  If that is less
 // than the number of arguments, err will report why.
 
-// Fscan 扫描从 r 中读取的文本，并将连续由空格分隔的值存储为连续的实参。
+// Fscan 扫描从 r
+// 中读取的文本，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Fscan(r io.Reader, a ...interface{}) (n int, err error)
 
@@ -686,23 +668,24 @@ func Fscan(r io.Reader, a ...interface{}) (n int, err error)
 // returns the number of items successfully parsed.
 // Newlines in the input must match newlines in the format.
 
-// Fscanf 扫描从 r 中读取的文本，并将连续由空格分隔的值存储为连续的实参， 其格式
-// 由 format 决定。它返回成功解析的条目数。输入中的换行符必须与 format 中的相匹
-// 配。
+// Fscanf 扫描从 r
+// 中读取的文本，并将连续由空格分隔的值存储为连续的实参， 其格式由 format
+// 决定。它返回成功解析的条目数。
 func Fscanf(r io.Reader, format string, a ...interface{}) (n int, err error)
 
 // Fscanln is similar to Fscan, but stops scanning at a newline and
 // after the final item there must be a newline or EOF.
 
-// Fscanln 类似于 Sscan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或
-// EOF。
+// Fscanln 类似于
+// Sscan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或 EOF。
 func Fscanln(r io.Reader, a ...interface{}) (n int, err error)
 
 // Print formats using the default formats for its operands and writes to
 // standard output. Spaces are added between operands when neither is a string.
 // It returns the number of bytes written and any write error encountered.
 
-// Print 使用其操作数的默认格式进行格式化并写入到标准输出。
+// Print
+// 使用其操作数的默认格式进行格式化并写入到标准输出。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 // 它返回写入的字节数以及任何遇到的错误。
 func Print(a ...interface{}) (n int, err error)
@@ -710,7 +693,8 @@ func Print(a ...interface{}) (n int, err error)
 // Printf formats according to a format specifier and writes to standard output.
 // It returns the number of bytes written and any write error encountered.
 
-// Printf 根据于格式说明符进行格式化并写入到标准输出。
+// Printf
+// 根据于格式说明符进行格式化并写入到标准输出。
 // 它返回写入的字节数以及任何遇到的写入错误。
 func Printf(format string, a ...interface{}) (n int, err error)
 
@@ -719,7 +703,8 @@ func Printf(format string, a ...interface{}) (n int, err error)
 // appended. It returns the number of bytes written and any write error
 // encountered.
 
-// Println 使用其操作数的默认格式进行格式化并写入到标准输出。
+// Println
+// 使用其操作数的默认格式进行格式化并写入到标准输出。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 // 它返回写入的字节数以及任何遇到的错误。
 func Println(a ...interface{}) (n int, err error)
@@ -729,7 +714,8 @@ func Println(a ...interface{}) (n int, err error)
 // as space.  It returns the number of items successfully scanned.
 // If that is less than the number of arguments, err will report why.
 
-// Scan 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参。
+// Scan
+// 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Scan(a ...interface{}) (n int, err error)
 
@@ -741,37 +727,38 @@ func Scan(a ...interface{}) (n int, err error)
 // The one exception: the verb %c always scans the next rune in the
 // input, even if it is a space (or tab etc.) or newline.
 
-// Scanf 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参，
-// 其格式由 format 决定。它返回成功扫描的条目数。若返回的条目数小于实参数，
-// 则会报告错误原因 err。输入中的换行符必须与 format 中的相匹配，除了一种例外：
-// %c 占位符总是扫描输入中的下一个符文，即便它是空格（或 tab 等）或换行符。
+// Scanf 扫描从标准输入中读取的文本，并将连续由空格分隔的值存储为连续的实参， 其
+// 格式由 format 决定。它返回成功扫描的条目数。
 func Scanf(format string, a ...interface{}) (n int, err error)
 
 // Scanln is similar to Scan, but stops scanning at a newline and
 // after the final item there must be a newline or EOF.
 
-// Scanln 类似于 Scan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或
-// EOF。
+// Scanln 类似于
+// Scan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或 EOF。
 func Scanln(a ...interface{}) (n int, err error)
 
 // Sprint formats using the default formats for its operands and returns the
 // resulting string. Spaces are added between operands when neither is a string.
 
-// Sprint 使用其操作数的默认格式进行格式化并返回其结果字符串。
+// Sprint
+// 使用其操作数的默认格式进行格式化并返回其结果字符串。
 // 当两个连续的操作数均不为字符串时，它们之间就会添加空格。
 func Sprint(a ...interface{}) string
 
 // Sprintf formats according to a format specifier and returns the resulting
 // string.
 
-// Sprintf 根据于格式说明符进行格式化并返回其结果字符串。
+// Sprintf
+// 根据于格式说明符进行格式化并返回其结果字符串。
 func Sprintf(format string, a ...interface{}) string
 
 // Sprintln formats using the default formats for its operands and returns the
 // resulting string. Spaces are always added between operands and a newline is
 // appended.
 
-// Sprintln 使用其操作数的默认格式进行格式化并写返回其结果字符串。
+// Sprintln
+// 使用其操作数的默认格式进行格式化并写返回其结果字符串。
 // 其操作数之间总是添加空格，且总在最后追加一个换行符。
 func Sprintln(a ...interface{}) string
 
@@ -780,7 +767,8 @@ func Sprintln(a ...interface{}) string
 // returns the number of items successfully scanned.  If that is less
 // than the number of arguments, err will report why.
 
-// Sscan 扫描实参 string，并将连续由空格分隔的值存储为连续的实参。
+// Sscan 扫描实参
+// string，并将连续由空格分隔的值存储为连续的实参。
 // 换行符计为空格。它返回成功扫描的条目数。若它少于实参数，err 就会报告原因。
 func Sscan(str string, a ...interface{}) (n int, err error)
 
@@ -789,14 +777,15 @@ func Sscan(str string, a ...interface{}) (n int, err error)
 // returns the number of items successfully parsed.
 // Newlines in the input must match newlines in the format.
 
-// Scanf 扫描实参 string，并将连续由空格分隔的值存储为连续的实参， 其格式由
-// format 决定。它返回成功解析的条目数。输入中的换行符必须与 format 中的相匹配。
+// Scanf 扫描实参
+// string，并将连续由空格分隔的值存储为连续的实参， 其格式由 format
+// 决定。它返回成功解析的条目数。
 func Sscanf(str string, format string, a ...interface{}) (n int, err error)
 
 // Sscanln is similar to Sscan, but stops scanning at a newline and
 // after the final item there must be a newline or EOF.
 
-// Sscanln 类似于 Sscan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或
-// EOF。
+// Sscanln 类似于
+// Sscan，但它在换行符处停止扫描，且最后的条目之后必须为换行符或 EOF。
 func Sscanln(str string, a ...interface{}) (n int, err error)
 

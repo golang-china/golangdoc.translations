@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -19,8 +19,9 @@ func Decode(s []uint16) []rune
 // If the pair is not a valid UTF-16 surrogate pair, DecodeRune returns
 // the Unicode replacement code point U+FFFD.
 
-// DecodeRune 返回替代值对的UTF-16解码。 若该值对并非有效的UTF-16替代值对，
-// DecodeRune 就会返回Unicode的替换码点U+FFFD。
+// DecodeRune 返回替代值对的UTF-16解码。
+// 若该值对并非有效的UTF-16替代值对，DecodeRune
+// 就会返回Unicode的替换码点U+FFFD。
 func DecodeRune(r1, r2 rune) rune
 
 // Encode returns the UTF-16 encoding of the Unicode code point sequence s.
@@ -39,6 +40,7 @@ func EncodeRune(r rune) (r1, r2 rune)
 // IsSurrogate reports whether the specified Unicode code point
 // can appear in a surrogate pair.
 
-// IsSurrogate 在指定的Unicode码点可出现在替代值对中时返回 true。
+// IsSurrogate
+// 在指定的Unicode码点可出现在替代值对中时返回 true。
 func IsSurrogate(r rune) bool
 

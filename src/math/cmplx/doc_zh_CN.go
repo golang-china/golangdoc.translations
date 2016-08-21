@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -85,7 +85,8 @@ func IsInf(x complex128) bool
 // IsNaN returns true if either real(x) or imag(x) is NaN
 // and neither is an infinity.
 
-// IsNaN 在 real(x) 或 imag(x) 其中之一为 NaN 且另一个为无限大值时返回 true。
+// IsNaN 在 real(x) 或 imag(x) 其中之一为 NaN
+// 且另一个为无限大值时返回 true。
 func IsNaN(x complex128) bool
 
 // Log returns the natural logarithm of x.
@@ -106,16 +107,15 @@ func NaN() complex128
 // Phase returns the phase (also called the argument) of x.
 // The returned value is in the range [-Pi, Pi].
 
-// Phase 返回 x 的 相位（亦称为辐角）。
-// 其返回值在区间 [-Pi, Pi] 内。
+// Phase 返回 x 的 相位（亦称为辐角）。 其返回值在区间 [-Pi, Pi] 内。
 func Phase(x complex128) float64
 
 // Polar returns the absolute value r and phase θ of x,
 // such that x = r * e**θi.
 // The phase is in the range [-Pi, Pi].
 
-// Polar 返回 x 的绝对值 r 和相位 θ，使得 x = r * e**θi。
-// 其相位在区间 [-Pi, Pi] 内。
+// Polar 返回 x 的绝对值 r 和相位 θ，使得 x = r * e**θi。 其相位在区间 [-Pi,
+// Pi] 内。
 func Polar(x complex128) (r, θ float64)
 
 // Pow returns x**y, the base-x exponential of y. For generalized compatibility
