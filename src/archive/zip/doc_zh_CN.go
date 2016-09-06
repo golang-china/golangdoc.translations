@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 // Package zip provides support for reading and writing ZIP archives.
 //
-// See: http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+// See: https://www.pkware.com/documents/casestudies/APPNOTE.TXT
 //
 // This package does not support disk spanning.
 //
@@ -32,33 +32,33 @@
 package zip
 
 import (
-    "bufio"
-    "compress/flate"
-    "encoding/binary"
-    "errors"
-    "fmt"
-    "hash"
-    "hash/crc32"
-    "io"
-    "io/ioutil"
-    "os"
-    "path"
-    "sync"
-    "time"
+	"bufio"
+	"compress/flate"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"hash"
+	"hash/crc32"
+	"io"
+	"io/ioutil"
+	"os"
+	"path"
+	"sync"
+	"time"
 )
 
 // Compression methods.
 
 // 预定义压缩算法。
 const (
-    Store   uint16 = 0
-    Deflate uint16 = 8
+	Store   uint16 = 0
+	Deflate uint16 = 8
 )
 
 var (
-    ErrFormat    = errors.New("zip: not a valid zip file")
-    ErrAlgorithm = errors.New("zip: unsupported compression algorithm")
-    ErrChecksum  = errors.New("zip: checksum error")
+	ErrFormat    = errors.New("zip: not a valid zip file")
+	ErrAlgorithm = errors.New("zip: unsupported compression algorithm")
+	ErrChecksum  = errors.New("zip: checksum error")
 )
 
 // A Compressor returns a new compressing writer, writing to w.
@@ -67,60 +67,63 @@ var (
 // simultaneously, but each returned writer will be used only by
 // one goroutine at a time.
 
-// Compressor函数类型会返回一个io.WriteCloser，该接口会将数据压缩后写入提供的接
-// 口。 关闭时，应将缓冲中的数据刷新到下层接口中。
-type Compressor func(io.Writer) (io.WriteCloser, error)
+// Compressor 返回一个新的压缩写入器，写入到 w 中。WriteCloser 的 Close 方法必须
+// 必须被用于将等待的数据刷新到 w 中。Compressor 在多个Go程被同步调用时， 其自身
+// 必须保证安全，但每个返回的写入器一次只会被一个Go程使用。
+type Compressor func(w io.Writer) (io.WriteCloser, error)
 
-// A Decompressor returns a new decompressing reader, reading from r.
-// The ReadCloser's Close method must be used to release associated resources.
-// The Decompressor itself must be safe to invoke from multiple goroutines
-// simultaneously, but each returned reader will be used only by
-// one goroutine at a time.
+// A Decompressor returns a new decompressing reader, reading from r. The
+// ReadCloser's Close method must be used to release associated resources. The
+// Decompressor itself must be safe to invoke from multiple goroutines
+// simultaneously, but each returned reader will be used only by one goroutine
+// at a time.
 
-// Decompressor函数类型会把一个io.Reader包装成具有decompressing特性的io.Reader.
-// Decompressor函数类型会返回一个io.ReadCloser，
-// 该接口的Read方法会将读取自提供的接口的数据提前解压缩。
-// 程序员有责任在读取结束时关闭该io.ReadCloser。
-type Decompressor func(io.Reader) io.ReadCloser
+// Decompressor 返回一个新的解压读取器，从 r 中读取。ReadCloser 的 Close
+// 方法必须被用于释放相关的资源。Decompressor 在多个Go程被同步调用时，
+// 其自身必须保证安全，但每个返回的读取器一次只会被一个Go程使用。
+type Decompressor func(r io.Reader) io.ReadCloser
 
 type File struct {
-    FileHeader
+	FileHeader
 }
 
 // FileHeader describes a file within a zip file.
 // See the zip spec for details.
 
-// FileHeader描述zip文件中的一个文件。 参见zip的定义获取细节。
+// FileHeader描述zip文件中的一个文件。
+// 参见zip的定义获取细节。
 type FileHeader struct {
-    // Name is the name of the file.
-    // It must be a relative path: it must not start with a drive
-    // letter (e.g. C:) or leading slash, and only forward slashes
-    // are allowed.
-    Name string
+	// Name is the name of the file.
+	// It must be a relative path: it must not start with a drive
+	// letter (e.g. C:) or leading slash, and only forward slashes
+	// are allowed.
 
-    CreatorVersion     uint16
-    ReaderVersion      uint16
-    Flags              uint16
-    Method             uint16
-    ModifiedTime       uint16 // MS-DOS time
-    ModifiedDate       uint16 // MS-DOS date
-    CRC32              uint32
-    CompressedSize     uint32 // deprecated; use CompressedSize64
-    UncompressedSize   uint32 // deprecated; use UncompressedSize64
-    CompressedSize64   uint64
-    UncompressedSize64 uint64
-    Extra              []byte
-    ExternalAttrs      uint32 // Meaning depends on CreatorVersion
-    Comment            string
+	// Name是文件名，它必须是相对路径，
+	// 不能以设备或斜杠开始，只接受'/'作为路径分隔符
+	Name               string
+	CreatorVersion     uint16
+	ReaderVersion      uint16
+	Flags              uint16
+	Method             uint16
+	ModifiedTime       uint16 // MS-DOS time // MS-DOS时间
+	ModifiedDate       uint16 // MS-DOS date // MS-DOS日期
+	CRC32              uint32
+	CompressedSize     uint32 // Deprecated: Use CompressedSize64 instead. // 已弃用；请使用CompressedSize64
+	UncompressedSize   uint32 // Deprecated: Use UncompressedSize64 instead. // 已弃用；请使用UncompressedSize64
+	CompressedSize64   uint64
+	UncompressedSize64 uint64
+	Extra              []byte
+	ExternalAttrs      uint32 // Meaning depends on CreatorVersion // 其含义依赖于CreatorVersion
+	Comment            string
 }
 
 type ReadCloser struct {
-    Reader
+	Reader
 }
 
 type Reader struct {
-    File    []*File
-    Comment string
+	File    []*File
+	Comment string
 }
 
 // Writer implements a zip file writer.
@@ -167,7 +170,8 @@ func RegisterCompressor(method uint16, comp Compressor)
 // The common methods Store and Deflate are built in.
 
 // RegisterDecompressor使用指定的方法ID注册一个Decompressor类型函数。
-func RegisterDecompressor(method uint16, d Decompressor)
+// 通用方法 Store 和 Deflate 是内建的。
+func RegisterDecompressor(method uint16, dcomp Decompressor)
 
 // DataOffset returns the offset of the file's possibly-compressed
 // data, relative to the beginning of the zip file.
@@ -177,53 +181,58 @@ func RegisterDecompressor(method uint16, d Decompressor)
 
 // DataOffset返回文件的可能存在的压缩数据相对于zip文件起始的偏移量。
 // 大多数调用者应使用Open代替，该方法会主动解压缩数据并验证校验和。
-func (*File) DataOffset() (offset int64, err error)
+func (f *File) DataOffset() (offset int64, err error)
 
 // Open returns a ReadCloser that provides access to the File's contents.
 // Multiple files may be read concurrently.
 
 // Open方法返回一个io.ReadCloser接口，提供读取文件内容的方法。
 // 可以同时读取多个文件。
-func (*File) Open() (rc io.ReadCloser, err error)
+func (f *File) Open() (io.ReadCloser, error)
 
 // FileInfo returns an os.FileInfo for the FileHeader.
 
 // FileInfo返回一个根据h的信息生成的os.FileInfo。
-func (*FileHeader) FileInfo() os.FileInfo
+func (h *FileHeader) FileInfo() os.FileInfo
 
 // ModTime returns the modification time in UTC.
 // The resolution is 2s.
 
 // 返回最近一次修改的UTC时间。（精度2s）
-func (*FileHeader) ModTime() time.Time
+func (h *FileHeader) ModTime() time.Time
 
 // Mode returns the permission and mode bits for the FileHeader.
 
 // Mode返回h的权限和模式位。
-func (*FileHeader) Mode() (mode os.FileMode)
+func (h *FileHeader) Mode() (mode os.FileMode)
 
 // SetModTime sets the ModifiedTime and ModifiedDate fields to the given time in
 // UTC. The resolution is 2s.
 
 // 将ModifiedTime和ModifiedDate字段设置为给定的UTC时间。（精度2s）
-func (*FileHeader) SetModTime(t time.Time)
+func (h *FileHeader) SetModTime(t time.Time)
 
 // SetMode changes the permission and mode bits for the FileHeader.
 
 // SetMode修改h的权限和模式位。
-func (*FileHeader) SetMode(mode os.FileMode)
+func (h *FileHeader) SetMode(mode os.FileMode)
 
 // Close closes the Zip file, rendering it unusable for I/O.
 
 // Close关闭zip文件，使它不能用于I/O。
-func (*ReadCloser) Close() error
+func (rc *ReadCloser) Close() error
+
+// RegisterDecompressor registers or overrides a custom decompressor for a
+// specific method ID. If a decompressor for a given method is not found,
+// Reader will default to looking up the decompressor at the package level.
+func (z *Reader) RegisterDecompressor(method uint16, dcomp Decompressor)
 
 // Close finishes writing the zip file by writing the central directory.
-// It does not (and can not) close the underlying writer.
+// It does not (and cannot) close the underlying writer.
 
 // Close方法通过写入中央目录关闭该*Writer。
 // 本方法不会也没办法关闭下层的io.Writer接口。
-func (*Writer) Close() error
+func (w *Writer) Close() error
 
 // Create adds a file to the zip file using the provided name.
 // It returns a Writer to which the file contents should be written.
@@ -233,11 +242,11 @@ func (*Writer) Close() error
 // The file's contents must be written to the io.Writer before the next
 // call to Create, CreateHeader, or Close.
 
-// 使用给出的文件名添加一个文件进zip文件。
-// 本方法返回一个io.Writer接口（用于写入新添加文件的内容）。
-// 文件名必须是相对路径，不能以设备或斜杠开始，只接受'/'作为路径分隔。
-// 新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。
-func (*Writer) Create(name string) (io.Writer, error)
+// 使用给出的文件名添加一个文件进zip文件。 本方法返回一个io.Writer接口（用于写入
+// 新添加文件的内容）。 文件名必须是相对路径，不能以设备或斜杠开始，只接受'/'作
+// 为路径分隔。 新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之
+// 前全部写入。
+func (w *Writer) Create(name string) (io.Writer, error)
 
 // CreateHeader adds a file to the zip file using the provided FileHeader
 // for the file metadata.
@@ -247,12 +256,28 @@ func (*Writer) Create(name string) (io.Writer, error)
 // call to Create, CreateHeader, or Close. The provided FileHeader fh
 // must not be modified after a call to CreateHeader.
 
-// 使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。
+// CreateHeader 使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。
 // 本方法返回一个io.Writer接口（用于写入新添加文件的内容）。
+//
 // 新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。
-func (*Writer) CreateHeader(fh *FileHeader) (io.Writer, error)
+// 提供的 FileHeader fh 在调用 CreateHeader 后决不能修改。
+func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error)
+
+// Flush flushes any buffered data to the underlying writer.
+// Calling Flush is not normally necessary; calling Close is sufficient.
 
 // Flush flushes any buffered data to the underlying writer. Calling Flush is
 // not normally necessary; calling Close is sufficient.
-func (*Writer) Flush() error
+func (w *Writer) Flush() error
+
+// RegisterCompressor registers or overrides a custom compressor for a specific
+// method ID. If a compressor for a given method is not found, Writer will
+// default to looking up the compressor at the package level.
+func (w *Writer) RegisterCompressor(method uint16, comp Compressor)
+
+// SetOffset sets the offset of the beginning of the zip data within the
+// underlying writer. It should be used when the zip data is appended to an
+// existing file, such as a binary executable.
+// It must be called before any data is written.
+func (w *Writer) SetOffset(n int64)
 

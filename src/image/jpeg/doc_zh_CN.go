@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,12 +13,12 @@
 package jpeg
 
 import (
-    "bufio"
-    "errors"
-    "image"
-    "image/color"
-    "image/internal/imageutil"
-    "io"
+	"bufio"
+	"errors"
+	"image"
+	"image/color"
+	"image/internal/imageutil"
+	"io"
 )
 
 // DefaultQuality is the default quality encoding parameter.
@@ -36,15 +36,15 @@ type FormatError string
 
 // Options是编码质量参数。取值范围[1,100]，越大图像编码质量越高。
 type Options struct {
-    Quality int
+	Quality int
 }
 
 // Deprecated: Reader is deprecated.
 
 // 如果提供的io.Reader接口没有ReadByte方法，Decode函数会为该接口附加一个缓冲。
 type Reader interface {
-    io.ByteReader
-    io.Reader
+	io.ByteReader
+	io.Reader
 }
 
 // An UnsupportedError reports that the input uses a valid but unimplemented
@@ -68,11 +68,11 @@ func DecodeConfig(r io.Reader) (image.Config, error)
 // Encode writes the Image m to w in JPEG 4:2:0 baseline format with the given
 // options. Default parameters are used if a nil *Options is passed.
 
-// Encode函数将采用JPEG
-// 4:2:0基线格式和指定的编码质量将图像写入w。如果o为nil将使用DefaultQuality。
+// Encode函数将采用JPEG 4:2:0基线格式和指定的编码质量将图像写入w。如果o为nil将使
+// 用DefaultQuality。
 func Encode(w io.Writer, m image.Image, o *Options) error
 
-func (FormatError) Error() string
+func (e FormatError) Error() string
 
-func (UnsupportedError) Error() string
+func (e UnsupportedError) Error() string
 

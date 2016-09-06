@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,21 +11,26 @@
 package debug
 
 import (
-    "os"
-    "runtime"
-    "sort"
-    "time"
+	"os"
+	"runtime"
+	"sort"
+	"time"
 )
 
 // GCStats collect information about recent garbage collections.
 type GCStats struct {
-    LastGC         time.Time       // time of last collection
-    NumGC          int64           // number of garbage collections
-    PauseTotal     time.Duration   // total pause for all collections
-    Pause          []time.Duration // pause history, most recent first
-    PauseEnd       []time.Time     // pause end times history, most recent first
-    PauseQuantiles []time.Duration
+	LastGC         time.Time       // time of last collection
+	NumGC          int64           // number of garbage collections
+	PauseTotal     time.Duration   // total pause for all collections
+	Pause          []time.Duration // pause history, most recent first
+	PauseEnd       []time.Time     // pause end times history, most recent first
+	PauseQuantiles []time.Duration
 }
+
+// FreeOSMemory forces a garbage collection followed by an
+// attempt to return as much memory to the operating system
+// as possible. (Even if this is not called, the runtime gradually
+// returns memory to the operating system in a background task.)
 
 // FreeOSMemory forces a garbage collection followed by an attempt to return as
 // much memory to the operating system as possible. (Even if this is not called,
@@ -36,9 +41,17 @@ func FreeOSMemory()
 // PrintStack prints to standard error the stack trace returned by
 // runtime.Stack.
 
-// PrintStack 将 Stack
-// 返回的栈跟踪信息打印到标准错误输出。
+// PrintStack 将 runtime.Stack 返回的栈跟踪信息打印到标准错误输出。
 func PrintStack()
+
+// ReadGCStats reads statistics about garbage collection into stats.
+// The number of entries in the pause history is system-dependent;
+// stats.Pause slice will be reused if large enough, reallocated otherwise.
+// ReadGCStats may use the full capacity of the stats.Pause slice.
+// If stats.PauseQuantiles is non-empty, ReadGCStats fills it with quantiles
+// summarizing the distribution of pause time. For example, if
+// len(stats.PauseQuantiles) is 5, it will be filled with the minimum,
+// 25%, 50%, 75%, and maximum pause times.
 
 // ReadGCStats reads statistics about garbage collection into stats. The number
 // of entries in the pause history is system-dependent; stats.Pause slice will
@@ -56,6 +69,17 @@ func ReadGCStats(stats *GCStats)
 // environment variable at startup, or 100 if the variable is not set. A
 // negative percentage disables garbage collection.
 func SetGCPercent(percent int) int
+
+// SetMaxStack sets the maximum amount of memory that
+// can be used by a single goroutine stack.
+// If any goroutine exceeds this limit while growing its stack,
+// the program crashes.
+// SetMaxStack returns the previous setting.
+// The initial setting is 1 GB on 64-bit systems, 250 MB on 32-bit systems.
+//
+// SetMaxStack is useful mainly for limiting the damage done by
+// goroutines that enter an infinite recursion. It only limits future
+// stack growth.
 
 // SetMaxStack sets the maximum amount of memory that can be used by a single
 // goroutine stack. If any goroutine exceeds this limit while growing its stack,
@@ -91,19 +115,33 @@ func SetMaxThreads(threads int) int
 // It returns the previous setting.
 func SetPanicOnFault(enabled bool) bool
 
+// SetTraceback sets the amount of detail printed by the runtime in
+// the traceback it prints before exiting due to an unrecovered panic
+// or an internal runtime error.
+// The level argument takes the same values as the GOTRACEBACK
+// environment variable. For example, SetTraceback("all") ensure
+// that the program prints all goroutines when it crashes.
+// See the package runtime documentation for details.
+// If SetTraceback is called with a level lower than that of the
+// environment variable, the call is ignored.
+func SetTraceback(level string)
+
 // Stack returns a formatted stack trace of the goroutine that calls it. It
 // calls runtime.Stack with a large enough buffer to capture the entire trace.
 
 // Stack 返回格式化的Go程调用的栈跟踪信息。
-// 对于每一个例程，它包括来源行的信息和 PC 值，然后尝试获取，对于Go函数，
-// 则是调用的函数或方法及其包含请求的行的文本。
-//
-// 此函数并不赞成使用。请使用 runtime 包中的 Stack 代替。
+// 它通过用一个足够大的缓冲调用 runtime.Stack 来捕获万种的跟踪。
 func Stack() []byte
 
 // WriteHeapDump writes a description of the heap and the objects in
 // it to the given file descriptor.
-// The heap dump format is defined at https://golang.org/s/go13heapdump.
+//
+// WriteHeapDump suspends the execution of all goroutines until the heap
+// dump is completely written.  Thus, the file descriptor must not be
+// connected to a pipe or socket whose other end is in the same Go
+// process; instead, use a temporary file or network socket.
+//
+// The heap dump format is defined at https://golang.org/s/go15heapdump.
 
 // WriteHeapDump writes a description of the heap and the objects in it to the
 // given file descriptor. The heap dump format is defined at

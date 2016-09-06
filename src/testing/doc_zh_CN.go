@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 // intended to be used in concert with the ``go test'' command, which automates
 // execution of any function of the form
 //
-//     func TestXxx(*testing.T)
+// 	func TestXxx(*testing.T)
 //
 // where Xxx can be any alphanumeric string (but the first letter must not be in
 // [a-z]) and serves to identify the test routine.
@@ -25,19 +25,19 @@
 // Tests and benchmarks may be skipped if not applicable with a call to the Skip
 // method of *T and *B:
 //
-//     func TestTimeConsuming(t *testing.T) {
-//         if testing.Short() {
-//             t.Skip("skipping test in short mode.")
-//         }
-//         ...
-//     }
+// 	func TestTimeConsuming(t *testing.T) {
+// 	    if testing.Short() {
+// 	        t.Skip("skipping test in short mode.")
+// 	    }
+// 	    ...
+// 	}
 //
 //
 // Benchmarks
 //
 // Functions of the form
 //
-//     func BenchmarkXxx(*testing.B)
+// 	func BenchmarkXxx(*testing.B)
 //
 // are considered benchmarks, and are executed by the "go test" command when its
 // -bench flag is provided. Benchmarks are run sequentially.
@@ -47,45 +47,45 @@
 //
 // A sample benchmark function looks like this:
 //
-//     func BenchmarkHello(b *testing.B) {
-//         for i := 0; i < b.N; i++ {
-//             fmt.Sprintf("hello")
-//         }
-//     }
+// 	func BenchmarkHello(b *testing.B) {
+// 	    for i := 0; i < b.N; i++ {
+// 	        fmt.Sprintf("hello")
+// 	    }
+// 	}
 //
 // The benchmark function must run the target code b.N times. During benchmark
 // execution, b.N is adjusted until the benchmark function lasts long enough to
 // be timed reliably. The output
 //
-//     BenchmarkHello    10000000    282 ns/op
+// 	BenchmarkHello    10000000    282 ns/op
 //
 // means that the loop ran 10000000 times at a speed of 282 ns per loop.
 //
 // If a benchmark needs some expensive setup before running, the timer may be
 // reset:
 //
-//     func BenchmarkBigLen(b *testing.B) {
-//         big := NewBig()
-//         b.ResetTimer()
-//         for i := 0; i < b.N; i++ {
-//             big.Len()
-//         }
-//     }
+// 	func BenchmarkBigLen(b *testing.B) {
+// 	    big := NewBig()
+// 	    b.ResetTimer()
+// 	    for i := 0; i < b.N; i++ {
+// 	        big.Len()
+// 	    }
+// 	}
 //
 // If a benchmark needs to test performance in a parallel setting, it may use
 // the RunParallel helper function; such benchmarks are intended to be used with
 // the go test -cpu flag:
 //
-//     func BenchmarkTemplateParallel(b *testing.B) {
-//         templ := template.Must(template.New("test").Parse("Hello, {{.}}!"))
-//         b.RunParallel(func(pb *testing.PB) {
-//             var buf bytes.Buffer
-//             for pb.Next() {
-//                 buf.Reset()
-//                 templ.Execute(&buf, "World")
-//             }
-//         })
-//     }
+// 	func BenchmarkTemplateParallel(b *testing.B) {
+// 	    templ := template.Must(template.New("test").Parse("Hello, {{.}}!"))
+// 	    b.RunParallel(func(pb *testing.PB) {
+// 	        var buf bytes.Buffer
+// 	        for pb.Next() {
+// 	            buf.Reset()
+// 	            templ.Execute(&buf, "World")
+// 	        }
+// 	    })
+// 	}
 //
 //
 // Examples
@@ -96,41 +96,97 @@
 // comparison ignores leading and trailing space.) These are examples of an
 // example:
 //
-//     func ExampleHello() {
-//             fmt.Println("hello")
-//             // Output: hello
-//     }
+// 	func ExampleHello() {
+// 	        fmt.Println("hello")
+// 	        // Output: hello
+// 	}
 //
-//     func ExampleSalutations() {
-//             fmt.Println("hello, and")
-//             fmt.Println("goodbye")
-//             // Output:
-//             // hello, and
-//             // goodbye
-//     }
+// 	func ExampleSalutations() {
+// 	        fmt.Println("hello, and")
+// 	        fmt.Println("goodbye")
+// 	        // Output:
+// 	        // hello, and
+// 	        // goodbye
+// 	}
 //
 // Example functions without output comments are compiled but not executed.
 //
 // The naming convention to declare examples for the package, a function F, a
 // type T and method M on type T are:
 //
-//     func Example() { ... }
-//     func ExampleF() { ... }
-//     func ExampleT() { ... }
-//     func ExampleT_M() { ... }
+// 	func Example() { ... }
+// 	func ExampleF() { ... }
+// 	func ExampleT() { ... }
+// 	func ExampleT_M() { ... }
 //
 // Multiple example functions for a package/type/function/method may be provided
 // by appending a distinct suffix to the name. The suffix must start with a
 // lower-case letter.
 //
-//     func Example_suffix() { ... }
-//     func ExampleF_suffix() { ... }
-//     func ExampleT_suffix() { ... }
-//     func ExampleT_M_suffix() { ... }
+// 	func Example_suffix() { ... }
+// 	func ExampleF_suffix() { ... }
+// 	func ExampleT_suffix() { ... }
+// 	func ExampleT_M_suffix() { ... }
 //
 // The entire test file is presented as the example when it contains a single
 // example function, at least one other function, type, variable, or constant
 // declaration, and no test or benchmark functions.
+//
+//
+// Subtests and Sub-benchmarks
+//
+// The Run methods of T and B allow defining subtests and sub-benchmarks,
+// without having to define separate functions for each. This enables uses like
+// table-driven benchmarks and creating hierarchical tests. It also provides a
+// way to share common setup and tear-down code:
+//
+// 	func TestFoo(t *testing.T) {
+// 	    // <setup code>
+// 	    t.Run("A=1", func(t *testing.T) { ... })
+// 	    t.Run("A=2", func(t *testing.T) { ... })
+// 	    t.Run("B=1", func(t *testing.T) { ... })
+// 	    // <tear-down code>
+// 	}
+//
+// Each subtest and sub-benchmark has a unique name: the combination of the name
+// of the top-level test and the sequence of names passed to Run, separated by
+// slashes, with an optional trailing sequence number for disambiguation.
+//
+// The argument to the -run and -bench command-line flags is a slash-separated
+// list of regular expressions that match each name element in turn. For
+// example:
+//
+// 	go test -run Foo     # Run top-level tests matching "Foo".
+// 	go test -run Foo/A=  # Run subtests of Foo matching "A=".
+// 	go test -run /A=1    # Run all subtests of a top-level test matching "A=1".
+//
+// Subtests can also be used to control parallelism. A parent test will only
+// complete once all of its subtests complete. In this example, all tests are
+// run in parallel with each other, and only with each other, regardless of
+// other top-level tests that may be defined:
+//
+// 	func TestGroupedParallel(t *testing.T) {
+// 	    for _, tc := range tests {
+// 	        tc := tc // capture range variable
+// 	        t.Run(tc.Name, func(t *testing.T) {
+// 	            t.Parallel()
+// 	            ...
+// 	        })
+// 	    }
+// 	}
+//
+// Run does not return until parallel subtests have completed, providing a way
+// to clean up after a group of parallel tests:
+//
+// 	func TestTeardownParallel(t *testing.T) {
+// 	    // This Run will not return until the parallel tests finish.
+// 	    t.Run("group", func(t *testing.T) {
+// 	        t.Run("Test1", parallelTest1)
+// 	        t.Run("Test2", parallelTest2)
+// 	        t.Run("Test3", parallelTest3)
+// 	    })
+// 	    // <tear-down code>
+// 	}
 //
 //
 // Main
@@ -140,7 +196,7 @@
 // which code runs on the main thread. To support these and other cases, if a
 // test file contains a function:
 //
-//     func TestMain(m *testing.M)
+// 	func TestMain(m *testing.M)
 //
 // then the generated test will call TestMain(m) instead of running the tests
 // directly. TestMain runs in the main goroutine and can do whatever setup and
@@ -151,16 +207,16 @@
 //
 // A simple implementation of TestMain is:
 //
-//     func TestMain(m *testing.M) {
-//         flag.Parse()
-//         os.Exit(m.Run())
-//     }
+// 	func TestMain(m *testing.M) {
+// 		flag.Parse()
+// 		os.Exit(m.Run())
+// 	}
 
 // Package testing provides support for automated testing of Go packages. It is
 // intended to be used in concert with the ``go test'' command, which automates
 // execution of any function of the form
 //
-//     func TestXxx(*testing.T)
+// 	func TestXxx(*testing.T)
 //
 // where Xxx can be any alphanumeric string (but the first letter must not be in
 // [a-z]) and serves to identify the test routine.
@@ -177,18 +233,19 @@
 // Tests and benchmarks may be skipped if not applicable with a call to the Skip
 // method of *T and *B:
 //
-//     func TestTimeConsuming(t *testing.T) {
-//         if testing.Short() {
-//             t.Skip("skipping test in short mode.")
-//         }
-//         ...
-//     }
+// 	func TestTimeConsuming(t *testing.T) {
+// 	    if testing.Short() {
+// 	        t.Skip("skipping test in short mode.")
+// 	    }
+// 	    ...
+// 	}
+//
 //
 // Benchmarks
 //
 // Functions of the form
 //
-//     func BenchmarkXxx(*testing.B)
+// 	func BenchmarkXxx(*testing.B)
 //
 // are considered benchmarks, and are executed by the "go test" command when its
 // -bench flag is provided. Benchmarks are run sequentially.
@@ -198,45 +255,46 @@
 //
 // A sample benchmark function looks like this:
 //
-//     func BenchmarkHello(b *testing.B) {
-//         for i := 0; i < b.N; i++ {
-//             fmt.Sprintf("hello")
-//         }
-//     }
+// 	func BenchmarkHello(b *testing.B) {
+// 	    for i := 0; i < b.N; i++ {
+// 	        fmt.Sprintf("hello")
+// 	    }
+// 	}
 //
 // The benchmark function must run the target code b.N times. During benchark
 // execution, b.N is adjusted until the benchmark function lasts long enough to
 // be timed reliably. The output
 //
-//     BenchmarkHello    10000000    282 ns/op
+// 	BenchmarkHello    10000000    282 ns/op
 //
 // means that the loop ran 10000000 times at a speed of 282 ns per loop.
 //
 // If a benchmark needs some expensive setup before running, the timer may be
 // reset:
 //
-//     func BenchmarkBigLen(b *testing.B) {
-//         big := NewBig()
-//         b.ResetTimer()
-//         for i := 0; i < b.N; i++ {
-//             big.Len()
-//         }
-//     }
+// 	func BenchmarkBigLen(b *testing.B) {
+// 	    big := NewBig()
+// 	    b.ResetTimer()
+// 	    for i := 0; i < b.N; i++ {
+// 	        big.Len()
+// 	    }
+// 	}
 //
 // If a benchmark needs to test performance in a parallel setting, it may use
 // the RunParallel helper function; such benchmarks are intended to be used with
 // the go test -cpu flag:
 //
-//     func BenchmarkTemplateParallel(b *testing.B) {
-//         templ := template.Must(template.New("test").Parse("Hello, {{.}}!"))
-//         b.RunParallel(func(pb *testing.PB) {
-//             var buf bytes.Buffer
-//             for pb.Next() {
-//                 buf.Reset()
-//                 templ.Execute(&buf, "World")
-//             }
-//         })
-//     }
+// 	func BenchmarkTemplateParallel(b *testing.B) {
+// 	    templ := template.Must(template.New("test").Parse("Hello, {{.}}!"))
+// 	    b.RunParallel(func(pb *testing.PB) {
+// 	        var buf bytes.Buffer
+// 	        for pb.Next() {
+// 	            buf.Reset()
+// 	            templ.Execute(&buf, "World")
+// 	        }
+// 	    })
+// 	}
+//
 //
 // Examples
 //
@@ -246,41 +304,42 @@
 // comparison ignores leading and trailing space.) These are examples of an
 // example:
 //
-//     func ExampleHello() {
-//             fmt.Println("hello")
-//             // Output: hello
-//     }
+// 	func ExampleHello() {
+// 	        fmt.Println("hello")
+// 	        // Output: hello
+// 	}
 //
-//     func ExampleSalutations() {
-//             fmt.Println("hello, and")
-//             fmt.Println("goodbye")
-//             // Output:
-//             // hello, and
-//             // goodbye
-//     }
+// 	func ExampleSalutations() {
+// 	        fmt.Println("hello, and")
+// 	        fmt.Println("goodbye")
+// 	        // Output:
+// 	        // hello, and
+// 	        // goodbye
+// 	}
 //
 // Example functions without output comments are compiled but not executed.
 //
 // The naming convention to declare examples for the package, a function F, a
 // type T and method M on type T are:
 //
-//     func Example() { ... }
-//     func ExampleF() { ... }
-//     func ExampleT() { ... }
-//     func ExampleT_M() { ... }
+// 	func Example() { ... }
+// 	func ExampleF() { ... }
+// 	func ExampleT() { ... }
+// 	func ExampleT_M() { ... }
 //
 // Multiple example functions for a package/type/function/method may be provided
 // by appending a distinct suffix to the name. The suffix must start with a
 // lower-case letter.
 //
-//     func Example_suffix() { ... }
-//     func ExampleF_suffix() { ... }
-//     func ExampleT_suffix() { ... }
-//     func ExampleT_M_suffix() { ... }
+// 	func Example_suffix() { ... }
+// 	func ExampleF_suffix() { ... }
+// 	func ExampleT_suffix() { ... }
+// 	func ExampleT_M_suffix() { ... }
 //
 // The entire test file is presented as the example when it contains a single
 // example function, at least one other function, type, variable, or constant
 // declaration, and no test or benchmark functions.
+//
 //
 // Main
 //
@@ -289,7 +348,7 @@
 // which code runs on the main thread. To support these and other cases, if a
 // test file contains a function:
 //
-//     func TestMain(m *testing.M)
+// 	func TestMain(m *testing.M)
 //
 // then the generated test will call TestMain(m) instead of running the tests
 // directly. TestMain runs in the main goroutine and can do whatever setup and
@@ -298,27 +357,28 @@
 //
 // The minimal implementation of TestMain is:
 //
-//     func TestMain(m *testing.M) { os.Exit(m.Run()) }
+// 	func TestMain(m *testing.M) { os.Exit(m.Run()) }
 //
 // In effect, that is the implementation used when no TestMain is explicitly
 // defined.
 package testing
 
 import (
-    "bytes"
-    "flag"
-    "fmt"
-    "io"
-    "os"
-    "runtime"
-    "runtime/debug"
-    "runtime/pprof"
-    "runtime/trace"
-    "strconv"
-    "strings"
-    "sync"
-    "sync/atomic"
-    "time"
+	"bytes"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"runtime"
+	"runtime/debug"
+	"runtime/pprof"
+	"runtime/trace"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 // B is a type passed to Benchmark functions to manage benchmark timing and to
@@ -337,57 +397,58 @@ import (
 // B is a type passed to Benchmark functions to manage benchmark timing and to
 // specify the number of iterations to run.
 type B struct {
-    N int
+	N int
 }
 
 // The results of a benchmark run.
 type BenchmarkResult struct {
-    N         int           // The number of iterations.
-    T         time.Duration // The total time taken.
-    Bytes     int64         // Bytes processed in one iteration.
-    MemAllocs uint64        // The total number of memory allocations.
-    MemBytes  uint64        // The total number of bytes allocated.
+	N         int           // The number of iterations.
+	T         time.Duration // The total time taken.
+	Bytes     int64         // Bytes processed in one iteration.
+	MemAllocs uint64        // The total number of memory allocations.
+	MemBytes  uint64        // The total number of bytes allocated.
 }
 
 // Cover records information about test coverage checking. NOTE: This struct is
 // internal to the testing infrastructure and may change. It is not covered
 // (yet) by the Go 1 compatibility guidelines.
 type Cover struct {
-    Mode            string
-    Counters        map[string][]uint32
-    Blocks          map[string][]CoverBlock
-    CoveredPackages string
+	Mode            string
+	Counters        map[string][]uint32
+	Blocks          map[string][]CoverBlock
+	CoveredPackages string
 }
 
 // CoverBlock records the coverage data for a single basic block. NOTE: This
 // struct is internal to the testing infrastructure and may change. It is not
 // covered (yet) by the Go 1 compatibility guidelines.
 type CoverBlock struct {
-    Line0 uint32
-    Col0  uint16
-    Line1 uint32
-    Col1  uint16
-    Stmts uint16
+	Line0 uint32
+	Col0  uint16
+	Line1 uint32
+	Col1  uint16
+	Stmts uint16
 }
 
 // An internal type but exported because it is cross-package; part of the
 // implementation of the "go test" command.
 type InternalBenchmark struct {
-    Name string
-    F    func(b *B)
+	Name string
+	F    func(b *B)
 }
 
 type InternalExample struct {
-    Name   string
-    F      func()
-    Output string
+	Name      string
+	F         func()
+	Output    string
+	Unordered bool
 }
 
 // An internal type but exported because it is cross-package; part of the
 // implementation of the "go test" command.
 type InternalTest struct {
-    Name string
-    F    func(*T)
+	Name string
+	F    func(*T)
 }
 
 // M is a type passed to a TestMain function to run the actual tests.
@@ -400,7 +461,7 @@ type PB struct {
 
 // T is a type passed to Test functions to manage test state and support
 // formatted test logs. Logs are accumulated during execution and dumped to
-// standard error when done.
+// standard output when done.
 //
 // A test ends when its Test function returns or calls any of the methods
 // FailNow, Fatal, Fatalf, SkipNow, Skip, or Skipf. Those methods, as well as
@@ -413,36 +474,38 @@ type PB struct {
 // T is a type passed to Test functions to manage test state and support
 // formatted test logs. Logs are accumulated during execution and dumped to
 // standard error when done.
+//
+// A test ends when its Test function returns or calls any of the methods
+// FailNow, Fatal, Fatalf, SkipNow, Skip, or Skipf. Those methods, as well as
+// the Parallel method, must be called only from the goroutine running the Test
+// function.
+//
+// The other reporting methods, such as the variations of Log and Error, may be
+// called simultaneously from multiple goroutines.
 type T struct {
 }
 
 // TB is the interface common to T and B.
 type TB interface {
-    Error(args ...interface{})
-    Errorf(format string, args ...interface{})
-    Fail()
-    FailNow()
-    Failed() bool
-    Fatal(args ...interface{})
-    Fatalf(format string, args ...interface{})
-    Log(args ...interface{})
-    Logf(format string, args ...interface{})
-    Skip(args ...interface{})
-    SkipNow()
-    Skipf(format string, args ...interface{})
-    Skipped() bool
-}
+	Error(args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fail()
+	FailNow()
+	Failed()bool
+	Fatal(args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Log(args ...interface{})
+	Logf(format string, args ...interface{})
+	Skip(args ...interface{})
+	SkipNow()
+	Skipf(format string, args ...interface{})
+	Skipped()bool
 
-// AllocsPerRun returns the average number of allocations during calls to f.
-// Although the return value has type float64, it will always be an integral
-// value.
-//
-// To compute the number of allocations, the function will first be run once as
-// a warm-up. The average number of allocations over the specified number of
-// runs will then be measured and returned.
-//
-// AllocsPerRun sets GOMAXPROCS to 1 during its measurement and will restore it
-// before returning.
+	// A private method to prevent users implementing the
+	// interface and so future additions to it will not
+	// violate Go 1 compatibility.
+	private()
+}
 
 // AllocsPerRun returns the average number of allocations during calls to f.
 // Although the return value has type float64, it will always be an integral
@@ -455,6 +518,12 @@ type TB interface {
 // AllocsPerRun sets GOMAXPROCS to 1 during its measurement and will restore it
 // before returning.
 func AllocsPerRun(runs int, f func()) (avg float64)
+
+// Benchmark benchmarks a single function. Useful for creating
+// custom benchmarks that do not use the "go test" command.
+//
+// If f calls Run, the result will be an estimate of running all its
+// subbenchmarks that don't call Run in sequence in a single benchmark.
 
 // Benchmark benchmarks a single function. Useful for creating custom benchmarks
 // that do not use the "go test" command.
@@ -497,49 +566,36 @@ func Short() bool
 // Verbose reports whether the -test.v flag is set.
 func Verbose() bool
 
-// Error is equivalent to Log followed by Fail.
-func (*B) Error(args ...interface{})
-
-// Errorf is equivalent to Logf followed by Fail.
-func (*B) Errorf(format string, args ...interface{})
-
-// Fail marks the function as having failed but continues execution.
-func (*B) Fail()
-
-// FailNow marks the function as having failed and stops its execution.
-// Execution will continue at the next test or benchmark. FailNow must be called
-// from the goroutine running the test or benchmark function, not from other
-// goroutines created during the test. Calling FailNow does not stop those other
-// goroutines.
-func (*B) FailNow()
-
-// Failed reports whether the function has failed.
-func (*B) Failed() bool
-
-// Fatal is equivalent to Log followed by FailNow.
-func (*B) Fatal(args ...interface{})
-
-// Fatalf is equivalent to Logf followed by FailNow.
-func (*B) Fatalf(format string, args ...interface{})
-
-// Log formats its arguments using default formatting, analogous to Println, and
-// records the text in the error log. The text will be printed only if the test
-// fails or the -test.v flag is set.
-func (*B) Log(args ...interface{})
-
-// Logf formats its arguments according to the format, analogous to Printf, and
-// records the text in the error log. The text will be printed only if the test
-// fails or the -test.v flag is set.
-func (*B) Logf(format string, args ...interface{})
+// ReportAllocs enables malloc statistics for this benchmark.
+// It is equivalent to setting -test.benchmem, but it only affects the
+// benchmark function that calls ReportAllocs.
 
 // ReportAllocs enables malloc statistics for this benchmark. It is equivalent
 // to setting -test.benchmem, but it only affects the benchmark function that
 // calls ReportAllocs.
-func (*B) ReportAllocs()
+func (b *B) ReportAllocs()
 
 // ResetTimer zeros the elapsed benchmark time and memory allocation counters.
 // It does not affect whether the timer is running.
-func (*B) ResetTimer()
+func (b *B) ResetTimer()
+
+// Run benchmarks f as a subbenchmark with the given name. It reports
+// whether there were any failures.
+//
+// A subbenchmark is like any other benchmark. A benchmark that calls Run at
+// least once will not be measured itself and will be called once with N=1.
+func (b *B) Run(name string, f func(b *B)) bool
+
+// RunParallel runs a benchmark in parallel. It creates multiple goroutines and
+// distributes b.N iterations among them. The number of goroutines defaults to
+// GOMAXPROCS. To increase parallelism for non-CPU-bound benchmarks, call
+// SetParallelism before RunParallel. RunParallel is usually used with the go
+// test -cpu flag.
+//
+// The body function will be run in each goroutine. It should set up any
+// goroutine-local state and then iterate until pb.Next returns false. It should
+// not use the StartTimer, StopTimer, or ResetTimer functions, because they have
+// global effect. It should also not call Run.
 
 // RunParallel runs a benchmark in parallel. It creates multiple goroutines and
 // distributes b.N iterations among them. The number of goroutines defaults to
@@ -551,118 +607,58 @@ func (*B) ResetTimer()
 // goroutine-local state and then iterate until pb.Next returns false. It should
 // not use the StartTimer, StopTimer, or ResetTimer functions, because they have
 // global effect.
-func (*B) RunParallel(body func(*PB))
+func (b *B) RunParallel(body func(*PB))
+
+// SetBytes records the number of bytes processed in a single operation.
+// If this is called, the benchmark will report ns/op and MB/s.
 
 // SetBytes records the number of bytes processed in a single operation. If this
 // is called, the benchmark will report ns/op and MB/s.
-func (*B) SetBytes(n int64)
+func (b *B) SetBytes(n int64)
 
 // SetParallelism sets the number of goroutines used by RunParallel to
 // p*GOMAXPROCS. There is usually no need to call SetParallelism for CPU-bound
 // benchmarks. If p is less than 1, this call will have no effect.
-func (*B) SetParallelism(p int)
+func (b *B) SetParallelism(p int)
 
-// Skip is equivalent to Log followed by SkipNow.
-func (*B) Skip(args ...interface{})
-
-// SkipNow marks the test as having been skipped and stops its execution.
-// Execution will continue at the next test or benchmark. See also FailNow.
-// SkipNow must be called from the goroutine running the test, not from other
-// goroutines created during the test. Calling SkipNow does not stop those other
-// goroutines.
-func (*B) SkipNow()
-
-// Skipf is equivalent to Logf followed by SkipNow.
-func (*B) Skipf(format string, args ...interface{})
-
-// Skipped reports whether the test was skipped.
-func (*B) Skipped() bool
-
-// StartTimer starts timing a test.  This function is called automatically
+// StartTimer starts timing a test. This function is called automatically
 // before a benchmark starts, but it can also used to resume timing after
 // a call to StopTimer.
 
 // StartTimer starts timing a test. This function is called automatically before
 // a benchmark starts, but it can also used to resume timing after a call to
 // StopTimer.
-func (*B) StartTimer()
+func (b *B) StartTimer()
 
-// StopTimer stops timing a test.  This can be used to pause the timer
+// StopTimer stops timing a test. This can be used to pause the timer
 // while performing complex initialization that you don't
 // want to measure.
 
 // StopTimer stops timing a test. This can be used to pause the timer while
 // performing complex initialization that you don't want to measure.
-func (*B) StopTimer()
+func (b *B) StopTimer()
 
 // Run runs the tests. It returns an exit code to pass to os.Exit.
-func (*M) Run() int
+func (m *M) Run() int
 
 // Next reports whether there are more iterations to execute.
-func (*PB) Next() bool
-
-// Error is equivalent to Log followed by Fail.
-func (*T) Error(args ...interface{})
-
-// Errorf is equivalent to Logf followed by Fail.
-func (*T) Errorf(format string, args ...interface{})
-
-// Fail marks the function as having failed but continues execution.
-func (*T) Fail()
-
-// FailNow marks the function as having failed and stops its execution.
-// Execution will continue at the next test or benchmark. FailNow must be called
-// from the goroutine running the test or benchmark function, not from other
-// goroutines created during the test. Calling FailNow does not stop those other
-// goroutines.
-func (*T) FailNow()
-
-// Failed reports whether the function has failed.
-func (*T) Failed() bool
-
-// Fatal is equivalent to Log followed by FailNow.
-func (*T) Fatal(args ...interface{})
-
-// Fatalf is equivalent to Logf followed by FailNow.
-func (*T) Fatalf(format string, args ...interface{})
-
-// Log formats its arguments using default formatting, analogous to Println, and
-// records the text in the error log. The text will be printed only if the test
-// fails or the -test.v flag is set.
-func (*T) Log(args ...interface{})
-
-// Logf formats its arguments according to the format, analogous to Printf, and
-// records the text in the error log. The text will be printed only if the test
-// fails or the -test.v flag is set.
-func (*T) Logf(format string, args ...interface{})
+func (pb *PB) Next() bool
 
 // Parallel signals that this test is to be run in parallel with (and only with)
 // other parallel tests.
-func (*T) Parallel()
+func (t *T) Parallel()
 
-// Skip is equivalent to Log followed by SkipNow.
-func (*T) Skip(args ...interface{})
+// Run runs f as a subtest of t called name. It reports whether f succeeded.
+// Run will block until all its parallel subtests have completed.
+func (t *T) Run(name string, f func(t *T)) bool
 
-// SkipNow marks the test as having been skipped and stops its execution.
-// Execution will continue at the next test or benchmark. See also FailNow.
-// SkipNow must be called from the goroutine running the test, not from other
-// goroutines created during the test. Calling SkipNow does not stop those other
-// goroutines.
-func (*T) SkipNow()
+func (r BenchmarkResult) AllocedBytesPerOp() int64
 
-// Skipf is equivalent to Logf followed by SkipNow.
-func (*T) Skipf(format string, args ...interface{})
+func (r BenchmarkResult) AllocsPerOp() int64
 
-// Skipped reports whether the test was skipped.
-func (*T) Skipped() bool
+func (r BenchmarkResult) MemString() string
 
-func (BenchmarkResult) AllocedBytesPerOp() int64
+func (r BenchmarkResult) NsPerOp() int64
 
-func (BenchmarkResult) AllocsPerOp() int64
-
-func (BenchmarkResult) MemString() string
-
-func (BenchmarkResult) NsPerOp() int64
-
-func (BenchmarkResult) String() string
+func (r BenchmarkResult) String() string
 

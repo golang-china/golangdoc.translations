@@ -1,24 +1,29 @@
-// Copyright The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 // +build ingore
-
-// Package format implements standard formatting of Go source.
 
 // Package format implements standard formatting of Go source.
 package format
 
 import (
-    "bytes"
-    "fmt"
-    "go/ast"
-    "go/parser"
-    "go/printer"
-    "go/token"
-    "io"
-    "strings"
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"io"
+	"strings"
 )
+
+// Node formats node in canonical gofmt style and writes the result to dst.
+//
+// The node type must be *ast.File, *printer.CommentedNode, []ast.Decl,
+// []ast.Stmt, or assignment-compatible to ast.Expr, ast.Decl, ast.Spec,
+// or ast.Stmt. Node does not modify node. Imports are not sorted for
+// nodes representing partial source files (i.e., if the node is not an
+// *ast.File or a *printer.CommentedNode not wrapping an *ast.File).
+//
+// The function may return early (before the entire result is written)
+// and return a formatting error, for instance due to an incorrect AST.
 
 // Node formats node in canonical gofmt style and writes the result to dst.
 //

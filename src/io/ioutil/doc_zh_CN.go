@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,14 +10,14 @@
 package ioutil
 
 import (
-    "bytes"
-    "io"
-    "os"
-    "path/filepath"
-    "sort"
-    "strconv"
-    "sync"
-    "time"
+	"bytes"
+	"io"
+	"os"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"sync"
+	"time"
 )
 
 // Discard is an io.Writer on which all Write calls succeed
@@ -45,8 +45,7 @@ func ReadAll(r io.Reader) ([]byte, error)
 // ReadDir reads the directory named by dirname and returns
 // a list of directory entries sorted by filename.
 
-// ReadDir 读取名为 dirname
-// 的目录并返回一个已排序的目录项列表。
+// ReadDir 读取名为 dirname 的目录并返回一个按文件名排序的目录项列表。
 func ReadDir(dirname string) ([]os.FileInfo, error)
 
 // ReadFile reads the file named by filename and returns the contents.
@@ -61,10 +60,10 @@ func ReadFile(filename string) ([]byte, error)
 
 // TempDir creates a new temporary directory in the directory dir
 // with a name beginning with prefix and returns the path of the
-// new directory.  If dir is the empty string, TempDir uses the
+// new directory. If dir is the empty string, TempDir uses the
 // default directory for temporary files (see os.TempDir).
 // Multiple programs calling TempDir simultaneously
-// will not choose the same directory.  It is the caller's responsibility
+// will not choose the same directory. It is the caller's responsibility
 // to remove the directory when no longer needed.
 
 // TempDir 在目录 dir 中创建一个名字以 prefix 开头的新的临时目录并返回该新目录的
@@ -79,15 +78,15 @@ func TempDir(dir, prefix string) (name string, err error)
 // If dir is the empty string, TempFile uses the default directory
 // for temporary files (see os.TempDir).
 // Multiple programs calling TempFile simultaneously
-// will not choose the same file.  The caller can use f.Name()
-// to find the pathname of the file.  It is the caller's responsibility
+// will not choose the same file. The caller can use f.Name()
+// to find the pathname of the file. It is the caller's responsibility
 // to remove the file when no longer needed.
 
 // TempFile 在目录 dir 中创建一个名字以 prefix 开头的新的临时文件，打开该文件以
 // 用于读写， 并返回其结果 *os.File。若 dir 为空字符串，TempFile 就会为临时文件
-// 使用默认的目录（见 os.TempDir）。多程序同时调用 TempFile 将不会选择相同的文件
-// 。调用者可使用 f.Name() 来查找该文件的路径名 pathname。当该文件不再被需要时，
-// 调用者应负责将其移除。
+// 使用默认的目录（见 os.TempDir）。多程序同时调用 TempFile 将不会选择相同的文
+// 件。调用者可使用 f.Name() 来查找该文件的路径名 pathname。当该文件不再被需要
+// 时，调用者应负责将其移除。
 func TempFile(dir, prefix string) (f *os.File, err error)
 
 // WriteFile writes data to a file named by filename.

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,16 +11,16 @@
 // and compress during writing.  For example, to write compressed data
 // to a buffer:
 //
-//     var b bytes.Buffer
-//     w := zlib.NewWriter(&b)
-//     w.Write([]byte("hello, world\n"))
-//     w.Close()
+// 	var b bytes.Buffer
+// 	w := zlib.NewWriter(&b)
+// 	w.Write([]byte("hello, world\n"))
+// 	w.Close()
 //
 // and to read that data back:
 //
-//     r, err := zlib.NewReader(&b)
-//     io.Copy(os.Stdout, r)
-//     r.Close()
+// 	r, err := zlib.NewReader(&b)
+// 	io.Copy(os.Stdout, r)
+// 	r.Close()
 
 // zlib 包实现了对 zlib 格式压缩数据的读写, 参见 RFC 1950.
 //
@@ -40,13 +40,13 @@
 package zlib
 
 import (
-    "bufio"
-    "compress/flate"
-    "errors"
-    "fmt"
-    "hash"
-    "hash/adler32"
-    "io"
+	"bufio"
+	"compress/flate"
+	"errors"
+	"fmt"
+	"hash"
+	"hash/adler32"
+	"io"
 )
 
 // These constants are copied from the flate package, so that code that imports
@@ -55,19 +55,23 @@ import (
 // 这些常量都是拷贝自 flate 包, 因此导入 "compress/zlib" 后,
 // 就不必再导入 "compress/flate" 了.
 const (
-    NoCompression      = flate.NoCompression
-    BestSpeed          = flate.BestSpeed
-    BestCompression    = flate.BestCompression
-    DefaultCompression = flate.DefaultCompression
+	NoCompression      = flate.NoCompression
+	BestSpeed          = flate.BestSpeed
+	BestCompression    = flate.BestCompression
+	DefaultCompression = flate.DefaultCompression
 )
 
 var (
-    // ErrChecksum is returned when reading ZLIB data that has an invalid checksum.
-    ErrChecksum = errors.New("zlib: invalid checksum")
-    // ErrDictionary is returned when reading ZLIB data that has an invalid dictionary.
-    ErrDictionary = errors.New("zlib: invalid dictionary")
-    // ErrHeader is returned when reading ZLIB data that has an invalid header.
-    ErrHeader = errors.New("zlib: invalid header")
+	// ErrChecksum is returned when reading ZLIB data that has an invalid
+	// checksum.
+	ErrChecksum = errors.New("zlib: invalid checksum")
+
+	// ErrDictionary is returned when reading ZLIB data that has an invalid
+	// dictionary.
+	ErrDictionary = errors.New("zlib: invalid dictionary")
+
+	// ErrHeader is returned when reading ZLIB data that has an invalid header.
+	ErrHeader = errors.New("zlib: invalid header")
 )
 
 // Resetter resets a ReadCloser returned by NewReader or NewReaderDict to
@@ -77,9 +81,9 @@ var (
 // Resetter 复位由 NewReader/NewReaderDict 返回的 ReadCloser, 底层以切换到新的
 // Reader. 允许重新使用 ReadCloser 而非分配一个新的.
 type Resetter interface {
-    // Reset discards any buffered data and resets the Resetter as if it was
-    // newly initialized with the given reader.
-    Reset(r io.Reader, dict []byte) error
+	// Reset discards any buffered data and resets the Resetter as if it was
+	// newly initialized with the given reader.
+	Reset(r io.Reader, dict []byte)error
 }
 
 // A Writer takes data written to it and writes the compressed
@@ -90,9 +94,9 @@ type Writer struct {
 }
 
 // NewReader creates a new ReadCloser. Reads from the returned ReadCloser read
-// and decompress data from r. The implementation buffers input and may read
-// more data than necessary from r. It is the caller's responsibility to call
-// Close on the ReadCloser when done.
+// and decompress data from r. If r does not implement io.ByteReader, the
+// decompressor may read more data than necessary from r. It is the caller's
+// responsibility to call Close on the ReadCloser when done.
 //
 // The ReadCloser returned by NewReader also implements Resetter.
 
@@ -113,8 +117,8 @@ func NewReader(r io.Reader) (io.ReadCloser, error)
 // 如果压缩数据没有采用字典, 本函数会忽略该参数.
 func NewReaderDict(r io.Reader, dict []byte) (io.ReadCloser, error)
 
-// NewWriter creates a new Writer.
-// Writes to the returned Writer are compressed and written to w.
+// NewWriter creates a new Writer. Writes to the returned Writer are compressed
+// and written to w.
 //
 // It is the caller's responsibility to call Close on the WriteCloser when done.
 // Writes may be buffered and not flushed until Close.
@@ -153,12 +157,12 @@ func NewWriterLevelDict(w io.Writer, level int, dict []byte) (*Writer, error)
 // io.Writer, but does not close the underlying io.Writer.
 
 // 调用 Close 会刷新缓冲并关闭 w, 但不会关闭下层 io.Writer 接口.
-func (*Writer) Close() error
+func (z *Writer) Close() error
 
 // Flush flushes the Writer to its underlying io.Writer.
 
 // Flush 将缓冲中的压缩数据刷新到下层 io.Writer 接口中.
-func (*Writer) Flush() error
+func (z *Writer) Flush() error
 
 // Reset clears the state of the Writer z such that it is equivalent to its
 // initial state from NewWriterLevel or NewWriterLevelDict, but instead writing
@@ -167,7 +171,7 @@ func (*Writer) Flush() error
 // Reset 将 w 重置, 丢弃当前的写入状态, 并将下层输出目标设为 dst. 效果上等价于将
 // w 设为使用 dst 和 w 的压缩水平, 字典重新调用
 // NewWriterLevel/NewWriterLevelDict 返回的 *Writer.
-func (*Writer) Reset(w io.Writer)
+func (z *Writer) Reset(w io.Writer)
 
 // Write writes a compressed form of p to the underlying io.Writer. The
 // compressed bytes are not necessarily flushed until the Writer is closed or
@@ -175,5 +179,5 @@ func (*Writer) Reset(w io.Writer)
 
 // Write 将 p 压缩后写入下层 io.Writer 接口.
 // 压缩后的数据不一定会立刻刷新, 除非 Writer 被关闭或者显式的刷新.
-func (*Writer) Write(p []byte) (n int, err error)
+func (z *Writer) Write(p []byte) (n int, err error)
 

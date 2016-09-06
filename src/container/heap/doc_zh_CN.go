@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -32,7 +32,7 @@ import "sort"
 // following invariants (established after Init has been called or if the data
 // is empty or sorted):
 //
-//     !h.Less(j, i) for 0 <= i < h.Len() and 2*i+1 <= j <= 2*i+2 and j < h.Len()
+// 	!h.Less(j, i) for 0 <= i < h.Len() and 2*i+1 <= j <= 2*i+2 and j < h.Len()
 //
 // Note that Push and Pop in this interface are for package heap's
 // implementation to call. To add and remove things from the heap, use heap.Push
@@ -41,24 +41,20 @@ import "sort"
 // 任何实现了本接口的类型都可以用于构建最小堆。最小堆可以通过heap.Init建立，数据
 // 是递增顺序或者空的话也是最小堆。最小堆的约束条件是：
 //
-//     !h.Less(j, i) for 0 <= i < h.Len() and 2*i+1 <= j <= 2*i+2 and j < h.Len()
+// 	!h.Less(j, i) for 0 <= i < h.Len() and 2*i+1 <= j <= 2*i+2 and j < h.Len()
 //
 // 注意接口的Push和Pop方法是供heap包调用的，请使用heap.Push和heap.Pop来向一个堆
 // 添加或者删除元素。
 type Interface interface {
-    sort.Interface
-    Push(x interface{}) // add x as element Len()
-    Pop() interface{}   // remove and return element Len() - 1.
+	sort.Interface
+	Push(x interface{}) // add x as element Len()
+	Pop()interface{}    // remove and return element Len() - 1.
 }
 
 // Fix re-establishes the heap ordering after the element at index i has changed
 // its value. Changing the value of the element at index i and then calling Fix
 // is equivalent to, but less expensive than, calling Remove(h, i) followed by a
 // Push of the new value. The complexity is O(log(n)) where n = h.Len().
-
-// 在修改第i个元素后，调用本函数修复堆，比删除第i个元素后插入新元素更有效率。
-//
-// 复杂度O(log(n))，其中n等于h.Len()。
 func Fix(h Interface, i int)
 
 // A heap must be initialized before any of the heap operations

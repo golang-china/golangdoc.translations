@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,30 +14,30 @@
 package png
 
 import (
-    "bufio"
-    "compress/zlib"
-    "encoding/binary"
-    "fmt"
-    "hash"
-    "hash/crc32"
-    "image"
-    "image/color"
-    "io"
-    "strconv"
+	"bufio"
+	"compress/zlib"
+	"encoding/binary"
+	"fmt"
+	"hash"
+	"hash/crc32"
+	"image"
+	"image/color"
+	"io"
+	"strconv"
 )
 
 const (
-    DefaultCompression CompressionLevel = 0
-    NoCompression      CompressionLevel = -1
-    BestSpeed          CompressionLevel = -2
-    BestCompression    CompressionLevel = -3
+	DefaultCompression CompressionLevel = 0
+	NoCompression      CompressionLevel = -1
+	BestSpeed          CompressionLevel = -2
+	BestCompression    CompressionLevel = -3
 )
 
 type CompressionLevel int
 
 // Encoder configures encoding PNG images.
 type Encoder struct {
-    CompressionLevel CompressionLevel
+	CompressionLevel CompressionLevel
 }
 
 // A FormatError reports that the input is not a valid PNG.
@@ -50,6 +50,9 @@ type FormatError string
 
 // UnsupportedError会提示输入使用一个合法的，但是未实现的PNG特性。
 type UnsupportedError string
+
+// Decode reads a PNG image from r and returns it as an image.Image.
+// The type of Image returned depends on the PNG contents.
 
 // Decode reads a PNG image from r and returns it as an image.Image. The type of
 // Image returned depends on the PNG contents.
@@ -71,9 +74,9 @@ func Encode(w io.Writer, m image.Image) error
 // Encode writes the Image m to w in PNG format.
 
 // Encode 将图像 m 以 PNG 格式写入 w。
-func (*Encoder) Encode(w io.Writer, m image.Image) error
+func (enc *Encoder) Encode(w io.Writer, m image.Image) error
 
-func (FormatError) Error() string
+func (e FormatError) Error() string
 
-func (UnsupportedError) Error() string
+func (e UnsupportedError) Error() string
 

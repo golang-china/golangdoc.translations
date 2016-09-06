@@ -5,8 +5,6 @@
 // +build ingore
 
 // Package imageutil contains code shared by image-related packages.
-
-// Package imageutil contains code shared by image-related packages.
 package imageutil
 
 import "image"

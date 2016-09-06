@@ -1,28 +1,89 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // +build ingore
 
-// Package pprof writes runtime profiling data in the format expected
-// by the pprof visualization tool.
+// Package pprof writes runtime profiling data in the format expected by the
+// pprof visualization tool.
+//
+//
+// Profiling a Go program
+//
+// The first step to profiling a Go program is to enable profiling. Support for
+// profiling benchmarks built with the standard testing package is built into go
+// test. For example, the following command runs benchmarks in the current
+// directory and writes the CPU and memory profiles to cpu.prof and mem.prof:
+//
+// 	go test -cpuprofile cpu.prof -memprofile mem.prof -bench .
+//
+// To add equivalent profiling support to a standalone program, add code like
+// the following to your main function:
+//
+// 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile `file`")
+// 	var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
+//
+// 	func main() {
+// 	    flag.Parse()
+// 	    if *cpuprofile != "" {
+// 	        f, err := os.Create(*cpuprofile)
+// 	        if err != nil {
+// 	            log.Fatal("could not create CPU profile: ", err)
+// 	        }
+// 	        if err := pprof.StartCPUProfile(f); err != nil {
+// 	            log.Fatal("could not start CPU profile: ", err)
+// 	        }
+// 	        defer pprof.StopCPUProfile()
+// 	    }
+// 	    ...
+// 	    if *memprofile != "" {
+// 	        f, err := os.Create(*memprofile)
+// 	        if err != nil {
+// 	            log.Fatal("could not create memory profile: ", err)
+// 	        }
+// 	        runtime.GC() // get up-to-date statistics
+// 	        if err := pprof.WriteHeapProfile(f); err != nil {
+// 	            log.Fatal("could not write memory profile: ", err)
+// 	        }
+// 	        f.Close()
+// 	    }
+// 	}
+//
+// There is also a standard HTTP interface to profiling data. Adding the
+// following line will install handlers under the /debug/pprof/ URL to download
+// live profiles:
+//
+// 	import _ "net/http/pprof"
+//
+// See the net/http/pprof package for more details.
+//
+// Profiles can then be visualized with the pprof tool:
+//
+// 	go tool pprof cpu.prof
+//
+// There are many commands available from the pprof command line. Commonly used
+// commands include "top", which prints a summary of the top program hot-spots,
+// and "web", which opens an interactive graph of hot-spots and their call
+// graphs. Use "help" for information on all pprof commands.
+//
 // For more information about pprof, see
-// http://code.google.com/p/google-perftools/.
+// https://github.com/google/pprof/blob/master/doc/pprof.md.
 
-// pprof 包按照可视化工具 pprof 所要求的格式写出运行时分析数据. 更多有关 pprof
-// 的信息见 http://code.google.com/p/google-perftools/。
+// pprof 包按照可视化工具 pprof 所要求的格式写出运行时分析数据.
+// 更多有关 pprof 的信息见 http://code.google.com/p/google-perftools/。
 package pprof
 
 import (
-    "bufio"
-    "bytes"
-    "fmt"
-    "io"
-    "runtime"
-    "sort"
-    "strings"
-    "sync"
-    "text/tabwriter"
+	"bufio"
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+	"runtime"
+	"sort"
+	"strings"
+	"sync"
+	"text/tabwriter"
 )
 
 // A Profile is a collection of stack traces showing the call sequences that led
@@ -35,10 +96,10 @@ import (
 //
 // Each Profile has a unique name. A few profiles are predefined:
 //
-//     goroutine    - stack traces of all current goroutines
-//     heap         - a sampling of all heap allocations
-//     threadcreate - stack traces that led to the creation of new OS threads
-//     block        - stack traces that led to blocking on synchronization primitives
+// 	goroutine    - stack traces of all current goroutines
+// 	heap         - a sampling of all heap allocations
+// 	threadcreate - stack traces that led to the creation of new OS threads
+// 	block        - stack traces that led to blocking on synchronization primitives
 //
 // These predefined profiles maintain themselves and panic on an explicit Add or
 // Remove method call.
@@ -62,10 +123,10 @@ import (
 //
 // 每个 Profile 都有唯一的名称。有些 Profile 是预定义的：
 //
-//     goroutine    - 所有当前Go程的栈跟踪
-//     heap         - 所有堆分配的采样
-//     threadcreate - 引导新OS的线程创建的栈跟踪
-//     block        - 引导同步原语中阻塞的栈跟踪
+// 	goroutine    - 所有当前Go程的栈跟踪
+// 	heap         - 所有堆分配的采样
+// 	threadcreate - 引导新OS的线程创建的栈跟踪
+// 	block        - 引导同步原语中阻塞的栈跟踪
 //
 // 这些预声明分析并不能作为 Profile 使用。它有专门的API，即 StartCPUProfile 和
 // StopCPUProfile 函数，因为它在分析时是以流的形式输出到写入器的。
@@ -75,8 +136,7 @@ type Profile struct {
 // Lookup returns the profile with the given name, or nil if no such profile
 // exists.
 
-// Lookup
-// 返回给定名称的分析，若不存在该分析，则返回 nil。
+// Lookup 返回给定名称的分析，若不存在该分析，则返回 nil。
 func Lookup(name string) *Profile
 
 // NewProfile creates a new profile with the given name.
@@ -84,15 +144,14 @@ func Lookup(name string) *Profile
 // The convention is to use a 'import/path.' prefix to create
 // separate name spaces for each package.
 
-// NewProfile 以给定的名称创建一个新的分析。 若拥有该名称的分析已存在，
-// NewProfile 就会引起恐慌。 约定使用一个 'import/path' 导入路径前缀来为每个包创
-// 建单独的命名空间。
+// NewProfile 以给定的名称创建一个新的分析。
+// 若拥有该名称的分析已存在，NewProfile 就会引起恐慌。
+// 约定使用一个 'import/path' 导入路径前缀来为每个包创建单独的命名空间。
 func NewProfile(name string) *Profile
 
 // Profiles returns a slice of all the known profiles, sorted by name.
 
-// Profiles
-// 返回所有已知分析的切片，按名称排序。
+// Profiles 返回所有已知分析的切片，按名称排序。
 func Profiles() []*Profile
 
 // StartCPUProfile enables CPU profiling for the current process.
@@ -103,20 +162,26 @@ func Profiles() []*Profile
 // Go code built with -buildmode=c-archive or -buildmode=c-shared.
 // StartCPUProfile relies on the SIGPROF signal, but that signal will
 // be delivered to the main program's SIGPROF signal handler (if any)
-// not to the one used by Go.  To make it work, call os/signal.Notify
+// not to the one used by Go. To make it work, call os/signal.Notify
 // for syscall.SIGPROF, but note that doing so may break any profiling
 // being done by the main program.
 
-// StartCPUProfile 为当前进程开启CPU分析。 在分析时，分析报告会缓存并写入到 w 中
-// 。若分析已经开启，StartCPUProfile 就会返回错误。
+// StartCPUProfile 为当前进程开启CPU分析。 在分析时，分析报告会缓存并写入到 w
+// 中。若分析已经开启，StartCPUProfile 就会返回错误。
+//
+// 在类 Unix 系统中，StartCPUProfile 默认不会用 -buildmode=c-archive 或
+// -buildmode=c-shared 来构建 Go 代码。StartCPUProfile 依赖于 SIGPROF 信号， 但
+// 是该信号将会被发送到主程序的 SIGPROF 信号处理器（如果存在）而不是 Go 使用的那
+// 个。 要让它工作，请为 syscall.SIGPROF 调用 os/signal.Notify，但注意，这样做可
+// 能会破坏 任何主程序完成的剖析。
 func StartCPUProfile(w io.Writer) error
 
 // StopCPUProfile stops the current CPU profile, if any.
 // StopCPUProfile only returns after all the writes for the
 // profile have completed.
 
-// StopCPUProfile 会停止当前的CPU分析，如果有的话。 StopCPUProfile
-// 只会在所有的分析报告写入完毕后才会返回。
+// StopCPUProfile 会停止当前的CPU分析，如果有的话。
+// StopCPUProfile 只会在所有的分析报告写入完毕后才会返回。
 func StopCPUProfile()
 
 // WriteHeapProfile is shorthand for Lookup("heap").WriteTo(w, 0).
@@ -135,72 +200,72 @@ func WriteHeapProfile(w io.Writer) error
 // where the stack trace begins. Passing skip=0 begins the trace in the function
 // calling Add. For example, given this execution stack:
 //
-//     Add
-//     called from rpc.NewClient
-//     called from mypkg.Run
-//     called from main.main
+// 	Add
+// 	called from rpc.NewClient
+// 	called from mypkg.Run
+// 	called from main.main
 //
 // Passing skip=0 begins the stack trace at the call to Add inside
 // rpc.NewClient. Passing skip=1 begins the stack trace at the call to NewClient
 // inside mypkg.Run.
 
-// Add 将当前与值相关联的执行栈添加到该分析中。 Add 在一个内部映射中存储值，因此
-// 值必须适于用作映射键，且在对应的 Remove 调用之前不会被垃圾收集。若分析已经包
-// 含了值的栈，Add 就会引发恐慌。
+// Add 将当前与值相关联的执行栈添加到该分析中。
+// Add 在一个内部映射中存储值，因此值必须适于用作映射键，且在对应的 Remove
+// 调用之前不会被垃圾收集。若分析已经包含了值的栈，Add 就会引发恐慌。
 //
-// skip 形参与 runtime.Caller 的 skip 意思相同，它用于控制栈跟踪从哪里开始。 传
-// 入 skip=0 会从函数调用 Add 处开始跟踪。例如，给定以下执行栈：
+// skip 形参与 runtime.Caller 的 skip 意思相同，它用于控制栈跟踪从哪里开始。
+// 传入 skip=0 会从函数调用 Add 处开始跟踪。例如，给定以下执行栈：
 //
-//     Add
-//     调用自 rpc.NewClient
-//     调用自 mypkg.Run
-//     调用自 main.main
+// 	Add
+// 	调用自 rpc.NewClient
+// 	调用自 mypkg.Run
+// 	调用自 main.main
 //
-// 传入 skip=0 会从 rpc.NewClient 中的 Add 调用处开始栈跟踪。 传入 skip=1 会从
-// mypkg.Run 中的 NewClient 调用处开始栈跟踪。
-func (*Profile) Add(value interface{}, skip int)
+// 传入 skip=0 会从 rpc.NewClient 中的 Add 调用处开始栈跟踪。
+// 传入 skip=1 会从 mypkg.Run 中的 NewClient 调用处开始栈跟踪。
+func (p *Profile) Add(value interface{}, skip int)
 
 // Count returns the number of execution stacks currently in the profile.
 
 // Count 返回该分析中当前执行栈的数量。
-func (*Profile) Count() int
+func (p *Profile) Count() int
 
 // Name returns this profile's name, which can be passed to Lookup to reobtain
 // the profile.
 
 // Name 返回该分析的名称，它可被传入 Lookup 来重新获取该分析。
-func (*Profile) Name() string
+func (p *Profile) Name() string
 
 // Remove removes the execution stack associated with value from the profile.
 // It is a no-op if the value is not in the profile.
 
-// Remove 从该分析中移除与值 value 相关联的执行栈。 若值 value
-// 不在此分析中，则为空操作。
-func (*Profile) Remove(value interface{})
+// Remove 从该分析中移除与值 value 相关联的执行栈。
+// 若值 value 不在此分析中，则为空操作。
+func (p *Profile) Remove(value interface{})
 
-// WriteTo writes a pprof-formatted snapshot of the profile to w.
-// If a write to w returns an error, WriteTo returns that error.
-// Otherwise, WriteTo returns nil.
+// WriteTo writes a pprof-formatted snapshot of the profile to w. If a write to
+// w returns an error, WriteTo returns that error. Otherwise, WriteTo returns
+// nil.
 //
-// The debug parameter enables additional output.
-// Passing debug=0 prints only the hexadecimal addresses that pprof needs.
-// Passing debug=1 adds comments translating addresses to function names
-// and line numbers, so that a programmer can read the profile without tools.
+// The debug parameter enables additional output. Passing debug=0 prints only
+// the hexadecimal addresses that pprof needs. Passing debug=1 adds comments
+// translating addresses to function names and line numbers, so that a
+// programmer can read the profile without tools.
 //
-// The predefined profiles may assign meaning to other debug values;
-// for example, when printing the "goroutine" profile, debug=2 means to
-// print the goroutine stacks in the same form that a Go program uses
-// when dying due to an unrecovered panic.
+// The predefined profiles may assign meaning to other debug values; for
+// example, when printing the "goroutine" profile, debug=2 means to print the
+// goroutine stacks in the same form that a Go program uses when dying due to an
+// unrecovered panic.
 
 // WriteTo 将pprof格式的分析快照写入 w 中。 若一个向 w 的写入返回一个错误，
 // WriteTo 就会返回该错误。 否则，WriteTo 就会返回 nil。
 //
-// debug 形参用于开启附加的输出。 传入 debug=0 只会打印pprof所需要的十六进制地址
-// 。 传入 debug=1 会将地址翻译为函数名和行号并添加注释，以便让程序员无需工具阅
-// 读分析报告。
+// debug 形参用于开启附加的输出。 传入 debug=0 只会打印pprof所需要的十六进制地
+// 址。 传入 debug=1 会将地址翻译为函数名和行号并添加注释，以便让程序员无需工具
+// 阅读分析报告。
 //
 // 预声明分析报告可为其它 debug 值赋予含义；例如，当打印“Go程”的分析报告时，
 // debug=2 意为：由于不可恢复的恐慌而濒临崩溃时，使用与Go程序相同的形式打印Go程
 // 的栈信息。
-func (*Profile) WriteTo(w io.Writer, debug int) error
+func (p *Profile) WriteTo(w io.Writer, debug int) error
 

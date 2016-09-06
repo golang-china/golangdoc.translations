@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -58,8 +58,23 @@ const (
 	RequireAndVerifyClientCert
 )
 
-// A list of the possible cipher suite ids. Taken from
-// http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
+const (
+	// RenegotiateNever disables renegotiation.
+	RenegotiateNever RenegotiationSupport = iota
+
+	// RenegotiateOnceAsClient allows a remote server to request
+	// renegotiation once per connection.
+	RenegotiateOnceAsClient
+
+	// RenegotiateFreelyAsClient allows a remote server to repeatedly
+	// request renegotiation.
+	RenegotiateFreelyAsClient
+)
+
+// A list of cipher suite IDs that are, or have been, implemented by this
+// package.
+//
+// Taken from http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
 
 // 可选的加密组的ID的列表。参见：
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
@@ -68,6 +83,8 @@ const (
 	TLS_RSA_WITH_3DES_EDE_CBC_SHA           uint16 = 0x000a
 	TLS_RSA_WITH_AES_128_CBC_SHA            uint16 = 0x002f
 	TLS_RSA_WITH_AES_256_CBC_SHA            uint16 = 0x0035
+	TLS_RSA_WITH_AES_128_GCM_SHA256         uint16 = 0x009c
+	TLS_RSA_WITH_AES_256_GCM_SHA384         uint16 = 0x009d
 	TLS_ECDHE_ECDSA_WITH_RC4_128_SHA        uint16 = 0xc007
 	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA    uint16 = 0xc009
 	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA    uint16 = 0xc00a
@@ -77,6 +94,12 @@ const (
 	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA      uint16 = 0xc014
 	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   uint16 = 0xc02f
 	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 uint16 = 0xc02b
+	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   uint16 = 0xc030
+	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 uint16 = 0xc02c
+
+	// TLS_FALLBACK_SCSV isn't a standard cipher suite but an indicator
+	// that the client is doing version fallback. See
+	// https://tools.ietf.org/html/rfc7507.
 
 	// TLS_FALLBACK_SCSV isn't a standard cipher suite but an indicator
 	// that the client is doing version fallback. See
@@ -96,15 +119,28 @@ const (
 // Certificate是一个或多个证书的链条，叶证书在最前面。
 type Certificate struct {
 	Certificate [][]byte
+
+	// PrivateKey contains the private key corresponding to the public key
+	// in Leaf. For a server, this must implement crypto.Signer and/or
+	// crypto.Decrypter, with an RSA or ECDSA PublicKey. For a client
+	// (performing client authentication), this must be a crypto.Signer
+	// with an RSA or ECDSA PublicKey.
+
 	// PrivateKey contains the private key corresponding to the public key
 	// in Leaf. For a server, this must be a *rsa.PrivateKey or
 	// *ecdsa.PrivateKey. For a client doing client authentication, this
 	// can be any type that implements crypto.Signer (which includes RSA
 	// and ECDSA private keys).
 	PrivateKey crypto.PrivateKey
+
 	// OCSPStaple contains an optional OCSP response which will be served
 	// to clients that request it.
 	OCSPStaple []byte
+
+	// SignedCertificateTimestamps contains an optional list of Signed
+	// Certificate Timestamps which will be served to clients that request it.
+	SignedCertificateTimestamps [][]byte
+
 	// Leaf is the parsed form of the leaf certificate, which may be
 	// initialized using x509.ParseCertificate to reduce per-handshake
 	// processing for TLS clients doing client authentication. If nil, the
@@ -187,6 +223,11 @@ type Config struct {
 
 	// Certificates contains one or more certificate chains
 	// to present to the other side of the connection.
+	// Server configurations must include at least one certificate
+	// or else set GetCertificate.
+
+	// Certificates contains one or more certificate chains
+	// to present to the other side of the connection.
 	// Server configurations must include at least one certificate.
 	Certificates []Certificate
 
@@ -197,6 +238,14 @@ type Config struct {
 	// The nil value causes the first element of Certificates to be used
 	// for all connections.
 	NameToCertificate map[string]*Certificate
+
+	// GetCertificate returns a Certificate based on the given
+	// ClientHelloInfo. It will only be called if the client supplies SNI
+	// information or if Certificates is empty.
+	//
+	// If GetCertificate is nil or returns nil, then the certificate is
+	// retrieved from NameToCertificate. If NameToCertificate is nil, the
+	// first element of Certificates will be used.
 
 	// GetCertificate returns a Certificate based on the given
 	// ClientHelloInfo. If GetCertificate is nil or returns nil, then the
@@ -212,6 +261,11 @@ type Config struct {
 
 	// NextProtos is a list of supported, application level protocols.
 	NextProtos []string
+
+	// ServerName is used to verify the hostname on the returned
+	// certificates unless InsecureSkipVerify is given. It is also included
+	// in the client's handshake to support virtual hosting unless it is
+	// an IP address.
 
 	// ServerName is used to verify the hostname on the returned
 	// certificates unless InsecureSkipVerify is given. It is also included
@@ -264,6 +318,9 @@ type Config struct {
 	ClientSessionCache ClientSessionCache
 
 	// MinVersion contains the minimum SSL/TLS version that is acceptable.
+	// If zero, then TLS 1.0 is taken as the minimum.
+
+	// MinVersion contains the minimum SSL/TLS version that is acceptable.
 	// If zero, then SSLv3 is taken as the minimum.
 	MinVersion uint16
 
@@ -276,6 +333,16 @@ type Config struct {
 	// an ECDHE handshake, in preference order. If empty, the default will
 	// be used.
 	CurvePreferences []CurveID
+
+	// DynamicRecordSizingDisabled disables adaptive sizing of TLS records.
+	// When true, the largest possible TLS record size is always used. When
+	// false, the size of TLS records may be adjusted in an attempt to
+	// improve latency.
+	DynamicRecordSizingDisabled bool
+
+	// Renegotiation controls what types of renegotiation are supported.
+	// The default, none, is correct for the vast majority of applications.
+	Renegotiation RenegotiationSupport
 }
 
 // A Conn represents a secured connection.
@@ -289,15 +356,17 @@ type Conn struct {
 
 // ConnectionState类型记录连接的基本TLS细节。
 type ConnectionState struct {
-	Version                    uint16                // TLS version used by the connection (e.g. VersionTLS12)
-	HandshakeComplete          bool                  // TLS handshake is complete
-	DidResume                  bool                  // connection resumes a previous TLS connection
-	CipherSuite                uint16                // cipher suite in use (TLS_RSA_WITH_RC4_128_SHA, ...)
-	NegotiatedProtocol         string                // negotiated next protocol (from Config.NextProtos)
-	NegotiatedProtocolIsMutual bool                  // negotiated protocol was advertised by server
-	ServerName                 string                // server name requested by client, if any (server side only)
-	PeerCertificates           []*x509.Certificate   // certificate chain presented by remote peer
-	VerifiedChains             [][]*x509.Certificate // verified chains built from PeerCertificates
+	Version                     uint16                // TLS version used by the connection (e.g. VersionTLS12)
+	HandshakeComplete           bool                  // TLS handshake is complete
+	DidResume                   bool                  // connection resumes a previous TLS connection
+	CipherSuite                 uint16                // cipher suite in use (TLS_RSA_WITH_RC4_128_SHA, ...)
+	NegotiatedProtocol          string                // negotiated next protocol (from Config.NextProtos)
+	NegotiatedProtocolIsMutual  bool                  // negotiated protocol was advertised by server
+	ServerName                  string                // server name requested by client, if any (server side only)
+	PeerCertificates            []*x509.Certificate   // certificate chain presented by remote peer
+	VerifiedChains              [][]*x509.Certificate // verified chains built from PeerCertificates
+	SignedCertificateTimestamps [][]byte              // SCTs from the server, if any
+	OCSPResponse                []byte                // stapled OCSP response from server, if any
 
 	// TLSUnique contains the "tls-unique" channel binding value (see RFC
 	// 5929, section 3). For resumed sessions this value will be nil
@@ -309,14 +378,36 @@ type ConnectionState struct {
 }
 
 // CurveID is the type of a TLS identifier for an elliptic curve. See
-//
-//
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
 
 // CurveID是TLS椭圆曲线的标识符的类型。参见：
 //
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-8
 type CurveID uint16
+
+// RecordHeaderError results when a TLS record header is invalid.
+type RecordHeaderError struct {
+	// Msg contains a human readable string that describes the error.
+	Msg string
+
+	// RecordHeader contains the five bytes of TLS record header that
+	// triggered the error.
+	RecordHeader [5]byte
+}
+
+// RenegotiationSupport enumerates the different levels of support for TLS
+// renegotiation. TLS renegotiation is the act of performing subsequent
+// handshakes on a connection after the first. This significantly complicates
+// the state machine and has been the source of numerous, subtle security
+// issues. Initiating a renegotiation is not supported, but support for
+// accepting renegotiation requests may be enabled.
+//
+// Even when enabled, the server may not change its identity between handshakes
+// (i.e. the leaf certificate must be the same). Additionally, concurrent
+// handshake and application data flow is not permitted so renegotiation can
+// only be used with protocols that synchronise with the renegotiation, such as
+// HTTPS.
+type RenegotiationSupport int
 
 // Client returns a new TLS client side connection
 // using conn as the underlying transport.
@@ -340,8 +431,8 @@ func Dial(network, addr string, config *Config) (*Conn, error)
 
 // DialWithDialer connects to the given network address using dialer.Dial and
 // then initiates a TLS handshake, returning the resulting TLS connection. Any
-// timeout or deadline given in the dialer apply to connection and TLS
-// handshake as a whole.
+// timeout or deadline given in the dialer apply to connection and TLS handshake
+// as a whole.
 //
 // DialWithDialer interprets a nil configuration as equivalent to the zero
 // configuration; see the documentation of Config for the defaults.
@@ -361,17 +452,18 @@ func DialWithDialer(dialer *net.Dialer, network, addr string, config *Config) (*
 // 必须是非nil的且必须含有至少一个证书。
 func Listen(network, laddr string, config *Config) (net.Listener, error)
 
-// LoadX509KeyPair reads and parses a public/private key pair from a pair of
-// files. The files must contain PEM encoded data. On successful return,
-// Certificate.Leaf will be nil because the parsed form of the certificate is
-// not retained.
+// LoadX509KeyPair reads and parses a public/private key pair from a pair
+// of files. The files must contain PEM encoded data. The certificate file
+// may contain intermediate certificates following the leaf certificate to
+// form a certificate chain. On successful return, Certificate.Leaf will
+// be nil because the parsed form of the certificate is not retained.
 
 // LoadX509KeyPair读取并解析一对文件获取公钥和私钥。这些文件必须是PEM编码的。
-func LoadX509KeyPair(certFile, keyFile string) (cert Certificate, err error)
+func LoadX509KeyPair(certFile, keyFile string) (Certificate, error)
 
-// NewLRUClientSessionCache returns a ClientSessionCache with the given
-// capacity that uses an LRU strategy. If capacity is < 1, a default capacity
-// is used instead.
+// NewLRUClientSessionCache returns a ClientSessionCache with the given capacity
+// that uses an LRU strategy. If capacity is < 1, a default capacity is used
+// instead.
 
 // 函数使用给出的容量创建一个采用LRU策略的ClientSessionState，如果capacity<1会采
 // 用默认容量。
@@ -395,12 +487,12 @@ func NewListener(inner net.Listener, config *Config) net.Listener
 // 非nil的且必须含有至少一个证书。
 func Server(conn net.Conn, config *Config) *Conn
 
-// X509KeyPair parses a public/private key pair from a pair of
-// PEM encoded data. On successful return, Certificate.Leaf will be nil because
-// the parsed form of the certificate is not retained.
+// X509KeyPair parses a public/private key pair from a pair of PEM encoded data.
+// On successful return, Certificate.Leaf will be nil because the parsed form of
+// the certificate is not retained.
 
 // X509KeyPair解析一对PEM编码的数据获取公钥和私钥。
-func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err error)
+func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error)
 
 // BuildNameToCertificate parses c.Certificates and builds c.NameToCertificate
 // from the CommonName and SubjectAlternateName fields of each of the leaf
@@ -408,17 +500,24 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert Certificate, err error)
 
 // BuildNameToCertificate解析c.Certificates并将每一个叶证书的CommonName和
 // SubjectAlternateName字段用于创建c.NameToCertificate。
-func (*Config) BuildNameToCertificate()
+func (c *Config) BuildNameToCertificate()
+
+// SetSessionTicketKeys updates the session ticket keys for a server. The first
+// key will be used when creating new tickets, while all keys can be used for
+// decrypting tickets. It is safe to call this function while the server is
+// running in order to rotate the session ticket keys. The function will panic
+// if keys is empty.
+func (c *Config) SetSessionTicketKeys(keys [][32]byte)
 
 // Close closes the connection.
 
 // Close关闭连接。
-func (*Conn) Close() error
+func (c *Conn) Close() error
 
 // ConnectionState returns basic TLS details about the connection.
 
 // ConnectionState返回该连接的基本TLS细节。
-func (*Conn) ConnectionState() ConnectionState
+func (c *Conn) ConnectionState() ConnectionState
 
 // Handshake runs the client or server handshake
 // protocol if it has not yet been run.
@@ -427,30 +526,30 @@ func (*Conn) ConnectionState() ConnectionState
 
 // Handshake执行客户端或服务端的握手协议（如果还没有执行的话）。本包的大多数应用
 // 不需要显式的调用Handsake方法：第一次Read或Write方法会自动调用本方法。
-func (*Conn) Handshake() error
+func (c *Conn) Handshake() error
 
 // LocalAddr returns the local network address.
 
 // LocalAddr返回本地网络地址。
-func (*Conn) LocalAddr() net.Addr
+func (c *Conn) LocalAddr() net.Addr
 
 // OCSPResponse returns the stapled OCSP response from the TLS server, if
 // any. (Only valid for client connections.)
 
 // OCSPResponse返回来自服务端的OCSP
 // staple回复（如果有）。只有客户端可以使用本方法。
-func (*Conn) OCSPResponse() []byte
+func (c *Conn) OCSPResponse() []byte
 
 // Read can be made to time out and return a net.Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
 
 // Read从连接读取数据，可设置超时，参见SetDeadline和SetReadDeadline。
-func (*Conn) Read(b []byte) (n int, err error)
+func (c *Conn) Read(b []byte) (n int, err error)
 
 // RemoteAddr returns the remote network address.
 
 // LocalAddr返回远端网络地址。
-func (*Conn) RemoteAddr() net.Addr
+func (c *Conn) RemoteAddr() net.Addr
 
 // SetDeadline sets the read and write deadlines associated with the connection.
 // A zero value for t means Read and Write will not time out. After a Write has
@@ -460,13 +559,13 @@ func (*Conn) RemoteAddr() net.Addr
 // SetDeadline设置该连接的读写操作绝对期限。t为Time零值表示不设置超时。在一次
 // Write/Read方法超时后，TLS连接状态会被破坏，之后所有的读写操作都会返回同一错误
 // 。
-func (*Conn) SetDeadline(t time.Time) error
+func (c *Conn) SetDeadline(t time.Time) error
 
 // SetReadDeadline sets the read deadline on the underlying connection.
 // A zero value for t means Read will not time out.
 
 // SetReadDeadline设置该连接的读操作绝对期限。t为Time零值表示不设置超时。
-func (*Conn) SetReadDeadline(t time.Time) error
+func (c *Conn) SetReadDeadline(t time.Time) error
 
 // SetWriteDeadline sets the write deadline on the underlying connection. A zero
 // value for t means Write will not time out. After a Write has timed out, the
@@ -474,17 +573,20 @@ func (*Conn) SetReadDeadline(t time.Time) error
 
 // SetReadDeadline设置该连接的写操作绝对期限。t为Time零值表示不设置超时。在一次
 // Write方法超时后，TLS连接状态会被破坏，之后所有的写操作都会返回同一错误。
-func (*Conn) SetWriteDeadline(t time.Time) error
+func (c *Conn) SetWriteDeadline(t time.Time) error
 
 // VerifyHostname checks that the peer certificate chain is valid for
-// connecting to host.  If so, it returns nil; if not, it returns an error
+// connecting to host. If so, it returns nil; if not, it returns an error
 // describing the problem.
 
 // VerifyHostname检查用于连接到host的对等实体证书链是否合法。如果合法，它会返回
 // nil；否则，会返回一个描述该问题的错误。
-func (*Conn) VerifyHostname(host string) error
+func (c *Conn) VerifyHostname(host string) error
 
 // Write writes data to the connection.
 
 // Write将数据写入连接，可设置超时，参见SetDeadline和SetWriteDeadline。
-func (*Conn) Write(b []byte) (int, error)
+func (c *Conn) Write(b []byte) (int, error)
+
+func (e RecordHeaderError) Error() string
+

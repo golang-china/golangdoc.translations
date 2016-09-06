@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 package elliptic
 
 import (
-    "io"
-    "math/big"
-    "sync"
+	"io"
+	"math/big"
+	"sync"
 )
 
 // A Curve represents a short-form Weierstrass curve with a=-3.
@@ -25,19 +25,24 @@ import (
 //
 // 参见http://www.hyperelliptic.org/EFD/g1p/auto-shortw.html
 type Curve interface {
-    // Params returns the parameters for the curve.
-    Params() *CurveParams
-    // IsOnCurve returns true if the given (x,y) lies on the curve.
-    IsOnCurve(x, y *big.Int) bool
-    // Add returns the sum of (x1,y1) and (x2,y2)
-    Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
-    // Double returns 2*(x,y)
-    Double(x1, y1 *big.Int) (x, y *big.Int)
-    // ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
-    ScalarMult(x1, y1 *big.Int, k []byte) (x, y *big.Int)
-    // ScalarBaseMult returns k*G, where G is the base point of the group
-    // and k is an integer in big-endian form.
-    ScalarBaseMult(k []byte) (x, y *big.Int)
+	// Params returns the parameters for the curve.
+	Params()*CurveParams
+
+	// IsOnCurve reports whether the given (x,y) lies on the curve.
+	IsOnCurve(x, y *big.Int)bool
+
+	// Add returns the sum of (x1,y1) and (x2,y2)
+	Add(x1, y1, x2, y2 *big.Int) (x, y *big.Int)
+
+	// Double returns 2*(x,y)
+	Double(x1, y1 *big.Int) (x, y *big.Int)
+
+	// ScalarMult returns k*(Bx,By) where k is a number in big-endian form.
+	ScalarMult(x1, y1 *big.Int, k []byte) (x, y *big.Int)
+
+	// ScalarBaseMult returns k*G, where G is the base point of the group
+	// and k is an integer in big-endian form.
+	ScalarBaseMult(k []byte) (x, y *big.Int)
 }
 
 // CurveParams contains the parameters of an elliptic curve and also provides
@@ -46,11 +51,12 @@ type Curve interface {
 // CurveParams包含一个椭圆曲线的所有参数，也可提供一般的、非常数时间实现的椭圆曲
 // 线。
 type CurveParams struct {
-    P       *big.Int // the order of the underlying field
-    N       *big.Int // the order of the base point
-    B       *big.Int // the constant of the curve equation
-    Gx, Gy  *big.Int // (x,y) of the base point
-    BitSize int      // the size of the underlying field
+	P       *big.Int // the order of the underlying field
+	N       *big.Int // the order of the base point
+	B       *big.Int // the constant of the curve equation
+	Gx, Gy  *big.Int // (x,y) of the base point
+	BitSize int      // the size of the underlying field
+	Name    string   // the canonical name of the curve
 }
 
 // GenerateKey returns a public/private key pair. The private key is
@@ -92,15 +98,15 @@ func P521() Curve
 // 将一个Marshal编码后的点还原；如果出错，x会被设为nil。
 func Unmarshal(curve Curve, data []byte) (x, y *big.Int)
 
-func (*CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int)
+func (curve *CurveParams) Add(x1, y1, x2, y2 *big.Int) (*big.Int, *big.Int)
 
-func (*CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int)
+func (curve *CurveParams) Double(x1, y1 *big.Int) (*big.Int, *big.Int)
 
-func (*CurveParams) IsOnCurve(x, y *big.Int) bool
+func (curve *CurveParams) IsOnCurve(x, y *big.Int) bool
 
-func (*CurveParams) Params() *CurveParams
+func (curve *CurveParams) Params() *CurveParams
 
-func (*CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int)
+func (curve *CurveParams) ScalarBaseMult(k []byte) (*big.Int, *big.Int)
 
-func (*CurveParams) ScalarMult(Bx, By *big.Int, k []byte) (*big.Int, *big.Int)
+func (curve *CurveParams) ScalarMult(Bx, By *big.Int, k []byte) (*big.Int, *big.Int)
 

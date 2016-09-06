@@ -1,7 +1,3 @@
-// Copyright The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 // +build ingore
 
 // Package bzip2 implements bzip2 decompression.
@@ -10,9 +6,9 @@
 package bzip2
 
 import (
-    "bufio"
-    "io"
-    "sort"
+	"bufio"
+	"io"
+	"sort"
 )
 
 // A StructuralError is returned when the bzip2 data is found to be
@@ -28,5 +24,5 @@ type StructuralError string
 // NewReader 返回一个从 r 读取 bzip2 压缩数据并解压缩后返回给调用者的 io.Reader.
 func NewReader(r io.Reader) io.Reader
 
-func (StructuralError) Error() string
+func (s StructuralError) Error() string
 

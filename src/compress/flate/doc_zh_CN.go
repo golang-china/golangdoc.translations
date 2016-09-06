@@ -1,11 +1,11 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // +build ingore
 
-// Package flate implements the DEFLATE compressed data format, described in
-// RFC 1951.  The gzip and zlib packages implement access to DEFLATE-based file
+// Package flate implements the DEFLATE compressed data format, described in RFC
+// 1951. The gzip and zlib packages implement access to DEFLATE-based file
 // formats.
 
 // flate 包实现了 deflate 压缩数据格式, 参见RFC 1951.
@@ -13,21 +13,31 @@
 package flate
 
 import (
-    "bufio"
-    "fmt"
-    "io"
-    "math"
-    "sort"
-    "strconv"
-    "sync"
+	"bufio"
+	"fmt"
+	"io"
+	"math"
+	"sort"
+	"strconv"
+	"sync"
 )
 
 const (
-    NoCompression = 0
-    BestSpeed     = 1
+	NoCompression      = 0
+	BestSpeed          = 1
+	BestCompression    = 9
+	DefaultCompression = -1
 
-    BestCompression    = 9
-    DefaultCompression = -1
+	// HuffmanOnly disables Lempel-Ziv match searching and only performs Huffman
+	// entropy encoding. This mode is useful in compressing data that has
+	// already been compressed with an LZ style algorithm (e.g. Snappy or LZ4)
+	// that lacks an entropy encoder. Compression gains are achieved when
+	// certain bytes in the input stream occur more frequently than others.
+	//
+	// Note that HuffmanOnly produces a compressed output that is RFC 1951
+	// compliant. That is, any valid DEFLATE decompressor will continue to be
+	// able to decompress this output.
+	HuffmanOnly = -2
 )
 
 // A CorruptInputError reports the presence of corrupt input at a given offset.
@@ -46,8 +56,8 @@ type InternalError string
 
 // ReadError 代表在读取输入流时遇到的错误.
 type ReadError struct {
-    Offset int64 // byte offset where error occurred
-    Err    error // error returned by underlying Read
+	Offset int64 // byte offset where error occurred
+	Err    error // error returned by underlying Read
 }
 
 // The actual read interface needed by NewReader.
@@ -57,17 +67,21 @@ type ReadError struct {
 // Reader 是 NewReader 真正需要的接口. 如果提供的 io.Reader 没有提供 ReadByte 方
 // 法, NewReader 函数会自行添加缓冲.
 type Reader interface {
-    io.Reader
-    io.ByteReader
+	io.Reader
+	io.ByteReader
 }
+
+// Resetter resets a ReadCloser returned by NewReader or NewReaderDict to
+// to switch to a new underlying Reader. This permits reusing a ReadCloser
+// instead of allocating a new one.
 
 // Resetter resets a ReadCloser returned by NewReader or NewReaderDict to to
 // switch to a new underlying Reader. This permits reusing a ReadCloser instead
 // of allocating a new one.
 type Resetter interface {
-    // Reset discards any buffered data and resets the Resetter as if it was
-    // newly initialized with the given reader.
-    Reset(r io.Reader, dict []byte) error
+	// Reset discards any buffered data and resets the Resetter as if it was
+	// newly initialized with the given reader.
+	Reset(r io.Reader, dict []byte)error
 }
 
 // A WriteError reports an error encountered while writing output.
@@ -76,8 +90,8 @@ type Resetter interface {
 
 // WriteError 代表在写入输出流时遇到的错误.
 type WriteError struct {
-    Offset int64 // byte offset where error occurred
-    Err    error // error returned by underlying Write
+	Offset int64 // byte offset where error occurred
+	Err    error // error returned by underlying Write
 }
 
 // A Writer takes data written to it and writes the compressed
@@ -101,9 +115,9 @@ type Writer struct {
 func NewReader(r io.Reader) io.ReadCloser
 
 // NewReaderDict is like NewReader but initializes the reader
-// with a preset dictionary.  The returned Reader behaves as if
+// with a preset dictionary. The returned Reader behaves as if
 // the uncompressed data stream started with the given dictionary,
-// which has already been read.  NewReaderDict is typically used
+// which has already been read. NewReaderDict is typically used
 // to read data compressed by NewWriterDict.
 //
 // The ReadCloser returned by NewReader also implements Resetter.
@@ -114,14 +128,16 @@ func NewReader(r io.Reader) io.ReadCloser
 // NewReaderDict 用于读取 NewWriterDict 压缩的数据.
 func NewReaderDict(r io.Reader, dict []byte) io.ReadCloser
 
-// NewWriter returns a new Writer compressing data at the given level.
-// Following zlib, levels range from 1 (BestSpeed) to 9 (BestCompression);
-// higher levels typically run slower but compress more. Level 0
-// (NoCompression) does not attempt any compression; it only adds the
-// necessary DEFLATE framing. Level -1 (DefaultCompression) uses the default
-// compression level.
+// NewWriter returns a new Writer compressing data at the given level. Following
+// zlib, levels range from 1 (BestSpeed) to 9 (BestCompression); higher levels
+// typically run slower but compress more. Level 0 (NoCompression) does not
+// attempt any compression; it only adds the necessary DEFLATE framing. Level -1
+// (DefaultCompression) uses the default compression level. Level -2
+// (HuffmanOnly) will use Huffman compression only, giving a very fast
+// compression for all types of input, but sacrificing considerable compression
+// efficiency.
 //
-// If level is in the range [-1, 9] then the error returned will be nil.
+// If level is in the range [-2, 9] then the error returned will be nil.
 // Otherwise the error returned will be non-nil.
 
 // NewWriter 返回一个压缩水平为 level 的 Writer.
@@ -133,9 +149,9 @@ func NewReaderDict(r io.Reader, dict []byte) io.ReadCloser
 func NewWriter(w io.Writer, level int) (*Writer, error)
 
 // NewWriterDict is like NewWriter but initializes the new
-// Writer with a preset dictionary.  The returned Writer behaves
+// Writer with a preset dictionary. The returned Writer behaves
 // as if the dictionary had been written to it without producing
-// any compressed output.  The compressed data written to w
+// any compressed output. The compressed data written to w
 // can only be decompressed by a Reader initialized with the
 // same dictionary.
 
@@ -145,20 +161,20 @@ func NewWriter(w io.Writer, level int) (*Writer, error)
 // 使用 w 压缩的数据只能被使用同样的字典初始化生成的 Reader 接口解压缩.
 func NewWriterDict(w io.Writer, level int, dict []byte) (*Writer, error)
 
-func (*ReadError) Error() string
+func (e *ReadError) Error() string
 
-func (*WriteError) Error() string
+func (e *WriteError) Error() string
 
 // Close flushes and closes the writer.
 
 // Close 刷新缓冲并关闭 w.
-func (*Writer) Close() error
+func (w *Writer) Close() error
 
-// Flush flushes any pending compressed data to the underlying writer.
-// It is useful mainly in compressed network protocols, to ensure that
-// a remote reader has enough data to reconstruct a packet.
-// Flush does not return until the data has been written.
-// If the underlying writer returns an error, Flush returns that error.
+// Flush flushes any pending compressed data to the underlying writer. It is
+// useful mainly in compressed network protocols, to ensure that a remote reader
+// has enough data to reconstruct a packet. Flush does not return until the data
+// has been written. If the underlying writer returns an error, Flush returns
+// that error.
 //
 // In the terminology of the zlib library, Flush is equivalent to Z_SYNC_FLUSH.
 
@@ -168,7 +184,7 @@ func (*Writer) Close() error
 // 来重构数据报. Flush 会阻塞直到所有缓冲中的数据都写入下层 io.Writer 接口后才返
 // 回. 如果下层的 io.Writetr 接口返回一个错误, Flush 也会返回该错误. 在zlib包的
 // 术语中, Flush 方法等价于 Z_SYNC_FLUSH.
-func (*Writer) Flush() error
+func (w *Writer) Flush() error
 
 // Reset discards the writer's state and makes it equivalent to
 // the result of NewWriter or NewWriterDict called with dst
@@ -177,15 +193,15 @@ func (*Writer) Flush() error
 // Reset 将 w 重置, 丢弃当前的写入状态, 并将下层输出目标设为 dst. 效果上等价于将
 // w 设为使用 dst 和 w 的压缩水平/字典重新调用 NewWriter 或 NewWriterDict 返回的
 // *Writer.
-func (*Writer) Reset(dst io.Writer)
+func (w *Writer) Reset(dst io.Writer)
 
 // Write writes data to w, which will eventually write the
 // compressed form of data to its underlying writer.
 
 // Write 向 w写入数据, 最终会将压缩后的数据写入下层 io.Writer接口.
-func (*Writer) Write(data []byte) (n int, err error)
+func (w *Writer) Write(data []byte) (n int, err error)
 
-func (CorruptInputError) Error() string
+func (e CorruptInputError) Error() string
 
-func (InternalError) Error() string
+func (e InternalError) Error() string
 

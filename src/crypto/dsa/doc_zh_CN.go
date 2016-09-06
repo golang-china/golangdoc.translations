@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,22 +6,19 @@
 
 // Package dsa implements the Digital Signature Algorithm, as defined in FIPS
 // 186-3.
-
-// Package dsa implements the Digital Signature Algorithm, as defined in FIPS
-// 186-3.
 package dsa
 
 import (
-    "errors"
-    "io"
-    "math/big"
+	"errors"
+	"io"
+	"math/big"
 )
 
 const (
-    L1024N160 ParameterSizes = iota
-    L2048N224
-    L2048N256
-    L3072N256
+	L1024N160 ParameterSizes = iota
+	L2048N224
+	L2048N256
+	L3072N256
 )
 
 // ErrInvalidPublicKey results when a public key is not usable by this code.
@@ -37,19 +34,19 @@ type ParameterSizes int
 // Parameters represents the domain parameters for a key. These parameters can
 // be shared across many keys. The bit length of Q must be a multiple of 8.
 type Parameters struct {
-    P, Q, G *big.Int
+	P, Q, G *big.Int
 }
 
 // PrivateKey represents a DSA private key.
 type PrivateKey struct {
-    PublicKey
-    X   *big.Int
+	PublicKey
+	X *big.Int
 }
 
 // PublicKey represents a DSA public key.
 type PublicKey struct {
-    Parameters
-    Y   *big.Int
+	Parameters
+	Y *big.Int
 }
 
 // GenerateKey generates a public&private key pair. The Parameters of the
@@ -61,7 +58,7 @@ func GenerateKey(priv *PrivateKey, rand io.Reader) error
 
 // GenerateParameters puts a random, valid set of DSA parameters into params.
 // This function takes many seconds, even on fast machines.
-func GenerateParameters(params *Parameters, rand io.Reader, sizes ParameterSizes) (err error)
+func GenerateParameters(params *Parameters, rand io.Reader, sizes ParameterSizes) error
 
 // Sign signs an arbitrary length hash (which should be the result of hashing a
 // larger message) using the private key, priv. It returns the signature as a

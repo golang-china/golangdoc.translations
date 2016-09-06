@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,29 +13,38 @@
 package scanner
 
 import (
-    "bytes"
-    "fmt"
-    "go/token"
-    "io"
-    "path/filepath"
-    "sort"
-    "strconv"
-    "unicode"
-    "unicode/utf8"
+	"bytes"
+	"fmt"
+	"go/token"
+	"io"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"unicode"
+	"unicode/utf8"
 )
 
 const (
-    ScanComments Mode = 1 << iota // return comments as COMMENT tokens
-
+	ScanComments Mode = 1 << iota // return comments as COMMENT tokens
 )
+
+// In an ErrorList, an error is represented by an *Error.
+// The position Pos, if valid, points to the beginning of
+// the offending token, and the error condition is described
+// by Msg.
 
 // In an ErrorList, an error is represented by an *Error. The position Pos, if
 // valid, points to the beginning of the offending token, and the error
 // condition is described by Msg.
 type Error struct {
-    Pos token.Position
-    Msg string
+	Pos token.Position
+	Msg string
 }
+
+// An ErrorHandler may be provided to Scanner.Init. If a syntax error is
+// encountered and a handler was installed, the handler is called with a
+// position and an error message. The position points to the beginning of
+// the offending token.
 
 // An ErrorHandler may be provided to Scanner.Init. If a syntax error is
 // encountered and a handler was installed, the handler is called with a
@@ -43,26 +52,34 @@ type Error struct {
 // offending token.
 type ErrorHandler func(pos token.Position, msg string)
 
+// ErrorList is a list of *Errors.
+// The zero value for an ErrorList is an empty ErrorList ready to use.
+
 // ErrorList is a list of *Errors. The zero value for an ErrorList is an empty
 // ErrorList ready to use.
 type ErrorList []*Error
+
+// A mode value is a set of flags (or 0).
+// They control scanner behavior.
 
 // A mode value is a set of flags (or 0). They control scanner behavior.
 type Mode uint
 
 // A Scanner holds the scanner's internal state while processing
-// a given text.  It can be allocated as part of another data
+// a given text. It can be allocated as part of another data
 // structure but must be initialized via Init before use.
 
 // A Scanner holds the scanner's internal state while processing a given text.
 // It can be allocated as part of another data structure but must be initialized
 // via Init before use.
 type Scanner struct {
-
-    // public state - ok to modify
-    ErrorCount int // number of errors encountered
-
+	// public state - ok to modify
+	ErrorCount int // number of errors encountered
 }
+
+// PrintError is a utility function that prints a list of errors to w,
+// one error per line, if the err parameter is an ErrorList. Otherwise
+// it prints the err string.
 
 // PrintError is a utility function that prints a list of errors to w, one error
 // per line, if the err parameter is an ErrorList. Otherwise it prints the err
@@ -70,14 +87,29 @@ type Scanner struct {
 func PrintError(w io.Writer, err error)
 
 // Add adds an Error with given position and error message to an ErrorList.
-func (*ErrorList) Add(pos token.Position, msg string)
+func (p *ErrorList) Add(pos token.Position, msg string)
 
 // RemoveMultiples sorts an ErrorList and removes all but the first error per
 // line.
-func (*ErrorList) RemoveMultiples()
+func (p *ErrorList) RemoveMultiples()
 
 // Reset resets an ErrorList to no errors.
-func (*ErrorList) Reset()
+func (p *ErrorList) Reset()
+
+// Init prepares the scanner s to tokenize the text src by setting the
+// scanner at the beginning of src. The scanner uses the file set file
+// for position information and it adds line information for each line.
+// It is ok to re-use the same file when re-scanning the same file as
+// line information which is already present is ignored. Init causes a
+// panic if the file size does not match the src size.
+//
+// Calls to Scan will invoke the error handler err if they encounter a
+// syntax error and err is not nil. Also, for each error encountered,
+// the Scanner field ErrorCount is incremented by one. The mode parameter
+// determines how comments are handled.
+//
+// Note that Init may call err if there is an error in the first character
+// of the file.
 
 // Init prepares the scanner s to tokenize the text src by setting the scanner
 // at the beginning of src. The scanner uses the file set file for position
@@ -93,7 +125,7 @@ func (*ErrorList) Reset()
 //
 // Note that Init may call err if there is an error in the first character of
 // the file.
-func (*Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode)
+func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode)
 
 // Scan scans the next token and returns the token position, the token, and its
 // literal string if applicable. The source end is indicated by token.EOF.
@@ -121,26 +153,33 @@ func (*Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode)
 //
 // Scan adds line information to the file added to the file set with Init. Token
 // positions are relative to that file and thus relative to the file set.
-func (*Scanner) Scan() (pos token.Pos, tok token.Token, lit string)
+func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string)
 
 // Error implements the error interface.
-func (Error) Error() string
+func (e Error) Error() string
+
+// Err returns an error equivalent to this error list.
+// If the list is empty, Err returns nil.
 
 // Err returns an error equivalent to this error list. If the list is empty, Err
 // returns nil.
-func (ErrorList) Err() error
+func (p ErrorList) Err() error
 
 // An ErrorList implements the error interface.
-func (ErrorList) Error() string
+func (p ErrorList) Error() string
 
 // ErrorList implements the sort Interface.
-func (ErrorList) Len() int
+func (p ErrorList) Len() int
 
-func (ErrorList) Less(i, j int) bool
+func (p ErrorList) Less(i, j int) bool
+
+// Sort sorts an ErrorList. *Error entries are sorted by position,
+// other errors are sorted by error message, and before any *Error
+// entry.
 
 // Sort sorts an ErrorList. *Error entries are sorted by position, other errors
 // are sorted by error message, and before any *Error entry.
-func (ErrorList) Sort()
+func (p ErrorList) Sort()
 
-func (ErrorList) Swap(i, j int)
+func (p ErrorList) Swap(i, j int)
 

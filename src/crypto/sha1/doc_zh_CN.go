@@ -1,7 +1,3 @@
-// Copyright The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 // +build ingore
 
 // Package sha1 implements the SHA1 hash algorithm as defined in RFC 3174.
@@ -10,8 +6,8 @@
 package sha1
 
 import (
-    "crypto"
-    "hash"
+	"crypto"
+	"hash"
 )
 
 // The blocksize of SHA1 in bytes.

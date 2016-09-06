@@ -5,34 +5,27 @@
 // +build ingore
 
 // Package gcimporter implements Import for gc-generated object files.
-
-// Package gcimporter implements Import for gc-generated object files.
 package gcimporter
 
 import (
-    "bufio"
-    "encoding/binary"
-    "errors"
-    "fmt"
-    "go/build"
-    "go/constant"
-    "go/token"
-    "go/types"
-    "internal/testenv"
-    "io"
-    "io/ioutil"
-    "os"
-    "os/exec"
-    "path/filepath"
-    "runtime"
-    "sort"
-    "strconv"
-    "strings"
-    "testing"
-    "text/scanner"
-    "time"
-    "unicode"
-    "unicode/utf8"
+	"bufio"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"go/build"
+	"go/constant"
+	"go/token"
+	"go/types"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+	"text/scanner"
+	"unicode"
+	"unicode/utf8"
 )
 
 // BImportData imports a package from the serialized package data
@@ -72,25 +65,4 @@ func Import(packages map[string]*types.Package, path, srcDir string) (pkg *types
 // can be used directly, and there is no need to call this function (but
 // there is also no harm but for extra time used).
 func ImportData(packages map[string]*types.Package, filename, id string, data io.Reader) (pkg *types.Package, err error)
-
-// Smoke test to ensure that imported methods get the correct package.
-func TestCorrectMethodPackage(t *testing.T)
-
-func TestImportStdLib(t *testing.T)
-
-func TestImportTestdata(t *testing.T)
-
-// TODO(gri) Remove this function once we switched to new export format by
-// default
-//
-//     (and update the comment and want list in TestImportTestdata).
-func TestImportTestdataNewExport(t *testing.T)
-
-func TestImportedTypes(t *testing.T)
-
-func TestIssue13566(t *testing.T)
-
-func TestIssue13898(t *testing.T)
-
-func TestIssue5815(t *testing.T)
 

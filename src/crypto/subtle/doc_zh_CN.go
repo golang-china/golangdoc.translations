@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,12 +17,13 @@ package subtle
 // 如果x == y返回1，否则返回0。
 func ConstantTimeByteEq(x, y uint8) int
 
-// ConstantTimeCompare returns 1 iff the two slices, x
+// ConstantTimeCompare returns 1 if and only if the two slices, x
 // and y, have equal contents. The time taken is a function of the length of
 // the slices and is independent of the contents.
 
-// 如果x、y的长度和内容都相同返回1；否则返回0。消耗的时间正比于切片长度而与内容
-// 无关。
+// ConstantTimeCompare returns 1 iff the two slices, x
+// and y, have equal contents. The time taken is a function of the length of
+// the slices and is independent of the contents.
 func ConstantTimeCompare(x, y []byte) int
 
 // ConstantTimeCopy copies the contents of y into x (a slice of equal length)

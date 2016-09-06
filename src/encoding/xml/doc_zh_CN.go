@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -40,8 +40,8 @@ const (
 // HTMLAutoClose是应当考虑到自动关闭的HTML元素的集合。
 var HTMLAutoClose = htmlAutoClose
 
-// HTMLEntity is an entity map containing translations for the standard HTML
-// entity characters.
+// HTMLEntity is an entity map containing translations for the
+// standard HTML entity characters.
 
 // HTMLEntity是标准HTML entity字符到其翻译的映射。
 var HTMLEntity = htmlEntity
@@ -74,27 +74,28 @@ type Comment []byte
 // Decoder代表一个XML解析器，可以读取输入流的部分数据，该解析器假定输入是utf-8编
 // 码的。
 type Decoder struct {
-	// Strict defaults to true, enforcing the requirements
-	// of the XML specification.
-	// If set to false, the parser allows input containing common
+	// Strict defaults to true, enforcing the requirements of the XML
+	// specification. If set to false, the parser allows input containing common
 	// mistakes:
-	//	* If an element is missing an end tag, the parser invents
-	//	  end tags as necessary to keep the return values from Token
-	//	  properly balanced.
-	//	* In attribute values and character data, unknown or malformed
-	//	  character entities (sequences beginning with &) are left alone.
+	//
+	// 	* If an element is missing an end tag, the parser invents
+	// 	  end tags as necessary to keep the return values from Token
+	// 	  properly balanced.
+	// 	* In attribute values and character data, unknown or malformed
+	// 	  character entities (sequences beginning with &) are left alone.
 	//
 	// Setting:
 	//
-	//	d.Strict = false;
-	//	d.AutoClose = HTMLAutoClose;
-	//	d.Entity = HTMLEntity
+	// 	d.Strict = false;
+	// 	d.AutoClose = HTMLAutoClose;
+	// 	d.Entity = HTMLEntity
 	//
 	// creates a parser that can handle typical HTML.
 	//
 	// Strict mode does not enforce the requirements of the XML name spaces TR.
-	// In particular it does not reject name space tags using undefined prefixes.
-	// Such tags are recorded with the unknown prefix as the name space URL.
+	// In particular it does not reject name space tags using undefined
+	// prefixes. Such tags are recorded with the unknown prefix as the name
+	// space URL.
 	Strict bool
 
 	// When Strict == false, AutoClose indicates a set of elements to
@@ -102,15 +103,15 @@ type Decoder struct {
 	// of whether an end element is present.
 	AutoClose []string
 
-	// Entity can be used to map non-standard entity names to string replacements.
-	// The parser behaves as if these standard mappings are present in the map,
-	// regardless of the actual map content:
+	// Entity can be used to map non-standard entity names to string
+	// replacements. The parser behaves as if these standard mappings are
+	// present in the map, regardless of the actual map content:
 	//
-	//	"lt": "<",
-	//	"gt": ">",
-	//	"amp": "&",
-	//	"apos": "'",
-	//	"quot": `"`,
+	// 	"lt": "<",
+	// 	"gt": ">",
+	// 	"amp": "&",
+	// 	"apos": "'",
+	// 	"quot": `"`,
 	Entity map[string]string
 
 	// CharsetReader, if non-nil, defines a function to generate
@@ -171,7 +172,7 @@ type EndElement struct {
 // 略是重复调用e.EncodeToken来一次一个token的生成XML输出。编码后的token必须组成
 // 零或多个XML元素。
 type Marshaler interface {
-	MarshalXML(e *Encoder, start StartElement) error
+	MarshalXML(e *Encoder, start StartElement)error
 }
 
 // MarshalerAttr is the interface implemented by objects that can marshal
@@ -246,7 +247,8 @@ type TagPathError struct {
 
 // Token接口用于保存token类型（CharData、Comment、Directive、ProcInst、
 // StartElement、EndElement）的值。
-type Token interface{}
+type Token interface {
+}
 
 // An UnmarshalError represents an error in the unmarshalling process.
 
@@ -277,7 +279,7 @@ type UnmarshalError string
 // UnmarshalXML的调用者。另一个常用的策略是使用d.Token一次一个token的处理XML对象
 // 。UnmarshalXML通常不使用d.RawToken。
 type Unmarshaler interface {
-	UnmarshalXML(d *Decoder, start StartElement) error
+	UnmarshalXML(d *Decoder, start StartElement)error
 }
 
 // UnmarshalerAttr is the interface implemented by objects that can unmarshal
@@ -295,7 +297,7 @@ type Unmarshaler interface {
 // 止执行并返回该错误。UnmarshalXMLAttr只有在结构体字段的标签有"attr"选项时才被
 // 使用。
 type UnmarshalerAttr interface {
-	UnmarshalXMLAttr(attr Attr) error
+	UnmarshalXMLAttr(attr Attr)error
 }
 
 // A MarshalXMLError is returned when Marshal encounters a type
@@ -329,82 +331,101 @@ func EscapeText(w io.Writer, s []byte) error
 //
 // Marshal handles an array or slice by marshalling each of the elements.
 // Marshal handles a pointer by marshalling the value it points at or, if the
-// pointer is nil, by writing nothing.  Marshal handles an interface value by
+// pointer is nil, by writing nothing. Marshal handles an interface value by
 // marshalling the value it contains or, if the interface value is nil, by
-// writing nothing.  Marshal handles all other data by writing one or more XML
+// writing nothing. Marshal handles all other data by writing one or more XML
 // elements containing the data.
 //
 // The name for the XML elements is taken from, in order of preference:
-//     - the tag on the XMLName field, if the data is a struct
-//     - the value of the XMLName field of type xml.Name
-//     - the tag of the struct field used to obtain the data
-//     - the name of the struct field used to obtain the data
-//     - the name of the marshalled type
+//
+// 	- the tag on the XMLName field, if the data is a struct
+// 	- the value of the XMLName field of type Name
+// 	- the tag of the struct field used to obtain the data
+// 	- the name of the struct field used to obtain the data
+// 	- the name of the marshalled type
 //
 // The XML element for a struct contains marshalled elements for each of the
 // exported fields of the struct, with these exceptions:
-//     - the XMLName field, described above, is omitted.
-//     - a field with tag "-" is omitted.
-//     - a field with tag "name,attr" becomes an attribute with
-//       the given name in the XML element.
-//     - a field with tag ",attr" becomes an attribute with the
-//       field name in the XML element.
-//     - a field with tag ",chardata" is written as character data,
-//       not as an XML element.
-//     - a field with tag ",cdata" is written as character data
-//       wrapped in one or more <![CDATA[ ... ]]> tags, not as an XML element.
-//     - a field with tag ",innerxml" is written verbatim, not subject
-//       to the usual marshalling procedure.
-//     - a field with tag ",comment" is written as an XML comment, not
-//       subject to the usual marshalling procedure. It must not contain
-//       the "--" string within it.
-//     - a field with a tag including the "omitempty" option is omitted
-//       if the field value is empty. The empty values are false, 0, any
-//       nil pointer or interface value, and any array, slice, map, or
-//       string of length zero.
-//     - an anonymous struct field is handled as if the fields of its
-//       value were part of the outer struct.
+//
+// 	- the XMLName field, described above, is omitted.
+// 	- a field with tag "-" is omitted.
+// 	- a field with tag "name,attr" becomes an attribute with
+// 	  the given name in the XML element.
+// 	- a field with tag ",attr" becomes an attribute with the
+// 	  field name in the XML element.
+// 	- a field with tag ",chardata" is written as character data,
+// 	  not as an XML element.
+// 	- a field with tag ",cdata" is written as character data
+// 	  wrapped in one or more <![CDATA[ ... ]]> tags, not as an XML element.
+// 	- a field with tag ",innerxml" is written verbatim, not subject
+// 	  to the usual marshalling procedure.
+// 	- a field with tag ",comment" is written as an XML comment, not
+// 	  subject to the usual marshalling procedure. It must not contain
+// 	  the "--" string within it.
+// 	- a field with a tag including the "omitempty" option is omitted
+// 	  if the field value is empty. The empty values are false, 0, any
+// 	  nil pointer or interface value, and any array, slice, map, or
+// 	  string of length zero.
+// 	- an anonymous struct field is handled as if the fields of its
+// 	  value were part of the outer struct.
 //
 // If a field uses a tag "a>b>c", then the element c will be nested inside
-// parent elements a and b.  Fields that appear next to each other that name
-// the same parent will be enclosed in one XML element.
+// parent elements a and b. Fields that appear next to each other that name the
+// same parent will be enclosed in one XML element.
 //
 // See MarshalIndent for an example.
 //
 // Marshal will return an error if asked to marshal a channel, function, or map.
 
-// Marshal函数返回v的XML编码。
+// Marshal returns the XML encoding of v.
 //
-// Marshal处理数组或者切片时会序列化每一个元素。Marshal处理指针时，会序列化其指
-// 向的值；如果指针为nil，则啥也不输出。Marshal处理接口时，会序列化其内包含的具
-// 体类型值，如果接口值为nil，也是不输出。Marshal处理其余类型数据时，会输出一或
-// 多个包含数据的XML元素。
+// Marshal handles an array or slice by marshalling each of the elements.
+// Marshal handles a pointer by marshalling the value it points at or, if the
+// pointer is nil, by writing nothing. Marshal handles an interface value by
+// marshalling the value it contains or, if the interface value is nil, by
+// writing nothing. Marshal handles all other data by writing one or more XML
+// elements containing the data.
 //
-// XML元素的名字按如下优先顺序获取：
+// The name for the XML elements is taken from, in order of preference:
 //
-//     - 如果数据是结构体，其XMLName字段的标签
-//     - 类型为xml.Name的XMLName字段的值
-//     - 数据是某结构体的字段，其标签
-//     - 数据是某结构体的字段，其字段名
-//     - 被序列化的类型的名字
+// 	- the tag on the XMLName field, if the data is a struct
+// 	- the value of the XMLName field of type xml.Name
+// 	- the tag of the struct field used to obtain the data
+// 	- the name of the struct field used to obtain the data
+// 	- the name of the marshalled type
 //
-// 一个结构体的XML元素包含该结构体所有导出字段序列化后的元素，有如下例外：
+// The XML element for a struct contains marshalled elements for each of the
+// exported fields of the struct, with these exceptions:
 //
-//     - XMLName字段，如上所述，会省略
-//     - 具有标签"-"的字段会省略
-//     - 具有标签"name,attr"的字段会成为该XML元素的名为name的属性
-//     - 具有标签",attr"的字段会成为该XML元素的名为字段名的属性
-//     - 具有标签",chardata"的字段会作为字符数据写入，而非XML元素
-//     - 具有标签",innerxml"的字段会原样写入，而不会经过正常的序列化过程
-//     - 具有标签",comment"的字段作为XML注释写入，而不经过正常的序列化过程，该字段内不能有"--"字符串
-//     - 标签中包含"omitempty"选项的字段如果为空值会省略
-//       空值为false、0、nil指针、nil接口、长度为0的数组、切片、映射
-//     - 匿名字段（其标签无效）会被处理为其字段是外层结构体的字段
+// 	- the XMLName field, described above, is omitted.
+// 	- a field with tag "-" is omitted.
+// 	- a field with tag "name,attr" becomes an attribute with
+// 	  the given name in the XML element.
+// 	- a field with tag ",attr" becomes an attribute with the
+// 	  field name in the XML element.
+// 	- a field with tag ",chardata" is written as character data,
+// 	  not as an XML element.
+// 	- a field with tag ",cdata" is written as character data
+// 	  wrapped in one or more <![CDATA[ ... ]]> tags, not as an XML element.
+// 	- a field with tag ",innerxml" is written verbatim, not subject
+// 	  to the usual marshalling procedure.
+// 	- a field with tag ",comment" is written as an XML comment, not
+// 	  subject to the usual marshalling procedure. It must not contain
+// 	  the "--" string within it.
+// 	- a field with a tag including the "omitempty" option is omitted
+// 	  if the field value is empty. The empty values are false, 0, any
+// 	  nil pointer or interface value, and any array, slice, map, or
+// 	  string of length zero.
+// 	- an anonymous struct field is handled as if the fields of its
+// 	  value were part of the outer struct.
 //
-// 如果一个字段的标签为"a>b>c"，则元素c将会嵌套进其上层元素a和b中。如果该字段相
-// 邻的字段标签指定了同样的上层元素，则会放在同一个XML元素里。
+// If a field uses a tag "a>b>c", then the element c will be nested inside
+// parent elements a and b. Fields that appear next to each other that name the
+// same parent will be enclosed in one XML element.
 //
-// 参见MarshalIndent的例子。如果要求Marshal序列化通道、函数或者映射会返回错误。
+// See MarshalIndent for an example.
+//
+// Marshal will return an error if asked to marshal a channel, function, or map.
 func Marshal(v interface{}) ([]byte, error)
 
 // MarshalIndent works like Marshal, but each XML element begins on a new
@@ -432,7 +453,7 @@ func NewEncoder(w io.Writer) *Encoder
 // discarded.
 //
 // Because Unmarshal uses the reflect package, it can only assign
-// to exported (upper case) fields.  Unmarshal uses a case-sensitive
+// to exported (upper case) fields. Unmarshal uses a case-sensitive
 // comparison to match XML element names to tag values and struct
 // field names.
 //
@@ -442,9 +463,9 @@ func NewEncoder(w io.Writer) *Encoder
 //
 //   * If the struct has a field of type []byte or string with tag
 //      ",innerxml", Unmarshal accumulates the raw XML nested inside the
-//      element in that field.  The rest of the rules still apply.
+//      element in that field. The rest of the rules still apply.
 //
-//   * If the struct has a field named XMLName of type xml.Name,
+//   * If the struct has a field named XMLName of type Name,
 //      Unmarshal records the element name in that field.
 //
 //   * If the XMLName field has an associated tag of the form
@@ -464,7 +485,7 @@ func NewEncoder(w io.Writer) *Encoder
 //
 //   * If the XML element contains comments, they are accumulated in
 //      the first struct field that has tag ",comment".  The struct
-//      field may have type []byte or string.  If there is no such
+//      field may have type []byte or string. If there is no such
 //      field, the comments are discarded.
 //
 //   * If the XML element contains a sub-element whose name matches
@@ -507,7 +528,97 @@ func NewEncoder(w io.Writer) *Encoder
 //
 // Unmarshal maps an XML element or attribute value to an integer or
 // floating-point field by setting the field to the result of
-// interpreting the string value in decimal.  There is no check for
+// interpreting the string value in decimal. There is no check for
+// overflow.
+//
+// Unmarshal maps an XML element to a Name by recording the element
+// name.
+//
+// Unmarshal maps an XML element to a pointer by setting the pointer
+// to a freshly allocated value and then mapping the element to that value.
+
+// Unmarshal parses the XML-encoded data and stores the result in
+// the value pointed to by v, which must be an arbitrary struct,
+// slice, or string. Well-formed data that does not fit into v is
+// discarded.
+//
+// Because Unmarshal uses the reflect package, it can only assign
+// to exported (upper case) fields. Unmarshal uses a case-sensitive
+// comparison to match XML element names to tag values and struct
+// field names.
+//
+// Unmarshal maps an XML element to a struct using the following rules.
+// In the rules, the tag of a field refers to the value associated with the
+// key 'xml' in the struct field's tag (see the example above).
+//
+//   * If the struct has a field of type []byte or string with tag
+//      ",innerxml", Unmarshal accumulates the raw XML nested inside the
+//      element in that field. The rest of the rules still apply.
+//
+//   * If the struct has a field named XMLName of type xml.Name,
+//      Unmarshal records the element name in that field.
+//
+//   * If the XMLName field has an associated tag of the form
+//      "name" or "namespace-URL name", the XML element must have
+//      the given name (and, optionally, name space) or else Unmarshal
+//      returns an error.
+//
+//   * If the XML element has an attribute whose name matches a
+//      struct field name with an associated tag containing ",attr" or
+//      the explicit name in a struct field tag of the form "name,attr",
+//      Unmarshal records the attribute value in that field.
+//
+//   * If the XML element contains character data, that data is
+//      accumulated in the first struct field that has tag ",chardata".
+//      The struct field may have type []byte or string.
+//      If there is no such field, the character data is discarded.
+//
+//   * If the XML element contains comments, they are accumulated in
+//      the first struct field that has tag ",comment".  The struct
+//      field may have type []byte or string. If there is no such
+//      field, the comments are discarded.
+//
+//   * If the XML element contains a sub-element whose name matches
+//      the prefix of a tag formatted as "a" or "a>b>c", unmarshal
+//      will descend into the XML structure looking for elements with the
+//      given names, and will map the innermost elements to that struct
+//      field. A tag starting with ">" is equivalent to one starting
+//      with the field name followed by ">".
+//
+//   * If the XML element contains a sub-element whose name matches
+//      a struct field's XMLName tag and the struct field has no
+//      explicit name tag as per the previous rule, unmarshal maps
+//      the sub-element to that struct field.
+//
+//   * If the XML element contains a sub-element whose name matches a
+//      field without any mode flags (",attr", ",chardata", etc), Unmarshal
+//      maps the sub-element to that struct field.
+//
+//   * If the XML element contains a sub-element that hasn't matched any
+//      of the above rules and the struct has a field with tag ",any",
+//      unmarshal maps the sub-element to that struct field.
+//
+//   * An anonymous struct field is handled as if the fields of its
+//      value were part of the outer struct.
+//
+//   * A struct field with tag "-" is never unmarshalled into.
+//
+// Unmarshal maps an XML element to a string or []byte by saving the
+// concatenation of that element's character data in the string or
+// []byte. The saved []byte is never nil.
+//
+// Unmarshal maps an attribute value to a string or []byte by saving
+// the value in the string or slice.
+//
+// Unmarshal maps an XML element to a slice by extending the length of
+// the slice and mapping the element to the newly created value.
+//
+// Unmarshal maps an XML element or attribute value to a bool by
+// setting it to the boolean value represented by the string.
+//
+// Unmarshal maps an XML element or attribute value to an integer or
+// floating-point field by setting the field to the result of
+// interpreting the string value in decimal. There is no check for
 // overflow.
 //
 // Unmarshal maps an XML element to an xml.Name by recording the
@@ -515,78 +626,30 @@ func NewEncoder(w io.Writer) *Encoder
 //
 // Unmarshal maps an XML element to a pointer by setting the pointer
 // to a freshly allocated value and then mapping the element to that value.
-
-// Unmarshal解析XML编码的数据并将结果存入v指向的值。v只能指向结构体、切片或者和
-// 字符串。良好格式化的数据如果不能存入v，会被丢弃。
-//
-// 因为Unmarshal使用reflect包，它只能填写导出字段。本函数好似用大小写敏感的比较
-// 来匹配XML元素名和结构体的字段名/标签键名。
-//
-// Unmarshal函数使用如下规则将XML元素映射到结构体字段上。这些规则中，字段标签指
-// 的是结构体字段的标签键'xml'对应的值（参见上面的例子）：
-//
-//     * 如果结构体字段的类型为字符串或者[]byte，且标签为",innerxml"，
-//       Unmarshal函数直接将对应原始XML文本写入该字段，其余规则仍适用。
-//     * 如果结构体字段类型为xml.Name且名为XMLName，Unmarshal会将元素名写入该字段
-//     * 如果字段XMLName的标签的格式为"name"或"namespace-URL name"，
-//       XML元素必须有给定的名字（以及可选的名字空间），否则Unmarshal会返回错误。
-//     * 如果XML元素的属性的名字匹配某个标签",attr"为字段的字段名，或者匹配某个标签为"name,attr"
-//       的字段的标签名，Unmarshal会将该属性的值写入该字段。
-//     * 如果XML元素包含字符数据，该数据会存入结构体中第一个具有标签",chardata"的字段中，
-//       该字段可以是字符串类型或者[]byte类型。如果没有这样的字段，字符数据会丢弃。
-//     * 如果XML元素包含注释，该数据会存入结构体中第一个具有标签",comment"的字段中，
-//       该字段可以是字符串类型或者[]byte类型。如果没有这样的字段，字符数据会丢弃。
-//     * 如果XML元素包含一个子元素，其名称匹配格式为"a"或"a>b>c"的标签的前缀，反序列化会深入
-//       XML结构中寻找具有指定名称的元素，并将最后端的元素映射到该标签所在的结构体字段。
-//       以">"开始的标签等价于以字段名开始并紧跟着">" 的标签。
-//     * 如果XML元素包含一个子元素，其名称匹配某个结构体类型字段的XMLName字段的标签名，
-//       且该结构体字段本身没有显式指定标签名，Unmarshal会将该元素映射到该字段。
-//     * 如果XML元素的包含一个子元素，其名称匹配够格结构体字段的字段名，且该字段没有任何模式选项
-//       （",attr"、",chardata"等），Unmarshal会将该元素映射到该字段。
-//     * 如果XML元素包含的某个子元素不匹配以上任一条，而存在某个字段其标签为",any"，
-//       Unmarshal会将该元素映射到该字段。
-//     * 匿名字段被处理为其字段好像位于外层结构体中一样。
-//     * 标签为"-"的结构体字段永不会被反序列化填写。
-//
-// Unmarshal函数将XML元素写入string或[]byte时，会将该元素的字符数据串联起来作为
-// 值，目标[]byte不能是nil。
-//
-// Unmarshal函数将属性写入string或[]byte时，会将属性的值以字符串/切片形式写入。
-//
-// Unmarshal函数将XML元素写入切片时，会将切片扩展并将XML元素的子元素映射入新建的
-// 值里。
-//
-// Unmarshal函数将XML元素/属性写入bool值时，会将对应的字符串转化为布尔值。
-//
-// Unmarshal函数将XML元素/属性写入整数或浮点数类型时，会将对应的字符串解释为十进
-// 制数字。不会检查溢出。
-//
-// Unmarshal函数将XML元素写入xml.Name类型时，会记录元素的名称。
-//
-// Unmarshal函数将XML元素写入指针时，会申请一个新值并将XML元素映射入该值。
 func Unmarshal(data []byte, v interface{}) error
+
+// Decode works like Unmarshal, except it reads the decoder
+// stream to find the start element.
 
 // Decode works like xml.Unmarshal, except it reads the decoder
 // stream to find the start element.
+func (d *Decoder) Decode(v interface{}) error
 
-// Decode方法功能类似xml.Unmarshal函数，但会从底层读取XML数据并查找StartElement
-// 。
-func (*Decoder) Decode(v interface{}) error
+// DecodeElement works like Unmarshal except that it takes
+// a pointer to the start XML element to decode into v.
+// It is useful when a client reads some raw XML tokens itself
+// but also wants to defer to Unmarshal for some elements.
 
 // DecodeElement works like xml.Unmarshal except that it takes
 // a pointer to the start XML element to decode into v.
 // It is useful when a client reads some raw XML tokens itself
 // but also wants to defer to Unmarshal for some elements.
-
-// DecodeElement方法的功能类似xml.Unmarshal函数，但它会启出一个指向XML起始标签后
-// 将解析结果写入v。当客户端自己读取了一些原始XML token但仍想defer调用Unmarshal
-// 处理一些元素时很有用。
-func (*Decoder) DecodeElement(v interface{}, start *StartElement) error
+func (d *Decoder) DecodeElement(v interface{}, start *StartElement) error
 
 // InputOffset returns the input stream byte offset of the current decoder
 // position. The offset gives the location of the end of the most recently
 // returned token and the beginning of the next token.
-func (*Decoder) InputOffset() int64
+func (d *Decoder) InputOffset() int64
 
 // RawToken is like Token but does not verify that
 // start and end elements match and does not translate
@@ -594,7 +657,7 @@ func (*Decoder) InputOffset() int64
 
 // RawToken方法Token方法，但不会验证起始和结束标签，也不将名字空间前缀翻译为它们
 // 相应的URL。
-func (*Decoder) RawToken() (Token, error)
+func (d *Decoder) RawToken() (Token, error)
 
 // Skip reads tokens until it has consumed the end element
 // matching the most recent start element already consumed.
@@ -606,14 +669,14 @@ func (*Decoder) RawToken() (Token, error)
 // Skip从底层读取token，直到读取到最近一次读取到的起始标签对应的结束标签。如果读
 // 取中遇到别的起始标签会进行迭代，因此可以跳过嵌套结构。如果本方法找到了对应起
 // 始标签的结束标签，会返回nil；否则返回一个描述该问题的错误。
-func (*Decoder) Skip() error
+func (d *Decoder) Skip() error
 
 // Token returns the next XML token in the input stream.
 // At the end of the input stream, Token returns nil, io.EOF.
 //
 // Slices of bytes in the returned token data refer to the
 // parser's internal buffer and remain valid only until the next
-// call to Token.  To acquire a copy of the bytes, call CopyToken
+// call to Token. To acquire a copy of the bytes, call CopyToken
 // or the token's Copy method.
 //
 // Token expands self-closing elements such as <br/>
@@ -645,7 +708,14 @@ func (*Decoder) Skip() error
 // Token方法实现了XML名字空间，细节参见http://www.w3.org/TR/REC-xml-names/。每一
 // 个包含在Token里的Name结构体，都会将Space字段设为URL标识（如果可知的话）。如果
 // Token遇到未知的名字空间前缀，它会使用该前缀作为名字空间，而不是报错。
-func (*Decoder) Token() (t Token, err error)
+func (d *Decoder) Token() (Token, error)
+
+// Encode writes the XML encoding of v to the stream.
+//
+// See the documentation for Marshal for details about the conversion
+// of Go values to XML.
+//
+// Encode calls Flush before returning.
 
 // Encode writes the XML encoding of v to the stream.
 //
@@ -653,7 +723,15 @@ func (*Decoder) Token() (t Token, err error)
 // values to XML.
 //
 // Encode calls Flush before returning.
-func (*Encoder) Encode(v interface{}) error
+func (enc *Encoder) Encode(v interface{}) error
+
+// EncodeElement writes the XML encoding of v to the stream,
+// using start as the outermost tag in the encoding.
+//
+// See the documentation for Marshal for details about the conversion
+// of Go values to XML.
+//
+// EncodeElement calls Flush before returning.
 
 // EncodeElement writes the XML encoding of v to the stream, using start as the
 // outermost tag in the encoding.
@@ -662,7 +740,7 @@ func (*Encoder) Encode(v interface{}) error
 // values to XML.
 //
 // EncodeElement calls Flush before returning.
-func (*Encoder) EncodeElement(v interface{}, start StartElement) error
+func (enc *Encoder) EncodeElement(v interface{}, start StartElement) error
 
 // EncodeToken writes the given XML token to the stream. It returns an error if
 // StartElement and EndElement tokens are not properly matched.
@@ -676,36 +754,44 @@ func (*Encoder) EncodeElement(v interface{}, start StartElement) error
 //
 // EncodeToken allows writing a ProcInst with Target set to "xml" only as the
 // first token in the stream.
-func (*Encoder) EncodeToken(t Token) error
+func (enc *Encoder) EncodeToken(t Token) error
+
+// Flush flushes any buffered XML to the underlying writer.
+// See the EncodeToken documentation for details about when it is necessary.
 
 // Flush flushes any buffered XML to the underlying writer. See the EncodeToken
 // documentation for details about when it is necessary.
-func (*Encoder) Flush() error
+func (enc *Encoder) Flush() error
+
+// Indent sets the encoder to generate XML in which each element
+// begins on a new indented line that starts with prefix and is followed by
+// one or more copies of indent according to the nesting depth.
 
 // Indent sets the encoder to generate XML in which each element begins on a new
 // indented line that starts with prefix and is followed by one or more copies
 // of indent according to the nesting depth.
-func (*Encoder) Indent(prefix, indent string)
+func (enc *Encoder) Indent(prefix, indent string)
 
-func (*SyntaxError) Error() string
+func (e *SyntaxError) Error() string
 
-func (*TagPathError) Error() string
+func (e *TagPathError) Error() string
 
-func (*UnsupportedTypeError) Error() string
+func (e *UnsupportedTypeError) Error() string
 
-func (CharData) Copy() CharData
+func (c CharData) Copy() CharData
 
-func (Comment) Copy() Comment
+func (c Comment) Copy() Comment
 
-func (Directive) Copy() Directive
+func (d Directive) Copy() Directive
 
-func (ProcInst) Copy() ProcInst
+func (p ProcInst) Copy() ProcInst
 
-func (StartElement) Copy() StartElement
+func (e StartElement) Copy() StartElement
 
 // End returns the corresponding XML end element.
 
 // 返回e对应的XML结束元素。
-func (StartElement) End() EndElement
+func (e StartElement) End() EndElement
 
-func (UnmarshalError) Error() string
+func (e UnmarshalError) Error() string
+

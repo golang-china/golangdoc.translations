@@ -11,39 +11,29 @@
 // is unknown due to an error. Operations on unknown
 // values produce unknown values unless specified
 // otherwise.
-
-// Package constant implements Values representing untyped
-// Go constants and their corresponding operations.
-//
-// A special Unknown value may be used when a value
-// is unknown due to an error. Operations on unknown
-// values produce unknown values unless specified
-// otherwise.
-package constant // import "go/constant"
+package constant
 
 import (
-    "fmt"
-    "go/token"
-    "math"
-    "math/big"
-    "strconv"
-    "strings"
-    "testing"
-    "unicode/utf8"
+	"fmt"
+	"go/token"
+	"math"
+	"math/big"
+	"strconv"
+	"unicode/utf8"
 )
 
 const (
-    // unknown values
-    Unknown Kind = iota
+	// unknown values
+	Unknown Kind = iota
 
-    // non-numeric values
-    Bool
-    String
+	// non-numeric values
+	Bool
+	String
 
-    // numeric values
-    Int
-    Float
-    Complex
+	// numeric values
+	Int
+	Float
+	Complex
 )
 
 // Kind specifies the kind of value represented by a Value.
@@ -51,20 +41,20 @@ type Kind int
 
 // A Value represents the value of a Go constant.
 type Value interface {
-    // Kind returns the value kind.
-    Kind() Kind
+	// Kind returns the value kind.
+	Kind()Kind
 
-    // String returns a short, human-readable form of the value.
-    // For numeric values, the result may be an approximation;
-    // for String values the result may be a shortened string.
-    // Use ExactString for a string representing a value exactly.
-    String() string
+	// String returns a short, human-readable form of the value.
+	// For numeric values, the result may be an approximation;
+	// for String values the result may be a shortened string.
+	// Use ExactString for a string representing a value exactly.
+	String()string
 
-    // ExactString returns an exact, printable form of the value.
-    ExactString() string
+	// ExactString returns an exact, printable form of the value.
+	ExactString()string
 
-    // Prevent external implementations.
-    implementsValue()
+	// Prevent external implementations.
+	implementsValue()
 }
 
 // BinaryOp returns the result of the binary expression x op y.
@@ -118,6 +108,8 @@ func Imag(x Value) Value
 // undefined. If x is Unknown, the result is (0, false).
 func Int64Val(x Value) (int64, bool)
 
+// MakeBool returns the Bool value for b.
+
 // MakeBool returns the Bool value for x.
 func MakeBool(b bool) Value
 
@@ -128,6 +120,12 @@ func MakeFloat64(x float64) Value
 // MakeFromBytes returns the Int value given the bytes of its little-endian
 // binary representation. An empty byte slice argument represents 0.
 func MakeFromBytes(bytes []byte) Value
+
+// MakeFromLiteral returns the corresponding integer, floating-point,
+// imaginary, character, or string value for a Go literal string. The
+// tok value must be one of token.INT, token.FLOAT, token.IMAG,
+// token.CHAR, or token.STRING. The final argument must be zero.
+// If the literal string syntax is invalid, the result is an Unknown.
 
 // MakeFromLiteral returns the corresponding integer, floating-point,
 // imaginary, character, or string value for a Go literal string. The
@@ -143,6 +141,8 @@ func MakeImag(x Value) Value
 
 // MakeInt64 returns the Int value for x.
 func MakeInt64(x int64) Value
+
+// MakeString returns the String value for s.
 
 // MakeString returns the String value for x.
 func MakeString(s string) Value
@@ -168,24 +168,14 @@ func Real(x Value) Value
 // an Int or an Unknown. If x is Unknown, the result is x.
 func Shift(x Value, op token.Token, s uint) Value
 
-// Sign returns -1, 0, or 1 depending on whether x < 0, x == 0, or x > 0;
-// x must be numeric or Unknown. For complex values x, the sign is 0 if x == 0,
+// Sign returns -1, 0, or 1 depending on whether x < 0, x == 0, or x > 0; x must
+// be numeric or Unknown. For complex values x, the sign is 0 if x == 0,
 // otherwise it is != 0. If x is Unknown, the result is 1.
 func Sign(x Value) int
 
 // StringVal returns the Go string value of x, which must be a String or an
 // Unknown. If x is Unknown, the result is "".
 func StringVal(x Value) string
-
-func TestBytes(t *testing.T)
-
-func TestFractions(t *testing.T)
-
-func TestOps(t *testing.T)
-
-func TestString(t *testing.T)
-
-func TestUnknown(t *testing.T)
 
 // ToComplex converts x to a Complex value if x is representable as a Complex.
 // Otherwise it returns an Unknown.

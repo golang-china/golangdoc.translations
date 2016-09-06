@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,18 +7,17 @@
 // Package jsonrpc implements a JSON-RPC ClientCodec and ServerCodec
 // for the rpc package.
 
-// jsonrpc
-// 包使用了rpc的包实现了一个JSON-RPC的客户端解码器和服务端的解码器.
+// jsonrpc 包使用了rpc的包实现了一个JSON-RPC的客户端解码器和服务端的解码器.
 package jsonrpc
 
 import (
-    "encoding/json"
-    "errors"
-    "fmt"
-    "io"
-    "net"
-    "net/rpc"
-    "sync"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net"
+	"net/rpc"
+	"sync"
 )
 
 // Dial connects to a JSON-RPC server at the specified network address.

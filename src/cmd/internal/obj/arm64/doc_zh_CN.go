@@ -1,507 +1,500 @@
 // +build ingore
 
-package arm64 // import "cmd/internal/obj/arm64"
+package arm64
 
 import (
-    "cmd/internal/obj"
-    "encoding/binary"
-    "fmt"
-    "log"
-    "math"
-    "sort"
+	"cmd/internal/obj"
+	"cmd/internal/sys"
+	"fmt"
+	"log"
+	"math"
+	"sort"
 )
 
 const (
-    AADC = obj.ABaseARM64 + obj.A_ARCHSPECIFIC + iota
-    AADCS
-    AADCSW
-    AADCW
-    AADD
-    AADDS
-    AADDSW
-    AADDW
-    AADR
-    AADRP
-    AAND
-    AANDS
-    AANDSW
-    AANDW
-    AASR
-    AASRW
-    AAT
-    ABFI
-    ABFIW
-    ABFM
-    ABFMW
-    ABFXIL
-    ABFXILW
-    ABIC
-    ABICS
-    ABICSW
-    ABICW
-    ABRK
-    ACBNZ
-    ACBNZW
-    ACBZ
-    ACBZW
-    ACCMN
-    ACCMNW
-    ACCMP
-    ACCMPW
-    ACINC
-    ACINCW
-    ACINV
-    ACINVW
-    ACLREX
-    ACLS
-    ACLSW
-    ACLZ
-    ACLZW
-    ACMN
-    ACMNW
-    ACMP
-    ACMPW
-    ACNEG
-    ACNEGW
-    ACRC32B
-    ACRC32CB
-    ACRC32CH
-    ACRC32CW
-    ACRC32CX
-    ACRC32H
-    ACRC32W
-    ACRC32X
-    ACSEL
-    ACSELW
-    ACSET
-    ACSETM
-    ACSETMW
-    ACSETW
-    ACSINC
-    ACSINCW
-    ACSINV
-    ACSINVW
-    ACSNEG
-    ACSNEGW
-    ADC
-    ADCPS1
-    ADCPS2
-    ADCPS3
-    ADMB
-    ADRPS
-    ADSB
-    AEON
-    AEONW
-    AEOR
-    AEORW
-    AERET
-    AEXTR
-    AEXTRW
-    AHINT
-    AHLT
-    AHVC
-    AIC
-    AISB
-    ALDAR
-    ALDARB
-    ALDARH
-    ALDARW
-    ALDAXP
-    ALDAXPW
-    ALDAXR
-    ALDAXRB
-    ALDAXRH
-    ALDAXRW
-    ALDP
-    ALDXR
-    ALDXRB
-    ALDXRH
-    ALDXRW
-    ALDXP
-    ALDXPW
-    ALSL
-    ALSLW
-    ALSR
-    ALSRW
-    AMADD
-    AMADDW
-    AMNEG
-    AMNEGW
-    AMOVK
-    AMOVKW
-    AMOVN
-    AMOVNW
-    AMOVZ
-    AMOVZW
-    AMRS
-    AMSR
-    AMSUB
-    AMSUBW
-    AMUL
-    AMULW
-    AMVN
-    AMVNW
-    ANEG
-    ANEGS
-    ANEGSW
-    ANEGW
-    ANGC
-    ANGCS
-    ANGCSW
-    ANGCW
-    AORN
-    AORNW
-    AORR
-    AORRW
-    APRFM
-    APRFUM
-    ARBIT
-    ARBITW
-    AREM
-    AREMW
-    AREV
-    AREV16
-    AREV16W
-    AREV32
-    AREVW
-    AROR
-    ARORW
-    ASBC
-    ASBCS
-    ASBCSW
-    ASBCW
-    ASBFIZ
-    ASBFIZW
-    ASBFM
-    ASBFMW
-    ASBFX
-    ASBFXW
-    ASDIV
-    ASDIVW
-    ASEV
-    ASEVL
-    ASMADDL
-    ASMC
-    ASMNEGL
-    ASMSUBL
-    ASMULH
-    ASMULL
-    ASTXR
-    ASTXRB
-    ASTXRH
-    ASTXP
-    ASTXPW
-    ASTXRW
-    ASTLP
-    ASTLPW
-    ASTLR
-    ASTLRB
-    ASTLRH
-    ASTLRW
-    ASTLXP
-    ASTLXPW
-    ASTLXR
-    ASTLXRB
-    ASTLXRH
-    ASTLXRW
-    ASTP
-    ASUB
-    ASUBS
-    ASUBSW
-    ASUBW
-    ASVC
-    ASXTB
-    ASXTBW
-    ASXTH
-    ASXTHW
-    ASXTW
-    ASYS
-    ASYSL
-    ATBNZ
-    ATBZ
-    ATLBI
-    ATST
-    ATSTW
-    AUBFIZ
-    AUBFIZW
-    AUBFM
-    AUBFMW
-    AUBFX
-    AUBFXW
-    AUDIV
-    AUDIVW
-    AUMADDL
-    AUMNEGL
-    AUMSUBL
-    AUMULH
-    AUMULL
-    AUREM
-    AUREMW
-    AUXTB
-    AUXTH
-    AUXTW
-    AUXTBW
-    AUXTHW
-    AWFE
-    AWFI
-    AYIELD
-    AMOVB
-    AMOVBU
-    AMOVH
-    AMOVHU
-    AMOVW
-    AMOVWU
-    AMOVD
-    AMOVNP
-    AMOVNPW
-    AMOVP
-    AMOVPD
-    AMOVPQ
-    AMOVPS
-    AMOVPSW
-    AMOVPW
-    ABEQ
-    ABNE
-    ABCS
-    ABHS
-    ABCC
-    ABLO
-    ABMI
-    ABPL
-    ABVS
-    ABVC
-    ABHI
-    ABLS
-    ABGE
-    ABLT
-    ABGT
-    ABLE
-    AFABSD
-    AFABSS
-    AFADDD
-    AFADDS
-    AFCCMPD
-    AFCCMPED
-    AFCCMPS
-    AFCCMPES
-    AFCMPD
-    AFCMPED
-    AFCMPES
-    AFCMPS
-    AFCVTSD
-    AFCVTDS
-    AFCVTZSD
-    AFCVTZSDW
-    AFCVTZSS
-    AFCVTZSSW
-    AFCVTZUD
-    AFCVTZUDW
-    AFCVTZUS
-    AFCVTZUSW
-    AFDIVD
-    AFDIVS
-    AFMOVD
-    AFMOVS
-    AFMULD
-    AFMULS
-    AFNEGD
-    AFNEGS
-    AFSQRTD
-    AFSQRTS
-    AFSUBD
-    AFSUBS
-    ASCVTFD
-    ASCVTFS
-    ASCVTFWD
-    ASCVTFWS
-    AUCVTFD
-    AUCVTFS
-    AUCVTFWD
-    AUCVTFWS
-    AWORD
-    ADWORD
-    AFCSELS
-    AFCSELD
-    AFMAXS
-    AFMINS
-    AFMAXD
-    AFMIND
-    AFMAXNMS
-    AFMAXNMD
-    AFNMULS
-    AFNMULD
-    AFRINTNS
-    AFRINTND
-    AFRINTPS
-    AFRINTPD
-    AFRINTMS
-    AFRINTMD
-    AFRINTZS
-    AFRINTZD
-    AFRINTAS
-    AFRINTAD
-    AFRINTXS
-    AFRINTXD
-    AFRINTIS
-    AFRINTID
-    AFMADDS
-    AFMADDD
-    AFMSUBS
-    AFMSUBD
-    AFNMADDS
-    AFNMADDD
-    AFNMSUBS
-    AFNMSUBD
-    AFMINNMS
-    AFMINNMD
-    AFCVTDH
-    AFCVTHS
-    AFCVTHD
-    AFCVTSH
-    AAESD
-    AAESE
-    AAESIMC
-    AAESMC
-    ASHA1C
-    ASHA1H
-    ASHA1M
-    ASHA1P
-    ASHA1SU0
-    ASHA1SU1
-    ASHA256H
-    ASHA256H2
-    ASHA256SU0
-    ASHA256SU1
-    ALAST
-    AB  = obj.AJMP
-    ABL = obj.ACALL
+	AADC = obj.ABaseARM64 + obj.A_ARCHSPECIFIC + iota
+	AADCS
+	AADCSW
+	AADCW
+	AADD
+	AADDS
+	AADDSW
+	AADDW
+	AADR
+	AADRP
+	AAND
+	AANDS
+	AANDSW
+	AANDW
+	AASR
+	AASRW
+	AAT
+	ABFI
+	ABFIW
+	ABFM
+	ABFMW
+	ABFXIL
+	ABFXILW
+	ABIC
+	ABICS
+	ABICSW
+	ABICW
+	ABRK
+	ACBNZ
+	ACBNZW
+	ACBZ
+	ACBZW
+	ACCMN
+	ACCMNW
+	ACCMP
+	ACCMPW
+	ACINC
+	ACINCW
+	ACINV
+	ACINVW
+	ACLREX
+	ACLS
+	ACLSW
+	ACLZ
+	ACLZW
+	ACMN
+	ACMNW
+	ACMP
+	ACMPW
+	ACNEG
+	ACNEGW
+	ACRC32B
+	ACRC32CB
+	ACRC32CH
+	ACRC32CW
+	ACRC32CX
+	ACRC32H
+	ACRC32W
+	ACRC32X
+	ACSEL
+	ACSELW
+	ACSET
+	ACSETM
+	ACSETMW
+	ACSETW
+	ACSINC
+	ACSINCW
+	ACSINV
+	ACSINVW
+	ACSNEG
+	ACSNEGW
+	ADC
+	ADCPS1
+	ADCPS2
+	ADCPS3
+	ADMB
+	ADRPS
+	ADSB
+	AEON
+	AEONW
+	AEOR
+	AEORW
+	AERET
+	AEXTR
+	AEXTRW
+	AHINT
+	AHLT
+	AHVC
+	AIC
+	AISB
+	ALDAR
+	ALDARB
+	ALDARH
+	ALDARW
+	ALDAXP
+	ALDAXPW
+	ALDAXR
+	ALDAXRB
+	ALDAXRH
+	ALDAXRW
+	ALDP
+	ALDXR
+	ALDXRB
+	ALDXRH
+	ALDXRW
+	ALDXP
+	ALDXPW
+	ALSL
+	ALSLW
+	ALSR
+	ALSRW
+	AMADD
+	AMADDW
+	AMNEG
+	AMNEGW
+	AMOVK
+	AMOVKW
+	AMOVN
+	AMOVNW
+	AMOVZ
+	AMOVZW
+	AMRS
+	AMSR
+	AMSUB
+	AMSUBW
+	AMUL
+	AMULW
+	AMVN
+	AMVNW
+	ANEG
+	ANEGS
+	ANEGSW
+	ANEGW
+	ANGC
+	ANGCS
+	ANGCSW
+	ANGCW
+	AORN
+	AORNW
+	AORR
+	AORRW
+	APRFM
+	APRFUM
+	ARBIT
+	ARBITW
+	AREM
+	AREMW
+	AREV
+	AREV16
+	AREV16W
+	AREV32
+	AREVW
+	AROR
+	ARORW
+	ASBC
+	ASBCS
+	ASBCSW
+	ASBCW
+	ASBFIZ
+	ASBFIZW
+	ASBFM
+	ASBFMW
+	ASBFX
+	ASBFXW
+	ASDIV
+	ASDIVW
+	ASEV
+	ASEVL
+	ASMADDL
+	ASMC
+	ASMNEGL
+	ASMSUBL
+	ASMULH
+	ASMULL
+	ASTXR
+	ASTXRB
+	ASTXRH
+	ASTXP
+	ASTXPW
+	ASTXRW
+	ASTLP
+	ASTLPW
+	ASTLR
+	ASTLRB
+	ASTLRH
+	ASTLRW
+	ASTLXP
+	ASTLXPW
+	ASTLXR
+	ASTLXRB
+	ASTLXRH
+	ASTLXRW
+	ASTP
+	ASUB
+	ASUBS
+	ASUBSW
+	ASUBW
+	ASVC
+	ASXTB
+	ASXTBW
+	ASXTH
+	ASXTHW
+	ASXTW
+	ASYS
+	ASYSL
+	ATBNZ
+	ATBZ
+	ATLBI
+	ATST
+	ATSTW
+	AUBFIZ
+	AUBFIZW
+	AUBFM
+	AUBFMW
+	AUBFX
+	AUBFXW
+	AUDIV
+	AUDIVW
+	AUMADDL
+	AUMNEGL
+	AUMSUBL
+	AUMULH
+	AUMULL
+	AUREM
+	AUREMW
+	AUXTB
+	AUXTH
+	AUXTW
+	AUXTBW
+	AUXTHW
+	AWFE
+	AWFI
+	AYIELD
+	AMOVB
+	AMOVBU
+	AMOVH
+	AMOVHU
+	AMOVW
+	AMOVWU
+	AMOVD
+	AMOVNP
+	AMOVNPW
+	AMOVP
+	AMOVPD
+	AMOVPQ
+	AMOVPS
+	AMOVPSW
+	AMOVPW
+	ABEQ
+	ABNE
+	ABCS
+	ABHS
+	ABCC
+	ABLO
+	ABMI
+	ABPL
+	ABVS
+	ABVC
+	ABHI
+	ABLS
+	ABGE
+	ABLT
+	ABGT
+	ABLE
+	AFABSD
+	AFABSS
+	AFADDD
+	AFADDS
+	AFCCMPD
+	AFCCMPED
+	AFCCMPS
+	AFCCMPES
+	AFCMPD
+	AFCMPED
+	AFCMPES
+	AFCMPS
+	AFCVTSD
+	AFCVTDS
+	AFCVTZSD
+	AFCVTZSDW
+	AFCVTZSS
+	AFCVTZSSW
+	AFCVTZUD
+	AFCVTZUDW
+	AFCVTZUS
+	AFCVTZUSW
+	AFDIVD
+	AFDIVS
+	AFMOVD
+	AFMOVS
+	AFMULD
+	AFMULS
+	AFNEGD
+	AFNEGS
+	AFSQRTD
+	AFSQRTS
+	AFSUBD
+	AFSUBS
+	ASCVTFD
+	ASCVTFS
+	ASCVTFWD
+	ASCVTFWS
+	AUCVTFD
+	AUCVTFS
+	AUCVTFWD
+	AUCVTFWS
+	AWORD
+	ADWORD
+	AFCSELS
+	AFCSELD
+	AFMAXS
+	AFMINS
+	AFMAXD
+	AFMIND
+	AFMAXNMS
+	AFMAXNMD
+	AFNMULS
+	AFNMULD
+	AFRINTNS
+	AFRINTND
+	AFRINTPS
+	AFRINTPD
+	AFRINTMS
+	AFRINTMD
+	AFRINTZS
+	AFRINTZD
+	AFRINTAS
+	AFRINTAD
+	AFRINTXS
+	AFRINTXD
+	AFRINTIS
+	AFRINTID
+	AFMADDS
+	AFMADDD
+	AFMSUBS
+	AFMSUBD
+	AFNMADDS
+	AFNMADDD
+	AFNMSUBS
+	AFNMSUBD
+	AFMINNMS
+	AFMINNMD
+	AFCVTDH
+	AFCVTHS
+	AFCVTHD
+	AFCVTSH
+	AAESD
+	AAESE
+	AAESIMC
+	AAESMC
+	ASHA1C
+	ASHA1H
+	ASHA1M
+	ASHA1P
+	ASHA1SU0
+	ASHA1SU1
+	ASHA256H
+	ASHA256H2
+	ASHA256SU0
+	ASHA256SU1
+	ALAST
+	AB  = obj.AJMP
+	ABL = obj.ACALL
 )
 
 const (
-    BIG = 2048 - 8
+	BIG = 2048 - 8
 )
 
 const (
-    C_NONE   = iota
-    C_REG    // R0..R30
-    C_RSP    // R0..R30, RSP
-    C_FREG   // F0..F31
-    C_VREG   // V0..V31
-    C_PAIR   // (Rn, Rm)
-    C_SHIFT  // Rn<<2
-    C_EXTREG // Rn.UXTB<<3
-    C_SPR    // REG_NZCV
-    C_COND   // EQ, NE, etc
+	C_NONE     = iota
+	C_REG      // R0..R30
+	C_RSP      // R0..R30, RSP
+	C_FREG     // F0..F31
+	C_VREG     // V0..V31
+	C_PAIR     // (Rn, Rm)
+	C_SHIFT    // Rn<<2
+	C_EXTREG   // Rn.UXTB<<3
+	C_SPR      // REG_NZCV
+	C_COND     // EQ, NE, etc
+	C_ZCON     // $0 or ZR
+	C_ADDCON0  // 12-bit unsigned, unshifted
+	C_ADDCON   // 12-bit unsigned, shifted left by 0 or 12
+	C_MOVCON   // generated by a 16-bit constant, optionally inverted and/or shifted by multiple of 16
+	C_BITCON   // bitfield and logical immediate masks
+	C_ABCON    // could be C_ADDCON or C_BITCON
+	C_MBCON    // could be C_MOVCON or C_BITCON
+	C_LCON     // 32-bit constant
+	C_VCON     // 64-bit constant
+	C_FCON     // floating-point constant
+	C_VCONADDR // 64-bit memory address
+	C_AACON    // ADDCON offset in auto constant $a(FP)
+	C_LACON    // 32-bit offset in auto constant $a(FP)
+	C_AECON    // ADDCON offset in extern constant $e(SB)
 
-    C_ZCON     // $0 or ZR
-    C_ADDCON0  // 12-bit unsigned, unshifted
-    C_ADDCON   // 12-bit unsigned, shifted left by 0 or 12
-    C_MOVCON   // generated by a 16-bit constant, optionally inverted and/or shifted by multiple of 16
-    C_BITCON   // bitfield and logical immediate masks
-    C_ABCON    // could be C_ADDCON or C_BITCON
-    C_MBCON    // could be C_MOVCON or C_BITCON
-    C_LCON     // 32-bit constant
-    C_VCON     // 64-bit constant
-    C_FCON     // floating-point constant
-    C_VCONADDR // 64-bit memory address
+	// TODO(aram): only one branch class should be enough
+	C_SBRA // for TYPE_BRANCH
+	C_LBRA
+	C_NPAUTO   // -512 <= x < 0, 0 mod 8
+	C_NSAUTO   // -256 <= x < 0
+	C_PSAUTO   // 0 to 255
+	C_PPAUTO   // 0 to 504, 0 mod 8
+	C_UAUTO4K  // 0 to 4095
+	C_UAUTO8K  // 0 to 8190, 0 mod 2
+	C_UAUTO16K // 0 to 16380, 0 mod 4
+	C_UAUTO32K // 0 to 32760, 0 mod 8
+	C_UAUTO64K // 0 to 65520, 0 mod 16
+	C_LAUTO    // any other 32-bit constant
+	C_SEXT1    // 0 to 4095, direct
+	C_SEXT2    // 0 to 8190
+	C_SEXT4    // 0 to 16380
+	C_SEXT8    // 0 to 32760
+	C_SEXT16   // 0 to 65520
+	C_LEXT
 
-    C_AACON // ADDCON offset in auto constant $a(FP)
-    C_LACON // 32-bit offset in auto constant $a(FP)
-    C_AECON // ADDCON offset in extern constant $e(SB)
+	// TODO(aram): s/AUTO/INDIR/
+	C_ZOREG  // 0(R)
+	C_NPOREG // mirror NPAUTO, etc
+	C_NSOREG
+	C_PSOREG
+	C_PPOREG
+	C_UOREG4K
+	C_UOREG8K
+	C_UOREG16K
+	C_UOREG32K
+	C_UOREG64K
+	C_LOREG
+	C_ADDR // TODO(aram): explain difference from C_VCONADDR
 
-    // TODO(aram): only one branch class should be enough
-    C_SBRA // for TYPE_BRANCH
-    C_LBRA
+	// The GOT slot for a symbol in -dynlink mode.
+	C_GOTADDR
 
-    C_NPAUTO   // -512 <= x < 0, 0 mod 8
-    C_NSAUTO   // -256 <= x < 0
-    C_PSAUTO   // 0 to 255
-    C_PPAUTO   // 0 to 504, 0 mod 8
-    C_UAUTO4K  // 0 to 4095
-    C_UAUTO8K  // 0 to 8190, 0 mod 2
-    C_UAUTO16K // 0 to 16380, 0 mod 4
-    C_UAUTO32K // 0 to 32760, 0 mod 8
-    C_UAUTO64K // 0 to 65520, 0 mod 16
-    C_LAUTO    // any other 32-bit constant
+	// TLS "var" in local exec mode: will become a constant offset from
+	// thread local base that is ultimately chosen by the program linker.
+	C_TLS_LE
 
-    C_SEXT1  // 0 to 4095, direct
-    C_SEXT2  // 0 to 8190
-    C_SEXT4  // 0 to 16380
-    C_SEXT8  // 0 to 32760
-    C_SEXT16 // 0 to 65520
-    C_LEXT
-
-    // TODO(aram): s/AUTO/INDIR/
-    C_ZOREG  // 0(R)
-    C_NPOREG // mirror NPAUTO, etc
-    C_NSOREG
-    C_PSOREG
-    C_PPOREG
-    C_UOREG4K
-    C_UOREG8K
-    C_UOREG16K
-    C_UOREG32K
-    C_UOREG64K
-    C_LOREG
-
-    C_ADDR // TODO(aram): explain difference from C_VCONADDR
-
-    // The GOT slot for a symbol in -dynlink mode.
-    C_GOTADDR
-
-    // TLS "var" in local exec mode: will become a constant offset from
-    // thread local base that is ultimately chosen by the program linker.
-    C_TLS_LE
-
-    // TLS "var" in initial exec mode: will become a memory address (chosen
-    // by the program linker) that the dynamic linker will fill with the
-    // offset from the thread local base.
-    C_TLS_IE
-
-    C_ROFF // register offset (including register extended)
-
-    C_GOK
-    C_TEXTSIZE
-    C_NCLASS // must be last
+	// TLS "var" in initial exec mode: will become a memory address (chosen
+	// by the program linker) that the dynamic linker will fill with the
+	// offset from the thread local base.
+	C_TLS_IE
+	C_ROFF // register offset (including register extended)
+	C_GOK
+	C_TEXTSIZE
+	C_NCLASS // must be last
 )
 
 const (
-    C_XPRE  = 1 << 6 // match arm.C_WBIT, so Prog.String know how to print it
-    C_XPOST = 1 << 5 // match arm.C_PBIT, so Prog.String know how to print it
+	C_XPRE  = 1 << 6 // match arm.C_WBIT, so Prog.String know how to print it
+	C_XPOST = 1 << 5 // match arm.C_PBIT, so Prog.String know how to print it
 )
 
 const (
-    FuncAlign = 16
+	FuncAlign = 16
 )
 
 const (
-    /* mark flags */
-    LABEL = 1 << iota
-    LEAF
-    FLOAT
-    BRANCH
-    LOAD
-    FCMP
-    SYNC
-    LIST
-    FOLL
-    NOSCHED
+	//  mark flags
+	LABEL = 1 << iota
+	LEAF
+	FLOAT
+	BRANCH
+	LOAD
+	FCMP
+	SYNC
+	LIST
+	FOLL
+	NOSCHED
 )
 
 const (
-    LFROM = 1 << 0
-    LTO   = 1 << 1
+	LFROM = 1 << 0
+	LTO   = 1 << 1
 )
 
 const (
-    NSNAME = 8
-    NSYM   = 50
-    NREG   = 32 /* number of general registers */
-    NFREG  = 32 /* number of floating point registers */
+	NSNAME = 8
+	NSYM   = 50
+	NREG   = 32 /* number of general registers*/
+	NFREG  = 32 /* number of floating point registers*/
 )
 
 const (
-    REGFROM = 1
+	REGFROM = 1
 )
 
 // Register assignments:
@@ -513,33 +506,36 @@ const (
 // compiler allocates register variables F7-F26
 // compiler allocates external registers F26 down
 const (
-    REGMIN = REG_R7  // register variables allocated from here to REGMAX
-    REGRT1 = REG_R16 // ARM64 IP0, for external linker, runtime, duffzero and duffcopy
-    REGRT2 = REG_R17 // ARM64 IP1, for external linker, runtime, duffcopy
-    REGPR  = REG_R18 // ARM64 platform register, unused in the Go toolchain
-    REGMAX = REG_R25
+	REGMIN  = REG_R7  // register variables allocated from here to REGMAX
+	REGRT1  = REG_R16 // ARM64 IP0, for external linker, runtime, duffzero and duffcopy
+	REGRT2  = REG_R17 // ARM64 IP1, for external linker, runtime, duffcopy
+	REGPR   = REG_R18 // ARM64 platform register, unused in the Go toolchain
+	REGMAX  = REG_R25
+	REGCTXT = REG_R26 // environment for closures
+	REGTMP  = REG_R27 // reserved for liblink
+	REGG    = REG_R28 // G
+	REGFP   = REG_R29 // frame pointer, unused in the Go toolchain
+	REGLINK = REG_R30
 
-    REGCTXT = REG_R26 // environment for closures
-    REGTMP  = REG_R27 // reserved for liblink
-    REGG    = REG_R28 // G
-    REGFP   = REG_R29 // frame pointer, unused in the Go toolchain
-    REGLINK = REG_R30
-
-    // ARM64 uses R31 as both stack pointer and zero register,
-    // depending on the instruction. To differentiate RSP from ZR,
-    // we use a different numeric value for REGZERO and REGSP.
-    REGZERO = REG_R31
-    REGSP   = REG_RSP
-
-    FREGRET  = REG_F0
-    FREGMIN  = REG_F7  // first register variable
-    FREGMAX  = REG_F26 // last register variable for 7g only
-    FREGEXT  = REG_F26 // first external register
-    FREGZERO = REG_F28 // both float and double
-    FREGHALF = REG_F29 // double
-    FREGONE  = REG_F30 // double
-    FREGTWO  = REG_F31 // double
+	// ARM64 uses R31 as both stack pointer and zero register,
+	// depending on the instruction. To differentiate RSP from ZR,
+	// we use a different numeric value for REGZERO and REGSP.
+	REGZERO  = REG_R31
+	REGSP    = REG_RSP
+	FREGRET  = REG_F0
+	FREGMIN  = REG_F7  // first register variable
+	FREGMAX  = REG_F26 // last register variable for 7g only
+	FREGEXT  = REG_F26 // first external register
+	FREGZERO = REG_F28 // both float and double
+	FREGHALF = REG_F29 // double
+	FREGONE  = REG_F30 // double
+	FREGTWO  = REG_F31 // double
 )
+
+// Not registers, but flags that can be combined with regular register
+// constants to indicate extended register conversion. When checking,
+// you should subtract obj.RBaseARM64 first. From this difference, bit 11
+// indicates extended register, bits 8-10 select the conversion mode.
 
 // Not registers, but flags that can be combined with regular register
 // constants to indicate extended register conversion.  When checking,
@@ -549,562 +545,173 @@ const REG_EXT = obj.RBaseARM64 + 1<<11
 
 // General purpose registers, kept in the low bits of Prog.Reg.
 const (
-    // integer
-    REG_R0 = obj.RBaseARM64 + iota
-    REG_R1
-    REG_R2
-    REG_R3
-    REG_R4
-    REG_R5
-    REG_R6
-    REG_R7
-    REG_R8
-    REG_R9
-    REG_R10
-    REG_R11
-    REG_R12
-    REG_R13
-    REG_R14
-    REG_R15
-    REG_R16
-    REG_R17
-    REG_R18
-    REG_R19
-    REG_R20
-    REG_R21
-    REG_R22
-    REG_R23
-    REG_R24
-    REG_R25
-    REG_R26
-    REG_R27
-    REG_R28
-    REG_R29
-    REG_R30
-    REG_R31
+	// integer
+	REG_R0 = obj.RBaseARM64 + iota
+	REG_R1
+	REG_R2
+	REG_R3
+	REG_R4
+	REG_R5
+	REG_R6
+	REG_R7
+	REG_R8
+	REG_R9
+	REG_R10
+	REG_R11
+	REG_R12
+	REG_R13
+	REG_R14
+	REG_R15
+	REG_R16
+	REG_R17
+	REG_R18
+	REG_R19
+	REG_R20
+	REG_R21
+	REG_R22
+	REG_R23
+	REG_R24
+	REG_R25
+	REG_R26
+	REG_R27
+	REG_R28
+	REG_R29
+	REG_R30
+	REG_R31
 
-    // scalar floating point
-    REG_F0
-    REG_F1
-    REG_F2
-    REG_F3
-    REG_F4
-    REG_F5
-    REG_F6
-    REG_F7
-    REG_F8
-    REG_F9
-    REG_F10
-    REG_F11
-    REG_F12
-    REG_F13
-    REG_F14
-    REG_F15
-    REG_F16
-    REG_F17
-    REG_F18
-    REG_F19
-    REG_F20
-    REG_F21
-    REG_F22
-    REG_F23
-    REG_F24
-    REG_F25
-    REG_F26
-    REG_F27
-    REG_F28
-    REG_F29
-    REG_F30
-    REG_F31
+	// scalar floating point
+	REG_F0
+	REG_F1
+	REG_F2
+	REG_F3
+	REG_F4
+	REG_F5
+	REG_F6
+	REG_F7
+	REG_F8
+	REG_F9
+	REG_F10
+	REG_F11
+	REG_F12
+	REG_F13
+	REG_F14
+	REG_F15
+	REG_F16
+	REG_F17
+	REG_F18
+	REG_F19
+	REG_F20
+	REG_F21
+	REG_F22
+	REG_F23
+	REG_F24
+	REG_F25
+	REG_F26
+	REG_F27
+	REG_F28
+	REG_F29
+	REG_F30
+	REG_F31
 
-    // SIMD
-    REG_V0
-    REG_V1
-    REG_V2
-    REG_V3
-    REG_V4
-    REG_V5
-    REG_V6
-    REG_V7
-    REG_V8
-    REG_V9
-    REG_V10
-    REG_V11
-    REG_V12
-    REG_V13
-    REG_V14
-    REG_V15
-    REG_V16
-    REG_V17
-    REG_V18
-    REG_V19
-    REG_V20
-    REG_V21
-    REG_V22
-    REG_V23
-    REG_V24
-    REG_V25
-    REG_V26
-    REG_V27
-    REG_V28
-    REG_V29
-    REG_V30
-    REG_V31
+	// SIMD
+	REG_V0
+	REG_V1
+	REG_V2
+	REG_V3
+	REG_V4
+	REG_V5
+	REG_V6
+	REG_V7
+	REG_V8
+	REG_V9
+	REG_V10
+	REG_V11
+	REG_V12
+	REG_V13
+	REG_V14
+	REG_V15
+	REG_V16
+	REG_V17
+	REG_V18
+	REG_V19
+	REG_V20
+	REG_V21
+	REG_V22
+	REG_V23
+	REG_V24
+	REG_V25
+	REG_V26
+	REG_V27
+	REG_V28
+	REG_V29
+	REG_V30
+	REG_V31
 
-    // The EQ in
-    // 	CSET	EQ, R0
-    // is encoded as TYPE_REG, even though it's not really a register.
-    COND_EQ
-    COND_NE
-    COND_HS
-    COND_LO
-    COND_MI
-    COND_PL
-    COND_VS
-    COND_VC
-    COND_HI
-    COND_LS
-    COND_GE
-    COND_LT
-    COND_GT
-    COND_LE
-    COND_AL
-    COND_NV
-
-    REG_RSP = REG_V31 + 32 // to differentiate ZR/SP, REG_RSP&0x1f = 31
+	// The EQ in
+	// 	CSET	EQ, R0
+	// is encoded as TYPE_REG, even though it's not really a register.
+	COND_EQ
+	COND_NE
+	COND_HS
+	COND_LO
+	COND_MI
+	COND_PL
+	COND_VS
+	COND_VC
+	COND_HI
+	COND_LS
+	COND_GE
+	COND_LT
+	COND_GT
+	COND_LE
+	COND_AL
+	COND_NV
+	REG_RSP = REG_V31 + 32 // to differentiate ZR/SP, REG_RSP&0x1f = 31
 )
 
 // Special registers, after subtracting obj.RBaseARM64, bit 12 indicates
 // a special register and the low bits select the register.
 const (
-    REG_SPECIAL = obj.RBaseARM64 + 1<<12 + iota
-    REG_DAIF
-    REG_NZCV
-    REG_FPSR
-    REG_FPCR
-    REG_SPSR_EL1
-    REG_ELR_EL1
-    REG_SPSR_EL2
-    REG_ELR_EL2
-    REG_CurrentEL
-    REG_SP_EL0
-    REG_SPSel
-    REG_DAIFSet
-    REG_DAIFClr
+	REG_SPECIAL = obj.RBaseARM64 + 1<<12 + iota
+	REG_DAIF
+	REG_NZCV
+	REG_FPSR
+	REG_FPCR
+	REG_SPSR_EL1
+	REG_ELR_EL1
+	REG_SPSR_EL2
+	REG_ELR_EL2
+	REG_CurrentEL
+	REG_SP_EL0
+	REG_SPSel
+	REG_DAIFSet
+	REG_DAIFClr
 )
 
 const (
-    REG_UXTB = REG_EXT + iota<<8
-    REG_UXTH
-    REG_UXTW
-    REG_UXTX
-    REG_SXTB
-    REG_SXTH
-    REG_SXTW
-    REG_SXTX
+	REG_UXTB = REG_EXT + iota<<8
+	REG_UXTH
+	REG_UXTW
+	REG_UXTX
+	REG_SXTB
+	REG_SXTH
+	REG_SXTW
+	REG_SXTX
 )
 
 const (
-    S32     = 0 << 31
-    S64     = 1 << 31
-    Sbit    = 1 << 29
-    LSL0_32 = 2 << 13
-    LSL0_64 = 3 << 13
+	S32     = 0 << 31
+	S64     = 1 << 31
+	Sbit    = 1 << 29
+	LSL0_32 = 2 << 13
+	LSL0_64 = 3 << 13
 )
 
-var Anames = []string{
-    obj.A_ARCHSPECIFIC: "ADC",
-    "ADCS",
-    "ADCSW",
-    "ADCW",
-    "ADD",
-    "ADDS",
-    "ADDSW",
-    "ADDW",
-    "ADR",
-    "ADRP",
-    "AND",
-    "ANDS",
-    "ANDSW",
-    "ANDW",
-    "ASR",
-    "ASRW",
-    "AT",
-    "BFI",
-    "BFIW",
-    "BFM",
-    "BFMW",
-    "BFXIL",
-    "BFXILW",
-    "BIC",
-    "BICS",
-    "BICSW",
-    "BICW",
-    "BRK",
-    "CBNZ",
-    "CBNZW",
-    "CBZ",
-    "CBZW",
-    "CCMN",
-    "CCMNW",
-    "CCMP",
-    "CCMPW",
-    "CINC",
-    "CINCW",
-    "CINV",
-    "CINVW",
-    "CLREX",
-    "CLS",
-    "CLSW",
-    "CLZ",
-    "CLZW",
-    "CMN",
-    "CMNW",
-    "CMP",
-    "CMPW",
-    "CNEG",
-    "CNEGW",
-    "CRC32B",
-    "CRC32CB",
-    "CRC32CH",
-    "CRC32CW",
-    "CRC32CX",
-    "CRC32H",
-    "CRC32W",
-    "CRC32X",
-    "CSEL",
-    "CSELW",
-    "CSET",
-    "CSETM",
-    "CSETMW",
-    "CSETW",
-    "CSINC",
-    "CSINCW",
-    "CSINV",
-    "CSINVW",
-    "CSNEG",
-    "CSNEGW",
-    "DC",
-    "DCPS1",
-    "DCPS2",
-    "DCPS3",
-    "DMB",
-    "DRPS",
-    "DSB",
-    "EON",
-    "EONW",
-    "EOR",
-    "EORW",
-    "ERET",
-    "EXTR",
-    "EXTRW",
-    "HINT",
-    "HLT",
-    "HVC",
-    "IC",
-    "ISB",
-    "LDAR",
-    "LDARB",
-    "LDARH",
-    "LDARW",
-    "LDAXP",
-    "LDAXPW",
-    "LDAXR",
-    "LDAXRB",
-    "LDAXRH",
-    "LDAXRW",
-    "LDP",
-    "LDXR",
-    "LDXRB",
-    "LDXRH",
-    "LDXRW",
-    "LDXP",
-    "LDXPW",
-    "LSL",
-    "LSLW",
-    "LSR",
-    "LSRW",
-    "MADD",
-    "MADDW",
-    "MNEG",
-    "MNEGW",
-    "MOVK",
-    "MOVKW",
-    "MOVN",
-    "MOVNW",
-    "MOVZ",
-    "MOVZW",
-    "MRS",
-    "MSR",
-    "MSUB",
-    "MSUBW",
-    "MUL",
-    "MULW",
-    "MVN",
-    "MVNW",
-    "NEG",
-    "NEGS",
-    "NEGSW",
-    "NEGW",
-    "NGC",
-    "NGCS",
-    "NGCSW",
-    "NGCW",
-    "ORN",
-    "ORNW",
-    "ORR",
-    "ORRW",
-    "PRFM",
-    "PRFUM",
-    "RBIT",
-    "RBITW",
-    "REM",
-    "REMW",
-    "REV",
-    "REV16",
-    "REV16W",
-    "REV32",
-    "REVW",
-    "ROR",
-    "RORW",
-    "SBC",
-    "SBCS",
-    "SBCSW",
-    "SBCW",
-    "SBFIZ",
-    "SBFIZW",
-    "SBFM",
-    "SBFMW",
-    "SBFX",
-    "SBFXW",
-    "SDIV",
-    "SDIVW",
-    "SEV",
-    "SEVL",
-    "SMADDL",
-    "SMC",
-    "SMNEGL",
-    "SMSUBL",
-    "SMULH",
-    "SMULL",
-    "STXR",
-    "STXRB",
-    "STXRH",
-    "STXP",
-    "STXPW",
-    "STXRW",
-    "STLP",
-    "STLPW",
-    "STLR",
-    "STLRB",
-    "STLRH",
-    "STLRW",
-    "STLXP",
-    "STLXPW",
-    "STLXR",
-    "STLXRB",
-    "STLXRH",
-    "STLXRW",
-    "STP",
-    "SUB",
-    "SUBS",
-    "SUBSW",
-    "SUBW",
-    "SVC",
-    "SXTB",
-    "SXTBW",
-    "SXTH",
-    "SXTHW",
-    "SXTW",
-    "SYS",
-    "SYSL",
-    "TBNZ",
-    "TBZ",
-    "TLBI",
-    "TST",
-    "TSTW",
-    "UBFIZ",
-    "UBFIZW",
-    "UBFM",
-    "UBFMW",
-    "UBFX",
-    "UBFXW",
-    "UDIV",
-    "UDIVW",
-    "UMADDL",
-    "UMNEGL",
-    "UMSUBL",
-    "UMULH",
-    "UMULL",
-    "UREM",
-    "UREMW",
-    "UXTB",
-    "UXTH",
-    "UXTW",
-    "UXTBW",
-    "UXTHW",
-    "WFE",
-    "WFI",
-    "YIELD",
-    "MOVB",
-    "MOVBU",
-    "MOVH",
-    "MOVHU",
-    "MOVW",
-    "MOVWU",
-    "MOVD",
-    "MOVNP",
-    "MOVNPW",
-    "MOVP",
-    "MOVPD",
-    "MOVPQ",
-    "MOVPS",
-    "MOVPSW",
-    "MOVPW",
-    "BEQ",
-    "BNE",
-    "BCS",
-    "BHS",
-    "BCC",
-    "BLO",
-    "BMI",
-    "BPL",
-    "BVS",
-    "BVC",
-    "BHI",
-    "BLS",
-    "BGE",
-    "BLT",
-    "BGT",
-    "BLE",
-    "FABSD",
-    "FABSS",
-    "FADDD",
-    "FADDS",
-    "FCCMPD",
-    "FCCMPED",
-    "FCCMPS",
-    "FCCMPES",
-    "FCMPD",
-    "FCMPED",
-    "FCMPES",
-    "FCMPS",
-    "FCVTSD",
-    "FCVTDS",
-    "FCVTZSD",
-    "FCVTZSDW",
-    "FCVTZSS",
-    "FCVTZSSW",
-    "FCVTZUD",
-    "FCVTZUDW",
-    "FCVTZUS",
-    "FCVTZUSW",
-    "FDIVD",
-    "FDIVS",
-    "FMOVD",
-    "FMOVS",
-    "FMULD",
-    "FMULS",
-    "FNEGD",
-    "FNEGS",
-    "FSQRTD",
-    "FSQRTS",
-    "FSUBD",
-    "FSUBS",
-    "SCVTFD",
-    "SCVTFS",
-    "SCVTFWD",
-    "SCVTFWS",
-    "UCVTFD",
-    "UCVTFS",
-    "UCVTFWD",
-    "UCVTFWS",
-    "WORD",
-    "DWORD",
-    "FCSELS",
-    "FCSELD",
-    "FMAXS",
-    "FMINS",
-    "FMAXD",
-    "FMIND",
-    "FMAXNMS",
-    "FMAXNMD",
-    "FNMULS",
-    "FNMULD",
-    "FRINTNS",
-    "FRINTND",
-    "FRINTPS",
-    "FRINTPD",
-    "FRINTMS",
-    "FRINTMD",
-    "FRINTZS",
-    "FRINTZD",
-    "FRINTAS",
-    "FRINTAD",
-    "FRINTXS",
-    "FRINTXD",
-    "FRINTIS",
-    "FRINTID",
-    "FMADDS",
-    "FMADDD",
-    "FMSUBS",
-    "FMSUBD",
-    "FNMADDS",
-    "FNMADDD",
-    "FNMSUBS",
-    "FNMSUBD",
-    "FMINNMS",
-    "FMINNMD",
-    "FCVTDH",
-    "FCVTHS",
-    "FCVTHD",
-    "FCVTSH",
-    "AESD",
-    "AESE",
-    "AESIMC",
-    "AESMC",
-    "SHA1C",
-    "SHA1H",
-    "SHA1M",
-    "SHA1P",
-    "SHA1SU0",
-    "SHA1SU1",
-    "SHA256H",
-    "SHA256H2",
-    "SHA256SU0",
-    "SHA256SU1",
-    "LAST",
-}
+var Anames = []string{obj.A_ARCHSPECIFIC: "ADC", "ADCS", "ADCSW", "ADCW", "ADD", "ADDS", "ADDSW", "ADDW", "ADR", "ADRP", "AND", "ANDS", "ANDSW", "ANDW", "ASR", "ASRW", "AT", "BFI", "BFIW", "BFM", "BFMW", "BFXIL", "BFXILW", "BIC", "BICS", "BICSW", "BICW", "BRK", "CBNZ", "CBNZW", "CBZ", "CBZW", "CCMN", "CCMNW", "CCMP", "CCMPW", "CINC", "CINCW", "CINV", "CINVW", "CLREX", "CLS", "CLSW", "CLZ", "CLZW", "CMN", "CMNW", "CMP", "CMPW", "CNEG", "CNEGW", "CRC32B", "CRC32CB", "CRC32CH", "CRC32CW", "CRC32CX", "CRC32H", "CRC32W", "CRC32X", "CSEL", "CSELW", "CSET", "CSETM", "CSETMW", "CSETW", "CSINC", "CSINCW", "CSINV", "CSINVW", "CSNEG", "CSNEGW", "DC", "DCPS1", "DCPS2", "DCPS3", "DMB", "DRPS", "DSB", "EON", "EONW", "EOR", "EORW", "ERET", "EXTR", "EXTRW", "HINT", "HLT", "HVC", "IC", "ISB", "LDAR", "LDARB", "LDARH", "LDARW", "LDAXP", "LDAXPW", "LDAXR", "LDAXRB", "LDAXRH", "LDAXRW", "LDP", "LDXR", "LDXRB", "LDXRH", "LDXRW", "LDXP", "LDXPW", "LSL", "LSLW", "LSR", "LSRW", "MADD", "MADDW", "MNEG", "MNEGW", "MOVK", "MOVKW", "MOVN", "MOVNW", "MOVZ", "MOVZW", "MRS", "MSR", "MSUB", "MSUBW", "MUL", "MULW", "MVN", "MVNW", "NEG", "NEGS", "NEGSW", "NEGW", "NGC", "NGCS", "NGCSW", "NGCW", "ORN", "ORNW", "ORR", "ORRW", "PRFM", "PRFUM", "RBIT", "RBITW", "REM", "REMW", "REV", "REV16", "REV16W", "REV32", "REVW", "ROR", "RORW", "SBC", "SBCS", "SBCSW", "SBCW", "SBFIZ", "SBFIZW", "SBFM", "SBFMW", "SBFX", "SBFXW", "SDIV", "SDIVW", "SEV", "SEVL", "SMADDL", "SMC", "SMNEGL", "SMSUBL", "SMULH", "SMULL", "STXR", "STXRB", "STXRH", "STXP", "STXPW", "STXRW", "STLP", "STLPW", "STLR", "STLRB", "STLRH", "STLRW", "STLXP", "STLXPW", "STLXR", "STLXRB", "STLXRH", "STLXRW", "STP", "SUB", "SUBS", "SUBSW", "SUBW", "SVC", "SXTB", "SXTBW", "SXTH", "SXTHW", "SXTW", "SYS", "SYSL", "TBNZ", "TBZ", "TLBI", "TST", "TSTW", "UBFIZ", "UBFIZW", "UBFM", "UBFMW", "UBFX", "UBFXW", "UDIV", "UDIVW", "UMADDL", "UMNEGL", "UMSUBL", "UMULH", "UMULL", "UREM", "UREMW", "UXTB", "UXTH", "UXTW", "UXTBW", "UXTHW", "WFE", "WFI", "YIELD", "MOVB", "MOVBU", "MOVH", "MOVHU", "MOVW", "MOVWU", "MOVD", "MOVNP", "MOVNPW", "MOVP", "MOVPD", "MOVPQ", "MOVPS", "MOVPSW", "MOVPW", "BEQ", "BNE", "BCS", "BHS", "BCC", "BLO", "BMI", "BPL", "BVS", "BVC", "BHI", "BLS", "BGE", "BLT", "BGT", "BLE", "FABSD", "FABSS", "FADDD", "FADDS", "FCCMPD", "FCCMPED", "FCCMPS", "FCCMPES", "FCMPD", "FCMPED", "FCMPES", "FCMPS", "FCVTSD", "FCVTDS", "FCVTZSD", "FCVTZSDW", "FCVTZSS", "FCVTZSSW", "FCVTZUD", "FCVTZUDW", "FCVTZUS", "FCVTZUSW", "FDIVD", "FDIVS", "FMOVD", "FMOVS", "FMULD", "FMULS", "FNEGD", "FNEGS", "FSQRTD", "FSQRTS", "FSUBD", "FSUBS", "SCVTFD", "SCVTFS", "SCVTFWD", "SCVTFWS", "UCVTFD", "UCVTFS", "UCVTFWD", "UCVTFWS", "WORD", "DWORD", "FCSELS", "FCSELD", "FMAXS", "FMINS", "FMAXD", "FMIND", "FMAXNMS", "FMAXNMD", "FNMULS", "FNMULD", "FRINTNS", "FRINTND", "FRINTPS", "FRINTPD", "FRINTMS", "FRINTMD", "FRINTZS", "FRINTZD", "FRINTAS", "FRINTAD", "FRINTXS", "FRINTXD", "FRINTIS", "FRINTID", "FMADDS", "FMADDD", "FMSUBS", "FMSUBD", "FNMADDS", "FNMADDD", "FNMSUBS", "FNMSUBD", "FMINNMS", "FMINNMD", "FCVTDH", "FCVTHS", "FCVTHD", "FCVTSH", "AESD", "AESE", "AESIMC", "AESMC", "SHA1C", "SHA1H", "SHA1M", "SHA1P", "SHA1SU0", "SHA1SU1", "SHA256H", "SHA256H2", "SHA256SU0", "SHA256SU1", "LAST"}
 
-var Linkarm64 = obj.LinkArch{
-    ByteOrder:  binary.LittleEndian,
-    Name:       "arm64",
-    Thechar:    '7',
-    Preprocess: preprocess,
-    Assemble:   span7,
-    Follow:     follow,
-    Progedit:   progedit,
-    UnaryDst:   unaryDst,
-    Minlc:      4,
-    Ptrsize:    8,
-    Regsize:    8,
-}
-
-type Oprange struct {
-    start []Optab
-    stop  []Optab
-}
+var Linkarm64 = obj.LinkArch{Arch: sys.ArchARM64, Preprocess: preprocess, Assemble: span7, Follow: follow, Progedit: progedit, UnaryDst: unaryDst}
 
 type Optab struct {
-    as    uint16
-    a1    uint8
-    a2    uint8
-    a3    uint8
-    type_ int8
-    size  int8
-    param int16
-    flag  int8
-    scond uint16
 }
 
 func ADR(p uint32, o uint32, rt uint32) uint32
@@ -1142,6 +749,8 @@ func OPDP3(sf uint32, op54 uint32, op31 uint32, o0 uint32) uint32
 func Rconv(r int) string
 
 func SYSARG4(op1 int, Cn int, Cm int, op2 int) int
+
+//  form offset parameter to SYS; special register number
 
 // form offset parameter to SYS; special register number
 func SYSARG5(op0 int, op1 int, Cn int, Cm int, op2 int) int

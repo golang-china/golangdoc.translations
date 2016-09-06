@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,20 +10,40 @@
 package mime
 
 import (
-    "bufio"
-    "bytes"
-    "encoding/base64"
-    "errors"
-    "fmt"
-    "internal/syscall/windows/registry"
-    "io"
-    "os"
-    "sort"
-    "strings"
-    "sync"
-    "unicode"
-    "unicode/utf8"
+	"bufio"
+	"bytes"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"sort"
+	"strings"
+	"sync"
+	"unicode"
+	"unicode/utf8"
 )
+
+const (
+	// BEncoding represents Base64 encoding scheme as defined by RFC 2045.
+	BEncoding = WordEncoder('b')
+
+	// QEncoding represents the Q-encoding scheme as defined by RFC 2047.
+	QEncoding = WordEncoder('q')
+)
+
+// A WordDecoder decodes MIME headers containing RFC 2047 encoded-words.
+type WordDecoder struct {
+	// CharsetReader, if non-nil, defines a function to generate
+	// charset-conversion readers, converting from the provided charset into
+	// UTF-8. Charsets are always lower-case. utf-8, iso-8859-1 and us-ascii
+	// charsets are handled by default. One of the the CharsetReader's result
+	// values must be non-nil.
+	CharsetReader func(charset string, input io.Reader) (io.Reader, error)
+}
+
+// A WordEncoder is an RFC 2047 encoded-word encoder.
+type WordEncoder byte
 
 // AddExtensionType sets the MIME type associated with
 // the extension ext to typ. The extension should begin with
@@ -31,6 +51,12 @@ import (
 
 // 函数将扩展名和mimetype建立偶联；扩展名应以点号开始，例如".html"。
 func AddExtensionType(ext, typ string) error
+
+// ExtensionsByType returns the extensions known to be associated with the MIME
+// type typ. The returned extensions will each begin with a leading dot, as in
+// ".html". When typ has no associated extensions, ExtensionsByType returns an
+// nil slice.
+func ExtensionsByType(typ string) ([]string, error)
 
 // FormatMediaType serializes mediatype t and the parameters
 // param as a media type conforming to RFC 2045 and RFC 2616.
@@ -80,10 +106,22 @@ func ParseMediaType(v string) (mediatype string, params map[string]string, err e
 // 内建的偶联表很小，但在unix系统会从本地系统的一或多个mime.types文件（参加下表
 // ）进行增补。
 //
-//     /etc/mime.types
-//     /etc/apache2/mime.types
-//     /etc/apache/mime.types
+// 	/etc/mime.types
+// 	/etc/apache2/mime.types
+// 	/etc/apache/mime.types
 //
 // Windows系统的mime类型从注册表获取。文本类型的字符集参数默认设置为"utf-8"。
 func TypeByExtension(ext string) string
+
+// Decode decodes an RFC 2047 encoded-word.
+func (d *WordDecoder) Decode(word string) (string, error)
+
+// DecodeHeader decodes all encoded-words of the given string. It returns an
+// error if and only if CharsetReader of d returns an error.
+func (d *WordDecoder) DecodeHeader(header string) (string, error)
+
+// Encode returns the encoded-word form of s. If s is ASCII without special
+// characters, it is returned unchanged. The provided charset is the IANA
+// charset name of s. It is case insensitive.
+func (e WordEncoder) Encode(charset, s string) string
 

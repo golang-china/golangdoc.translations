@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 package pkix
 
 import (
-    "encoding/asn1"
-    "math/big"
-    "time"
+	"encoding/asn1"
+	"math/big"
+	"time"
 )
 
 // AlgorithmIdentifier represents the ASN.1 structure of the same name. See RFC
@@ -22,8 +22,8 @@ import (
 
 // AlgorithmIdentifier代表一个同名的ASN.1结构体，参见RFC 5280, section 4.1.1.2。
 type AlgorithmIdentifier struct {
-    Algorithm  asn1.ObjectIdentifier
-    Parameters asn1.RawValue `asn1:"optional"`
+	Algorithm  asn1.ObjectIdentifier
+	Parameters asn1.RawValue `asn1:"optional"`
 }
 
 // AttributeTypeAndValue mirrors the ASN.1 structure of the same name in
@@ -32,8 +32,8 @@ type AlgorithmIdentifier struct {
 // AttributeTypeAndValue代表一个同名的ASN.1结构体，参见
 // http://tools.ietf.org/html/rfc5280#section-4.1.2.4。
 type AttributeTypeAndValue struct {
-    Type  asn1.ObjectIdentifier
-    Value interface{}
+	Type  asn1.ObjectIdentifier
+	Value interface{}
 }
 
 // AttributeTypeAndValueSET represents a set of ASN.1 sequences of
@@ -42,8 +42,8 @@ type AttributeTypeAndValue struct {
 // AttributeTypeAndValueSET代表AttributeTypeAndValue序列表示的ASN.1序列的集合，
 // 参见RFC 2986 (PKCS #10)。
 type AttributeTypeAndValueSET struct {
-    Type  asn1.ObjectIdentifier
-    Value [][]AttributeTypeAndValue `asn1:"set"`
+	Type  asn1.ObjectIdentifier
+	Value [][]AttributeTypeAndValue `asn1:"set"`
 }
 
 // CertificateList represents the ASN.1 structure of the same name. See RFC
@@ -53,9 +53,9 @@ type AttributeTypeAndValueSET struct {
 // CertificateList代表一个同名的ASN.1结构体，参见RFC 5280, section
 // 5.1。用于认证签名。
 type CertificateList struct {
-    TBSCertList        TBSCertificateList
-    SignatureAlgorithm AlgorithmIdentifier
-    SignatureValue     asn1.BitString
+	TBSCertList        TBSCertificateList
+	SignatureAlgorithm AlgorithmIdentifier
+	SignatureValue     asn1.BitString
 }
 
 // Extension represents the ASN.1 structure of the same name. See RFC
@@ -63,9 +63,9 @@ type CertificateList struct {
 
 // Extension代表一个同名的ASN.1结构体，参见RFC 5280, section 4.2。
 type Extension struct {
-    Id       asn1.ObjectIdentifier
-    Critical bool `asn1:"optional"`
-    Value    []byte
+	Id       asn1.ObjectIdentifier
+	Critical bool `asn1:"optional"`
+	Value    []byte
 }
 
 // Name represents an X.509 distinguished name. This only includes the common
@@ -75,12 +75,12 @@ type Extension struct {
 
 // Name代表一个X.509识别名。只包含识别名的公共属性，额外的属性被忽略。
 type Name struct {
-    Country, Organization, OrganizationalUnit []string
-    Locality, Province                        []string
-    StreetAddress, PostalCode                 []string
-    SerialNumber, CommonName                  string
-
-    Names []AttributeTypeAndValue
+	Country, Organization, OrganizationalUnit []string
+	Locality, Province                        []string
+	StreetAddress, PostalCode                 []string
+	SerialNumber, CommonName                  string
+	Names                                     []AttributeTypeAndValue
+	ExtraNames                                []AttributeTypeAndValue
 }
 
 type RDNSequence []RelativeDistinguishedNameSET
@@ -92,9 +92,9 @@ type RelativeDistinguishedNameSET []AttributeTypeAndValue
 
 // RevokedCertificate代表一个同名的ASN.1结构体，参见RFC 5280, section 5.1。
 type RevokedCertificate struct {
-    SerialNumber   *big.Int
-    RevocationTime time.Time
-    Extensions     []Extension `asn1:"optional"`
+	SerialNumber   *big.Int
+	RevocationTime time.Time
+	Extensions     []Extension `asn1:"optional"`
 }
 
 // TBSCertificateList represents the ASN.1 structure of the same name. See RFC
@@ -102,22 +102,22 @@ type RevokedCertificate struct {
 
 // TBSCertificateList代表一个同名的ASN.1结构体，参见RFC 5280, section 5.1。
 type TBSCertificateList struct {
-    Raw                 asn1.RawContent
-    Version             int `asn1:"optional,default:2"`
-    Signature           AlgorithmIdentifier
-    Issuer              RDNSequence
-    ThisUpdate          time.Time
-    NextUpdate          time.Time            `asn1:"optional"`
-    RevokedCertificates []RevokedCertificate `asn1:"optional"`
-    Extensions          []Extension          `asn1:"tag:0,optional,explicit"`
+	Raw                 asn1.RawContent
+	Version             int `asn1:"optional,default:0"`
+	Signature           AlgorithmIdentifier
+	Issuer              RDNSequence
+	ThisUpdate          time.Time
+	NextUpdate          time.Time `asn1:"optional"`
+	RevokedCertificates []RevokedCertificate `asn1:"optional"`
+	Extensions          []Extension `asn1:"tag:0,optional,explicit"`
 }
 
 // HasExpired reports whether now is past the expiry time of certList.
 
 // HasExpired报告证书列表是否已过期。
-func (*CertificateList) HasExpired(now time.Time) bool
+func (certList *CertificateList) HasExpired(now time.Time) bool
 
-func (*Name) FillFromRDNSequence(rdns *RDNSequence)
+func (n *Name) FillFromRDNSequence(rdns *RDNSequence)
 
-func (Name) ToRDNSequence() (ret RDNSequence)
+func (n Name) ToRDNSequence() (ret RDNSequence)
 

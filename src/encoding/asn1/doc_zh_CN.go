@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -18,16 +18,43 @@
 package asn1
 
 import (
-    "bytes"
-    "errors"
-    "fmt"
-    "io"
-    "math/big"
-    "reflect"
-    "strconv"
-    "strings"
-    "time"
-    "unicode/utf8"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"math/big"
+	"reflect"
+	"strconv"
+	"strings"
+	"time"
+	"unicode/utf8"
+)
+
+// ASN.1 class types represent the namespace of the tag.
+const (
+	ClassUniversal       = 0
+	ClassApplication     = 1
+	ClassContextSpecific = 2
+	ClassPrivate         = 3
+)
+
+// ASN.1 tags represent the type of the following object.
+const (
+	TagBoolean         = 1
+	TagInteger         = 2
+	TagBitString       = 3
+	TagOctetString     = 4
+	TagOID             = 6
+	TagEnum            = 10
+	TagUTF8String      = 12
+	TagSequence        = 16
+	TagSet             = 17
+	TagPrintableString = 19
+	TagT61String       = 20
+	TagIA5String       = 22
+	TagUTCTime         = 23
+	TagGeneralizedTime = 24
+	TagGeneralString   = 27
 )
 
 // BitString is the structure to use when you want an ASN.1 BIT STRING type. A
@@ -37,8 +64,8 @@ import (
 // BitString类型是用于表示ASN.1 BIT STRING类型的结构体。字位流补齐到最近的字节数
 // 保存在内存里并记录合法字位数，补齐的位可以为0个。
 type BitString struct {
-    Bytes     []byte // bits packed into bytes.
-    BitLength int    // length in bits.
+	Bytes     []byte // bits packed into bytes.
+	BitLength int    // length in bits.
 }
 
 // An Enumerated is represented as a plain int.
@@ -68,10 +95,10 @@ type RawContent []byte
 
 // RawValue代表一个未解码的ASN.1对象。
 type RawValue struct {
-    Class, Tag int
-    IsCompound bool
-    Bytes      []byte
-    FullBytes  []byte // includes the tag and length
+	Class, Tag int
+	IsCompound bool
+	Bytes      []byte
+	FullBytes  []byte // includes the tag and length
 }
 
 // A StructuralError suggests that the ASN.1 data is valid, but the Go type
@@ -79,14 +106,14 @@ type RawValue struct {
 
 // StructuralError表示ASN.1数据合法但接收的Go类型不匹配。
 type StructuralError struct {
-    Msg string
+	Msg string
 }
 
 // A SyntaxError suggests that the ASN.1 data is invalid.
 
 // SyntaxErrorLeixing表示ASN.1数据不合法。
 type SyntaxError struct {
-    Msg string
+	Msg string
 }
 
 // Marshal returns the ASN.1 encoding of val.
@@ -94,10 +121,10 @@ type SyntaxError struct {
 // In addition to the struct tags recognised by Unmarshal, the following can be
 // used:
 //
-//     ia5:        causes strings to be marshaled as ASN.1, IA5 strings
-//     omitempty:    causes empty slices to be skipped
-//     printable:    causes strings to be marshaled as ASN.1, PrintableString strings.
-//     utf8:        causes strings to be marshaled as ASN.1, UTF8 strings
+// 	ia5:		causes strings to be marshaled as ASN.1, IA5 strings
+// 	omitempty:	causes empty slices to be skipped
+// 	printable:	causes strings to be marshaled as ASN.1, PrintableString strings.
+// 	utf8:		causes strings to be marshaled as ASN.1, UTF8 strings
 
 // Marshal函数返回val的ASN.1编码。
 //
@@ -142,12 +169,12 @@ func Marshal(val interface{}) ([]byte, error)
 //
 // The following tags on struct fields have special meaning to Unmarshal:
 //
-//     application    specifies that a APPLICATION tag is used
-//     default:x    sets the default value for optional integer fields
-//     explicit    specifies that an additional, explicit tag wraps the implicit one
-//     optional    marks the field as ASN.1 OPTIONAL
-//     set        causes a SET, rather than a SEQUENCE type to be expected
-//     tag:x        specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
+// 	application	specifies that a APPLICATION tag is used
+// 	default:x	sets the default value for optional integer fields
+// 	explicit	specifies that an additional, explicit tag wraps the implicit one
+// 	optional	marks the field as ASN.1 OPTIONAL
+// 	set		causes a SET, rather than a SEQUENCE type to be expected
+// 	tag:x		specifies the ASN.1 tag number; implies ASN.1 CONTEXT SPECIFIC
 //
 // If the type of the first field of a structure is RawContent then the raw ASN1
 // contents of the struct will be stored in it.
@@ -188,12 +215,12 @@ func Marshal(val interface{}) ([]byte, error)
 //
 // 对Unmarshal函数，下列字段标签有特殊含义：
 //
-//     application    指明使用了APPLICATION标签
-//     default:x      设置一个可选整数字段的默认值
-//     explicit       给一个隐式的标签设置一个额外的显式标签
-//     optional       标记字段为ASN.1 OPTIONAL的
-//     set            表示期望一个SET而不是SEQUENCE类型
-//     tag:x          指定ASN.1标签码，隐含ASN.1 CONTEXT SPECIFIC
+// 	application    指明使用了APPLICATION标签
+// 	default:x      设置一个可选整数字段的默认值
+// 	explicit       给一个隐式的标签设置一个额外的显式标签
+// 	optional       标记字段为ASN.1 OPTIONAL的
+// 	set            表示期望一个SET而不是SEQUENCE类型
+// 	tag:x          指定ASN.1标签码，隐含ASN.1 CONTEXT SPECIFIC
 //
 // 如果结构体的第一个字段的类型为RawContent，则会将原始ASN1结构体内容包存在该字
 // 段。
@@ -214,23 +241,23 @@ func UnmarshalWithParams(b []byte, val interface{}, params string) (rest []byte,
 // returns false.
 
 // At方法发挥index位置的字位，如果index出界则返回0。
-func (BitString) At(i int) int
+func (b BitString) At(i int) int
 
 // RightAlign returns a slice where the padding bits are at the beginning. The
 // slice may share memory with the BitString.
 
 // RightAlign方法返回b表示的字位流的右对齐版本（即补位在开始部分）切片，该切片可
 // 能和b共享底层内存。
-func (BitString) RightAlign() []byte
+func (b BitString) RightAlign() []byte
 
 // Equal reports whether oi and other represent the same identifier.
 
 // 如果oi和other代表同一个标识符，Equal方法返回真。
-func (ObjectIdentifier) Equal(other ObjectIdentifier) bool
+func (oi ObjectIdentifier) Equal(other ObjectIdentifier) bool
 
-func (ObjectIdentifier) String() string
+func (oi ObjectIdentifier) String() string
 
-func (StructuralError) Error() string
+func (e StructuralError) Error() string
 
-func (SyntaxError) Error() string
+func (e SyntaxError) Error() string
 

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -35,19 +35,19 @@
 package binary
 
 import (
-    "errors"
-    "io"
-    "math"
-    "reflect"
+	"errors"
+	"io"
+	"math"
+	"reflect"
 )
 
 // MaxVarintLenN is the maximum length of a varint-encoded N-bit integer.
 
 // 变长编码N位整数的最大字节数。
 const (
-    MaxVarintLen16 = 3
-    MaxVarintLen32 = 5
-    MaxVarintLen64 = 10
+	MaxVarintLen16 = 3
+	MaxVarintLen32 = 5
+	MaxVarintLen64 = 10
 )
 
 // BigEndian is the big-endian implementation of ByteOrder.
@@ -62,13 +62,13 @@ var LittleEndian littleEndian
 // ByteOrder规定了如何将字节序列和
 // 16、32或64比特的无符号整数互相转化。
 type ByteOrder interface {
-    Uint16([]byte) uint16
-    Uint32([]byte) uint32
-    Uint64([]byte) uint64
-    PutUint16([]byte, uint16)
-    PutUint32([]byte, uint32)
-    PutUint64([]byte, uint64)
-    String() string
+	Uint16([]byte)uint16
+	Uint32([]byte)uint32
+	Uint64([]byte)uint64
+	PutUint16([]byte, uint16)
+	PutUint32([]byte, uint32)
+	PutUint64([]byte, uint64)
+	String()string
 }
 
 // PutUvarint encodes a uint64 into buf and returns the number of bytes written.
@@ -124,8 +124,8 @@ func Size(v interface{}) int
 // number of bytes read (> 0). If an error occurred, the value is 0
 // and the number of bytes n is <= 0 meaning:
 //
-//     n == 0: buf too small
-//     n  < 0: value larger than 64 bits (overflow)
+// 	n == 0: buf too small
+// 	n  < 0: value larger than 64 bits (overflow)
 //              and -n is the number of bytes read
 
 // 从buf解码一个uint64，返回该数字和读取的字节长度，如果发生了错误，该数字为0而
@@ -139,8 +139,8 @@ func Uvarint(buf []byte) (uint64, int)
 // number of bytes read (> 0). If an error occurred, the value is 0
 // and the number of bytes n is <= 0 with the following meaning:
 //
-//     n == 0: buf too small
-//     n  < 0: value larger than 64 bits (overflow)
+// 	n == 0: buf too small
+// 	n  < 0: value larger than 64 bits (overflow)
 //              and -n is the number of bytes read
 
 // 从buf解码一个int64，返回该数字和读取的字节长度，如果发生了错误，该数字为0而读

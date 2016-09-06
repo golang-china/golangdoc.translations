@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,9 +12,8 @@
 // representation.
 //
 // See
-//
-//
-// http://en.wikipedia.org/wiki/Mathematics_of_cyclic_redundancy_checks#Reversed_representations_and_reciprocal_polynomials for information.
+// http://en.wikipedia.org/wiki/Mathematics_of_cyclic_redundancy_checks#Reversed_representations_and_reciprocal_polynomials
+// for information.
 
 // crc32包实现了32位循环冗余校验（CRC-32）的校验和算法，参见：
 //
@@ -22,8 +21,8 @@
 package crc32
 
 import (
-    "hash"
-    "sync"
+	"hash"
+	"sync"
 )
 
 // Predefined polynomials.
@@ -34,19 +33,19 @@ import (
 //
 // CRC-32校验和的字节长度。
 const (
-    // IEEE is by far and away the most common CRC-32 polynomial.
-    // Used by ethernet (IEEE 802.3), v.42, fddi, gzip, zip, png, ...
-    IEEE = 0xedb88320
+	// IEEE is by far and away the most common CRC-32 polynomial.
+	// Used by ethernet (IEEE 802.3), v.42, fddi, gzip, zip, png, ...
+	IEEE = 0xedb88320
 
-    // Castagnoli's polynomial, used in iSCSI.
-    // Has better error detection characteristics than IEEE.
-    // http://dx.doi.org/10.1109/26.231911
-    Castagnoli = 0x82f63b78
+	// Castagnoli's polynomial, used in iSCSI.
+	// Has better error detection characteristics than IEEE.
+	// http://dx.doi.org/10.1109/26.231911
+	Castagnoli = 0x82f63b78
 
-    // Koopman's polynomial.
-    // Also has better error detection characteristics than IEEE.
-    // http://dx.doi.org/10.1109/DSN.2002.1028931
-    Koopman = 0xeb31d82e
+	// Koopman's polynomial.
+	// Also has better error detection characteristics than IEEE.
+	// http://dx.doi.org/10.1109/DSN.2002.1028931
+	Koopman = 0xeb31d82e
 )
 
 // The size of a CRC-32 checksum in bytes.

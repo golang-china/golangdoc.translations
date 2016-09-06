@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 // Package crc64 implements the 64-bit cyclic redundancy check, or CRC-64,
 //
-//     checksum. See http://en.wikipedia.org/wiki/Cyclic_redundancy_check for
-//     information.
+// 	checksum. See http://en.wikipedia.org/wiki/Cyclic_redundancy_check for
+// 	information.
 package crc64
 
 import "hash"
@@ -24,11 +24,11 @@ import "hash"
 //
 // CRC-64校验和的字节数。
 const (
-    // The ISO polynomial, defined in ISO 3309 and used in HDLC.
-    ISO = 0xD800000000000000
+	// The ISO polynomial, defined in ISO 3309 and used in HDLC.
+	ISO = 0xD800000000000000
 
-    // The ECMA polynomial, defined in ECMA 182.
-    ECMA = 0xC96C5795D7870F42
+	// The ECMA polynomial, defined in ECMA 182.
+	ECMA = 0xC96C5795D7870F42
 )
 
 // The size of a CRC-64 checksum in bytes.

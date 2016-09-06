@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,13 +13,16 @@
 package gosym
 
 import (
-    "bytes"
-    "encoding/binary"
-    "fmt"
-    "strconv"
-    "strings"
-    "sync"
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"strconv"
+	"strings"
+	"sync"
 )
+
+// DecodingError represents an error during the decoding of
+// the symbol table.
 
 // DecodingError represents an error during the decoding of the symbol table.
 type DecodingError struct {
@@ -27,14 +30,13 @@ type DecodingError struct {
 
 // A Func collects information about a single function.
 type Func struct {
-    Entry uint64
-    *Sym
-    End       uint64
-    Params    []*Sym
-    Locals    []*Sym
-    FrameSize int
-    LineTable *LineTable
-    Obj       *Obj
+	Entry     uint64
+	End       uint64
+	Params    []*Sym
+	Locals    []*Sym
+	FrameSize int
+	LineTable *LineTable
+	Obj       *Obj
 }
 
 // A LineTable is a data structure mapping program counters to line numbers.
@@ -52,9 +54,9 @@ type Func struct {
 // For the most part, LineTable's methods should be treated as an internal
 // detail of the package; callers should use the methods on Table instead.
 type LineTable struct {
-    Data []byte
-    PC   uint64
-    Line int
+	Data []byte
+	PC   uint64
+	Line int
 }
 
 // An Obj represents a collection of functions in a symbol table.
@@ -69,27 +71,30 @@ type LineTable struct {
 //
 // In Go 1.2, there is a single Obj for the entire program.
 type Obj struct {
-    // Funcs is a list of functions in the Obj.
-    Funcs []Func
+	// Funcs is a list of functions in the Obj.
+	Funcs []Func
 
-    // In Go 1.1 and earlier, Paths is a list of symbols corresponding
-    // to the source file names that produced the Obj.
-    // In Go 1.2, Paths is nil.
-    // Use the keys of Table.Files to obtain a list of source files.
-    Paths []Sym // meta
+	// In Go 1.1 and earlier, Paths is a list of symbols corresponding
+	// to the source file names that produced the Obj.
+	// In Go 1.2, Paths is nil.
+	// Use the keys of Table.Files to obtain a list of source files.
+	Paths []Sym // meta
 }
 
 // A Sym represents a single symbol table entry.
 type Sym struct {
-    Value  uint64
-    Type   byte
-    Name   string
-    GoType uint64
-    // If this symbol if a function symbol, the corresponding Func
-    Func *Func
+	Value  uint64
+	Type   byte
+	Name   string
+	GoType uint64
+
+	// If this symbol is a function symbol, the corresponding Func
+
+	// If this symbol if a function symbol, the corresponding Func
+	Func *Func
 }
 
-// Table represents a Go symbol table.  It stores all of the
+// Table represents a Go symbol table. It stores all of the
 // symbols decoded from the program and provides methods to translate
 // between symbols, names, and addresses.
 
@@ -97,88 +102,127 @@ type Sym struct {
 // the program and provides methods to translate between symbols, names, and
 // addresses.
 type Table struct {
-    Syms  []Sym
-    Funcs []Func
-    Files map[string]*Obj // nil for Go 1.2 and later binaries
-    Objs  []Obj           // nil for Go 1.2 and later binaries
-
+	Syms  []Sym
+	Funcs []Func
+	Files map[string]*Obj // nil for Go 1.2 and later binaries
+	Objs  []Obj           // nil for Go 1.2 and later binaries
 }
+
+// UnknownFileError represents a failure to find the specific file in
+// the symbol table.
 
 // UnknownFileError represents a failure to find the specific file in the symbol
 // table.
 type UnknownFileError string
 
+// UnknownLineError represents a failure to map a line to a program
+// counter, either because the line is beyond the bounds of the file
+// or because there is no code on the given line.
+
 // UnknownLineError represents a failure to map a line to a program counter,
 // either because the line is beyond the bounds of the file or because there is
 // no code on the given line.
 type UnknownLineError struct {
-    File string
-    Line int
+	File string
+	Line int
 }
+
+// NewLineTable returns a new PC/line table
+// corresponding to the encoded data.
+// Text must be the start address of the
+// corresponding text segment.
 
 // NewLineTable returns a new PC/line table corresponding to the encoded data.
 // Text must be the start address of the corresponding text segment.
 func NewLineTable(data []byte, text uint64) *LineTable
 
+// NewTable decodes the Go symbol table in data,
+// returning an in-memory representation.
+
 // NewTable decodes the Go symbol table in data, returning an in-memory
 // representation.
 func NewTable(symtab []byte, pcln *LineTable) (*Table, error)
 
-func (*DecodingError) Error() string
+func (e *DecodingError) Error() string
+
+// LineToPC returns the program counter for the given line number,
+// considering only program counters before maxpc.
+// Callers should use Table's LineToPC method instead.
 
 // LineToPC returns the program counter for the given line number, considering
 // only program counters before maxpc. Callers should use Table's LineToPC
 // method instead.
-func (*LineTable) LineToPC(line int, maxpc uint64) uint64
+func (t *LineTable) LineToPC(line int, maxpc uint64) uint64
+
+// PCToLine returns the line number for the given program counter.
+// Callers should use Table's PCToLine method instead.
 
 // PCToLine returns the line number for the given program counter. Callers
 // should use Table's PCToLine method instead.
-func (*LineTable) PCToLine(pc uint64) int
+func (t *LineTable) PCToLine(pc uint64) int
 
 // BaseName returns the symbol name without the package or receiver name.
-func (*Sym) BaseName() string
+func (s *Sym) BaseName() string
+
+// PackageName returns the package part of the symbol name,
+// or the empty string if there is none.
 
 // PackageName returns the package part of the symbol name, or the empty string
 // if there is none.
-func (*Sym) PackageName() string
+func (s *Sym) PackageName() string
+
+// ReceiverName returns the receiver type name of this symbol,
+// or the empty string if there is none.
 
 // ReceiverName returns the receiver type name of this symbol, or the empty
 // string if there is none.
-func (*Sym) ReceiverName() string
+func (s *Sym) ReceiverName() string
 
 // Static reports whether this symbol is static (not visible outside its file).
-func (*Sym) Static() bool
+func (s *Sym) Static() bool
 
 // LineToPC looks up the first program counter on the given line in
-// the named file.  It returns UnknownPathError or UnknownLineError if
+// the named file. It returns UnknownPathError or UnknownLineError if
 // there is an error looking up this line.
 
 // LineToPC looks up the first program counter on the given line in the named
 // file. It returns UnknownPathError or UnknownLineError if there is an error
 // looking up this line.
-func (*Table) LineToPC(file string, line int) (pc uint64, fn *Func, err error)
+func (t *Table) LineToPC(file string, line int) (pc uint64, fn *Func, err error)
+
+// LookupFunc returns the text, data, or bss symbol with the given name,
+// or nil if no such symbol is found.
 
 // LookupFunc returns the text, data, or bss symbol with the given name, or nil
 // if no such symbol is found.
-func (*Table) LookupFunc(name string) *Func
+func (t *Table) LookupFunc(name string) *Func
+
+// LookupSym returns the text, data, or bss symbol with the given name,
+// or nil if no such symbol is found.
 
 // LookupSym returns the text, data, or bss symbol with the given name, or nil
 // if no such symbol is found.
-func (*Table) LookupSym(name string) *Sym
+func (t *Table) LookupSym(name string) *Sym
+
+// PCToFunc returns the function containing the program counter pc,
+// or nil if there is no such function.
 
 // PCToFunc returns the function containing the program counter pc, or nil if
 // there is no such function.
-func (*Table) PCToFunc(pc uint64) *Func
+func (t *Table) PCToFunc(pc uint64) *Func
+
+// PCToLine looks up line number information for a program counter.
+// If there is no information, it returns fn == nil.
 
 // PCToLine looks up line number information for a program counter. If there is
 // no information, it returns fn == nil.
-func (*Table) PCToLine(pc uint64) (file string, line int, fn *Func)
+func (t *Table) PCToLine(pc uint64) (file string, line int, fn *Func)
 
 // SymByAddr returns the text, data, or bss symbol starting at the given
 // address.
-func (*Table) SymByAddr(addr uint64) *Sym
+func (t *Table) SymByAddr(addr uint64) *Sym
 
-func (*UnknownLineError) Error() string
+func (e *UnknownLineError) Error() string
 
-func (UnknownFileError) Error() string
+func (e UnknownFileError) Error() string
 

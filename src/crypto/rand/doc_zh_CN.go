@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,25 +11,26 @@
 package rand
 
 import (
-    "bufio"
-    "crypto/aes"
-    "crypto/cipher"
-    "errors"
-    "internal/syscall/unix"
-    "io"
-    "math/big"
-    "os"
-    "runtime"
-    "sync"
-    "syscall"
-    "time"
+	"bufio"
+	"crypto/aes"
+	"crypto/cipher"
+	"errors"
+	"internal/syscall/unix"
+	"io"
+	"math/big"
+	"os"
+	"runtime"
+	"sync"
+	"syscall"
+	"time"
 )
 
 // Reader is a global, shared instance of a cryptographically
 // strong pseudo-random generator.
 //
-// On Unix-like systems, Reader reads from /dev/urandom.
 // On Linux, Reader uses getrandom(2) if available, /dev/urandom otherwise.
+// On OpenBSD, Reader uses getentropy(2).
+// On other Unix-like systems, Reader reads from /dev/urandom.
 // On Windows systems, Reader uses the CryptGenRandom API.
 
 // Reader是一个全局、共享的密码用强随机数生成器。在Unix类型系统中，会从
@@ -42,9 +43,9 @@ var Reader io.Reader
 // max)区间服从均匀分布的随机值，如果max<=0则会panic。
 func Int(rand io.Reader, max *big.Int) (n *big.Int, err error)
 
-// Prime returns a number, p, of the given size, such that p is prime
-// with high probability.
-// Prime will return error for any error returned by rand.Read or if bits < 2.
+// Prime returns a number, p, of the given size, such that p is prime with high
+// probability. Prime will return error for any error returned by rand.Read or
+// if bits < 2.
 
 // 返回一个具有指定字位数的数字，该数字具有很高可能性是质数。如果从rand读取时出
 // 错，或者bits<2会返回错误。

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,20 +12,25 @@
 // draw 包提供组装图片的方法.
 //
 // 参考 "The Go image/draw package" 获取这个包的简介：
-// http://golang.org/doc/articles/image_draw.html
+// https://golang.org/doc/articles/image_draw.html
 package draw
 
 import (
-    "image"
-    "image/color"
-    "image/internal/imageutil"
+	"image"
+	"image/color"
+	"image/internal/imageutil"
 )
 
 const (
-    // Over specifies ``(src in mask) over dst''.
-    Over Op  = iota
-    // Src specifies ``src in mask''.
-    Src
+	// Over specifies ``(src in mask) over dst''.
+
+	// Over说明``(在mask上的src)覆盖在dst上''。
+	Over Op = iota
+
+	// Src specifies ``src in mask''.
+
+	// Src说明``src作用在mask上''。
+	Src
 )
 
 // FloydSteinberg is a Drawer that is the Src Op with Floyd-Steinberg error
@@ -38,15 +43,18 @@ var FloydSteinberg Drawer = floydSteinberg{}
 
 // Drawer 包含 Draw 方法。
 type Drawer interface {
-    // Draw aligns r.Min in dst with sp in src and then replaces the
-    // rectangle r in dst with the result of drawing src on dst.
-    Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
+	// Draw aligns r.Min in dst with sp in src and then replaces the
+	// rectangle r in dst with the result of drawing src on dst.
+
+	// Draw 根据 src 中的 sp 来对齐 dst 中的 r.Min，然后用在 dst 上画出 src
+	// 的结果来替换掉矩形 r
+	Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
 }
 
 // Image is an image.Image with a Set method to change a single pixel.
 type Image interface {
-    image.Image
-    Set(x, y int, c color.Color)
+	image.Image
+	Set(x, y int, c color.Color)
 }
 
 // Op is a Porter-Duff compositing operator.
@@ -56,9 +64,9 @@ type Op int
 
 // Quantizer produces a palette for an image.
 type Quantizer interface {
-    // Quantize appends up to cap(p) - len(p) colors to p and returns the
-    // updated palette suitable for converting m to a paletted image.
-    Quantize(p color.Palette, m image.Image) color.Palette
+	// Quantize appends up to cap(p) - len(p) colors to p and returns the
+	// updated palette suitable for converting m to a paletted image.
+	Quantize(p color.Palette, m image.Image)color.Palette
 }
 
 // Draw calls DrawMask with a nil mask.
@@ -76,5 +84,5 @@ func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mas
 // Op.
 
 // Draw 通过用此 Op 调用 Draw 函数实现了 Drawer 接口。
-func (Op) Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
+func (op Op) Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
 

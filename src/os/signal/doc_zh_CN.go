@@ -1,7 +1,3 @@
-// Copyright The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 // +build ingore
 
 // Package signal implements access to incoming signals.
@@ -12,7 +8,7 @@
 // Types of signals
 //
 // The signals SIGKILL and SIGSTOP may not be caught by a program, and
-// therefore can not be affected by this package.
+// therefore cannot be affected by this package.
 //
 // Synchronous signals are signals triggered by errors in program
 // execution: SIGBUS, SIGFPE, and SIGSEGV. These are only considered
@@ -206,8 +202,8 @@
 // Windows
 //
 // On Windows a ^C (Control-C) or ^BREAK (Control-Break) normally cause
-// the program to exit. If Notify is called for os.SIGINT, ^C or ^BREAK
-// will cause os.SIGINT to be sent on the channel, and the program will
+// the program to exit. If Notify is called for os.Interrupt, ^C or ^BREAK
+// will cause os.Interrupt to be sent on the channel, and the program will
 // not exit. If Reset is called, or Stop is called on all channels passed
 // to Notify, then the default behavior will be restored.
 //
@@ -221,27 +217,32 @@
 package signal
 
 import (
-    "os"
-    "sync"
-    "syscall"
+	"os"
+	"sync"
+	"syscall"
 )
 
-// Notify causes package signal to relay incoming signals to c.
-// If no signals are provided, all incoming signals will be relayed to c.
-// Otherwise, just the provided signals will.
+// Ignore causes the provided signals to be ignored. If they are received by
+// the program, nothing will happen. Ignore undoes the effect of any prior
+// calls to Notify for the provided signals.
+// If no signals are provided, all incoming signals will be ignored.
+func Ignore(sig ...os.Signal)
+
+// Notify causes package signal to relay incoming signals to c. If no signals
+// are provided, all incoming signals will be relayed to c. Otherwise, just the
+// provided signals will.
 //
-// Package signal will not block sending to c: the caller must ensure
-// that c has sufficient buffer space to keep up with the expected
-// signal rate.  For a channel used for notification of just one signal value,
-// a buffer of size 1 is sufficient.
+// Package signal will not block sending to c: the caller must ensure that c has
+// sufficient buffer space to keep up with the expected signal rate. For a
+// channel used for notification of just one signal value, a buffer of size 1 is
+// sufficient.
 //
-// It is allowed to call Notify multiple times with the same channel:
-// each call expands the set of signals sent to that channel.
-// The only way to remove signals from the set is to call Stop.
+// It is allowed to call Notify multiple times with the same channel: each call
+// expands the set of signals sent to that channel. The only way to remove
+// signals from the set is to call Stop.
 //
-// It is allowed to call Notify multiple times with different channels
-// and the same signals: each channel receives copies of incoming
-// signals independently.
+// It is allowed to call Notify multiple times with different channels and the
+// same signals: each channel receives copies of incoming signals independently.
 
 // Notify函数让signal包将输入信号转发到c。如果没有列出要传递的信号，会将所有输入
 // 信号传递到c；否则只传递列出的输入信号。
@@ -254,6 +255,11 @@ import (
 // 集去除信号的方法是调用Stop。可以使用同一信号和不同通道多次调用Notify：每一个
 // 通道都会独立接收到该信号的一个拷贝。
 func Notify(c chan<- os.Signal, sig ...os.Signal)
+
+// Reset undoes the effect of any prior calls to Notify for the provided
+// signals.
+// If no signals are provided, all signal handlers will be reset.
+func Reset(sig ...os.Signal)
 
 // Stop causes package signal to stop relaying incoming signals to c.
 // It undoes the effect of all prior calls to Notify using c.

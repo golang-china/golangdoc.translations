@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 package hex
 
 import (
-    "bytes"
-    "errors"
-    "fmt"
-    "io"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
 )
 
 // ErrLength results from decoding an odd length slice.
@@ -42,7 +42,6 @@ func Decode(dst, src []byte) (int, error)
 // 返回hex编码的字符串s代表的数据。
 func DecodeString(s string) ([]byte, error)
 
-// 长度x的编码数据解码后的明文数据的长度
 func DecodedLen(x int) int
 
 // Dump returns a string that contains a hex dump of the given data. The format
@@ -53,8 +52,8 @@ func DecodedLen(x int) int
 // -C`对该数据的输出是一致的。
 func Dump(data []byte) string
 
-// Dumper returns a WriteCloser that writes a hex dump of all written data to
-// w. The format of the dump matches the output of `hexdump -C` on the command
+// Dumper returns a WriteCloser that writes a hex dump of all written data to w.
+// The format of the dump matches the output of `hexdump -C` on the command
 // line.
 
 // 返回一个io.WriteCloser接口，将写入的数据的hex
@@ -62,7 +61,7 @@ func Dump(data []byte) string
 func Dumper(w io.Writer) io.WriteCloser
 
 // Encode encodes src into EncodedLen(len(src))
-// bytes of dst.  As a convenience, it returns the number
+// bytes of dst. As a convenience, it returns the number
 // of bytes written to dst, but this value is always EncodedLen(len(src)).
 // Encode implements hexadecimal encoding.
 
@@ -80,5 +79,5 @@ func EncodeToString(src []byte) string
 // 长度x的明文数据编码后的编码数据的长度。
 func EncodedLen(n int) int
 
-func (InvalidByteError) Error() string
+func (e InvalidByteError) Error() string
 

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 package x509
 
 import (
-	"C"
 	"bytes"
 	"crypto"
 	"crypto/aes"
@@ -34,15 +33,13 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net"
-	"os/exec"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 	"unicode/utf8"
-	"unsafe"
 )
 
 const (
@@ -76,16 +73,20 @@ const (
 	// NotAuthorizedToSign results when a certificate is signed by another
 	// which isn't marked as a CA certificate.
 	NotAuthorizedToSign InvalidReason = iota
+
 	// Expired results when a certificate has expired, based on the time
 	// given in the VerifyOptions.
 	Expired
+
 	// CANotAuthorizedForThisName results when an intermediate or root
 	// certificate has a name constraint which doesn't include the name
 	// being checked.
 	CANotAuthorizedForThisName
+
 	// TooManyIntermediates results when a path length constraint is
 	// violated.
 	TooManyIntermediates
+
 	// IncompatibleUsage results when the certificate's key usage indicates
 	// that it may only be used for a different purpose.
 	IncompatibleUsage
@@ -150,19 +151,16 @@ type Certificate struct {
 	RawSubjectPublicKeyInfo []byte // DER encoded SubjectPublicKeyInfo.
 	RawSubject              []byte // DER encoded Subject
 	RawIssuer               []byte // DER encoded Issuer
-
-	Signature          []byte
-	SignatureAlgorithm SignatureAlgorithm
-
-	PublicKeyAlgorithm PublicKeyAlgorithm
-	PublicKey          interface{}
-
-	Version             int
-	SerialNumber        *big.Int
-	Issuer              pkix.Name
-	Subject             pkix.Name
-	NotBefore, NotAfter time.Time // Validity bounds.
-	KeyUsage            KeyUsage
+	Signature               []byte
+	SignatureAlgorithm      SignatureAlgorithm
+	PublicKeyAlgorithm      PublicKeyAlgorithm
+	PublicKey               interface{}
+	Version                 int
+	SerialNumber            *big.Int
+	Issuer                  pkix.Name
+	Subject                 pkix.Name
+	NotBefore, NotAfter     time.Time // Validity bounds.
+	KeyUsage                KeyUsage
 
 	// Extensions contains raw X.509 extensions. When parsing certificates,
 	// this can be used to extract non-critical extensions that are not
@@ -176,18 +174,26 @@ type Certificate struct {
 	// field is not populated when parsing certificates, see Extensions.
 	ExtraExtensions []pkix.Extension
 
-	ExtKeyUsage        []ExtKeyUsage           // Sequence of extended key usages.
-	UnknownExtKeyUsage []asn1.ObjectIdentifier // Encountered extended key usages unknown to this package.
+	// UnhandledCriticalExtensions contains a list of extension IDs that
+	// were not (fully) processed when parsing. Verify will fail if this
+	// slice is non-empty, unless verification is delegated to an OS
+	// library which understands all the critical extensions.
+	//
+	// Users can access these extensions using Extensions and can remove
+	// elements from this slice if they believe that they have been
+	// handled.
+	UnhandledCriticalExtensions []asn1.ObjectIdentifier
+	ExtKeyUsage                 []ExtKeyUsage           // Sequence of extended key usages.
+	UnknownExtKeyUsage          []asn1.ObjectIdentifier // Encountered extended key usages unknown to this package.
+	BasicConstraintsValid       bool                    // if true then the next two fields are valid.
+	IsCA                        bool
+	MaxPathLen                  int
 
-	BasicConstraintsValid bool // if true then the next two fields are valid.
-	IsCA                  bool
-	MaxPathLen            int
 	// MaxPathLenZero indicates that BasicConstraintsValid==true and
 	// MaxPathLen==0 should be interpreted as an actual maximum path length
 	// of zero. Otherwise, that combination is interpreted as MaxPathLen
 	// not being set.
 	MaxPathLenZero bool
-
 	SubjectKeyId   []byte
 	AuthorityKeyId []byte
 
@@ -206,8 +212,7 @@ type Certificate struct {
 
 	// CRL Distribution Points
 	CRLDistributionPoints []string
-
-	PolicyIdentifiers []asn1.ObjectIdentifier
+	PolicyIdentifiers     []asn1.ObjectIdentifier
 }
 
 // CertificateInvalidError results when an odd error occurs. Users of this
@@ -228,15 +233,14 @@ type CertificateRequest struct {
 	RawTBSCertificateRequest []byte // Certificate request info part of raw ASN.1 DER content.
 	RawSubjectPublicKeyInfo  []byte // DER encoded SubjectPublicKeyInfo.
 	RawSubject               []byte // DER encoded Subject.
+	Version                  int
+	Signature                []byte
+	SignatureAlgorithm       SignatureAlgorithm
+	PublicKeyAlgorithm       PublicKeyAlgorithm
+	PublicKey                interface{}
+	Subject                  pkix.Name
 
-	Version            int
-	Signature          []byte
-	SignatureAlgorithm SignatureAlgorithm
-
-	PublicKeyAlgorithm PublicKeyAlgorithm
-	PublicKey          interface{}
-
-	Subject pkix.Name
+	// Attributes is the dried husk of a bug and shouldn't be used.
 
 	// Attributes is a collection of attributes providing
 	// additional information about the subject of the certificate.
@@ -263,13 +267,14 @@ type CertificateRequest struct {
 	IPAddresses    []net.IP
 }
 
-// ConstraintViolationError results when a requested usage is not permitted by
-// a certificate. For example: checking a signature when the public key isn't a
+// ConstraintViolationError results when a requested usage is not permitted by a
+// certificate. For example: checking a signature when the public key isn't a
 // certificate signing key.
 
 // 当请求的用途不被证书许可时，会返回ConstraintViolationError。如：当公钥不是证
 // 书的签名密钥时用它检查签名。
-type ConstraintViolationError struct{}
+type ConstraintViolationError struct {
+}
 
 // ExtKeyUsage represents an extended set of actions that are valid for a given
 // key. Each of the ExtKeyUsage* constants define a unique action.
@@ -286,6 +291,9 @@ type HostnameError struct {
 	Certificate *Certificate
 	Host        string
 }
+
+// An InsecureAlgorithmError
+type InsecureAlgorithmError SignatureAlgorithm
 
 type InvalidReason int
 
@@ -305,9 +313,12 @@ type SignatureAlgorithm int
 // SystemRootsError results when we fail to load the system root certificates.
 
 // 当从系统装载根证书失败时，会返回SystemRootsError。
-type SystemRootsError struct{}
+type SystemRootsError struct {
+	Err error
+}
 
-type UnhandledCriticalExtension struct{}
+type UnhandledCriticalExtension struct {
+}
 
 // UnknownAuthorityError results when the certificate issuer is unknown
 
@@ -325,6 +336,7 @@ type VerifyOptions struct {
 	Intermediates *CertPool
 	Roots         *CertPool // if nil, the system roots are used
 	CurrentTime   time.Time // if zero, the current time is used
+
 	// KeyUsage specifies which Extended Key Usage values are acceptable.
 	// An empty list means ExtKeyUsageServerAuth. Key usage is considered a
 	// constraint down the chain which mirrors Windows CryptoAPI behaviour,
@@ -339,8 +351,8 @@ type VerifyOptions struct {
 // PermittedDNSDomains, SignatureAlgorithm.
 //
 // The certificate is signed by parent. If parent is equal to template then the
-// certificate is self-signed. The parameter pub is the public key of the
-// signee and priv is the private key of the signer.
+// certificate is self-signed. The parameter pub is the public key of the signee
+// and priv is the private key of the signer.
 //
 // The returned slice is the certificate in DER encoding.
 //
@@ -364,10 +376,10 @@ type VerifyOptions struct {
 //
 // 只支持RSA和ECDSA类型的密钥。（pub可以是*rsa.PublicKey或*ecdsa.PublicKey，priv
 // 可以是*rsa.PrivateKey或*ecdsa.PrivateKey）
-func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interface{}, priv interface{}) (cert []byte, err error)
+func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv interface{}) (cert []byte, err error)
 
-// CreateCertificateRequest creates a new certificate based on a template. The
-// following members of template are used: Subject, Attributes,
+// CreateCertificateRequest creates a new certificate request based on a
+// template. The following members of template are used: Subject, Attributes,
 // SignatureAlgorithm, Extensions, DNSNames, EmailAddresses, and IPAddresses.
 // The private key is the private key of the signer.
 //
@@ -389,9 +401,9 @@ func CreateCertificateRequest(rand io.Reader, template *CertificateRequest, priv
 // DecryptPEMBlock takes a password encrypted PEM block and the password used to
 // encrypt it and returns a slice of decrypted DER encoded bytes. It inspects
 // the DEK-Info header to determine the algorithm used for decryption. If no
-// DEK-Info header is present, an error is returned. If an incorrect password
-// is detected an IncorrectPasswordError is returned. Because of deficiencies
-// in the encrypted-PEM format, it's not always possible to detect an incorrect
+// DEK-Info header is present, an error is returned. If an incorrect password is
+// detected an IncorrectPasswordError is returned. Because of deficiencies in
+// the encrypted-PEM format, it's not always possible to detect an incorrect
 // password. In these cases no error will be returned but the decrypted DER
 // bytes will be random noise.
 
@@ -440,7 +452,7 @@ func NewCertPool() *CertPool
 
 // ParseCRL从crlBytes中解析CRL（证书注销列表）。因为经常有PEM编码的CRL出现在应该
 // 是DER编码的地方，因此本函数可以透明的处理PEM编码，只要没有前导的垃圾数据。
-func ParseCRL(crlBytes []byte) (certList *pkix.CertificateList, err error)
+func ParseCRL(crlBytes []byte) (*pkix.CertificateList, error)
 
 // ParseCertificate parses a single certificate from the given ASN.1 DER data.
 
@@ -456,28 +468,28 @@ func ParseCertificateRequest(asn1Data []byte) (*CertificateRequest, error)
 // ParseCertificates parses one or more certificates from the given ASN.1 DER
 // data. The certificates must be concatenated with no intermediate padding.
 
-// ParseCertificates从ASN.1
-// DER编码的asn1Data中解析一到多个证书。这些证书必须是串联的，且中间没有填充。
+// ParseCertificates从ASN.1 DER编码的asn1Data中解析一到多个证书。这些证书必须是
+// 串联的，且中间没有填充。
 func ParseCertificates(asn1Data []byte) ([]*Certificate, error)
 
 // ParseDERCRL parses a DER encoded CRL from the given bytes.
 
 // ParseDERCRL从derBytes中解析DER编码的CRL。
-func ParseDERCRL(derBytes []byte) (certList *pkix.CertificateList, err error)
+func ParseDERCRL(derBytes []byte) (*pkix.CertificateList, error)
 
 // ParseECPrivateKey parses an ASN.1 Elliptic Curve Private Key Structure.
 
 // ParseECPrivateKey解析ASN.1 DER编码的ecdsa私钥。
-func ParseECPrivateKey(der []byte) (key *ecdsa.PrivateKey, err error)
+func ParseECPrivateKey(der []byte) (*ecdsa.PrivateKey, error)
 
 // ParsePKCS1PrivateKey returns an RSA private key from its ASN.1 PKCS#1 DER
 // encoded form.
 
 // ParsePKCS1PrivateKey解析ASN.1 PKCS#1 DER编码的rsa私钥。
-func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err error)
+func ParsePKCS1PrivateKey(der []byte) (*rsa.PrivateKey, error)
 
-// ParsePKCS8PrivateKey parses an unencrypted, PKCS#8 private key. See
-// http://www.rsa.com/rsalabs/node.asp?id=2130 and RFC5208.
+// ParsePKCS8PrivateKey parses an unencrypted, PKCS#8 private key.
+// See RFC 5208.
 
 // ParsePKCS8PrivateKey解析一个未加密的PKCS#8私钥，参见
 // http://www.rsa.com/rsalabs/node.asp?id=2130和RFC5208。
@@ -485,51 +497,63 @@ func ParsePKCS8PrivateKey(der []byte) (key interface{}, err error)
 
 // ParsePKIXPublicKey parses a DER encoded public key. These values are
 // typically found in PEM blocks with "BEGIN PUBLIC KEY".
+//
+// Supported key types include RSA, DSA, and ECDSA. Unknown key
+// types result in an error.
+//
+// On success, pub will be of type *rsa.PublicKey, *dsa.PublicKey,
+// or *ecdsa.PublicKey.
 
 // ParsePKIXPublicKey解析一个DER编码的公钥。这些公钥一般在以"BEGIN PUBLIC
 // KEY"出现的PEM块中。
 func ParsePKIXPublicKey(derBytes []byte) (pub interface{}, err error)
 
+// SystemCertPool returns a copy of the system cert pool.
+//
+// Any mutations to the returned pool are not written to disk and do
+// not affect any other pool.
+func SystemCertPool() (*CertPool, error)
+
 // AddCert adds a certificate to a pool.
 
 // AddCert向s中添加一个证书。
-func (*CertPool) AddCert(cert *Certificate)
+func (s *CertPool) AddCert(cert *Certificate)
 
-// AppendCertsFromPEM attempts to parse a series of PEM encoded certificates.
-// It appends any certificates found to s and reports whether any certificates
-// were successfully parsed.
+// AppendCertsFromPEM attempts to parse a series of PEM encoded certificates. It
+// appends any certificates found to s and reports whether any certificates were
+// successfully parsed.
 //
-// On many Linux systems, /etc/ssl/cert.pem will contain the system wide set
-// of root CAs in a format suitable for this function.
+// On many Linux systems, /etc/ssl/cert.pem will contain the system wide set of
+// root CAs in a format suitable for this function.
 
 // AppendCertsFromPEM试图解析一系列PEM编码的证书。它将找到的任何证书都加入s中，
 // 如果所有证书都成功被解析，会返回真。
 //
 // 在许多Linux系统中，/etc/ssl/cert.pem会包含适合本函数的大量系统级根证书。
-func (*CertPool) AppendCertsFromPEM(pemCerts []byte) (ok bool)
+func (s *CertPool) AppendCertsFromPEM(pemCerts []byte) (ok bool)
 
 // Subjects returns a list of the DER-encoded subjects of
 // all of the certificates in the pool.
 
 // Subjects返回池中所有证书的DER编码的持有者的列表。
-func (*CertPool) Subjects() (res [][]byte)
+func (s *CertPool) Subjects() [][]byte
 
 // CheckCRLSignature checks that the signature in crl is from c.
 
 // CheckCRLSignature检查crl中的签名是否来自c。
-func (*Certificate) CheckCRLSignature(crl *pkix.CertificateList) (err error)
+func (c *Certificate) CheckCRLSignature(crl *pkix.CertificateList) error
 
 // CheckSignature verifies that signature is a valid signature over signed from
 // c's public key.
 
 // CheckSignature检查signature是否是c的公钥生成的signed的合法签名。
-func (*Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature []byte) (err error)
+func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature []byte) error
 
 // CheckSignatureFrom verifies that the signature on c is a valid signature
 // from parent.
 
 // CheckSignatureFrom检查c中的签名是否是来自parent的合法签名。
-func (*Certificate) CheckSignatureFrom(parent *Certificate) (err error)
+func (c *Certificate) CheckSignatureFrom(parent *Certificate) error
 
 // CreateCRL returns a DER encoded CRL, signed by this Certificate, that
 // contains the given list of revoked certificates.
@@ -538,9 +562,9 @@ func (*Certificate) CheckSignatureFrom(parent *Certificate) (err error)
 // 签名列表。
 //
 // 只支持RSA类型的密钥（priv参数必须是*rsa.PrivateKey类型）。
-func (*Certificate) CreateCRL(rand io.Reader, priv interface{}, revokedCerts []pkix.RevokedCertificate, now, expiry time.Time) (crlBytes []byte, err error)
+func (c *Certificate) CreateCRL(rand io.Reader, priv interface{}, revokedCerts []pkix.RevokedCertificate, now, expiry time.Time) (crlBytes []byte, err error)
 
-func (*Certificate) Equal(other *Certificate) bool
+func (c *Certificate) Equal(other *Certificate) bool
 
 // Verify attempts to verify c by building one or more chains from c to a
 // certificate in opts.Roots, using certificates in opts.Intermediates if
@@ -557,20 +581,28 @@ func (*Certificate) Equal(other *Certificate) bool
 // 始，以opts.Roots中的证书结束。
 //
 // 警告：它不会做任何取消检查。
-func (*Certificate) Verify(opts VerifyOptions) (chains [][]*Certificate, err error)
+func (c *Certificate) Verify(opts VerifyOptions) (chains [][]*Certificate, err error)
 
 // VerifyHostname returns nil if c is a valid certificate for the named host.
 // Otherwise it returns an error describing the mismatch.
-func (*Certificate) VerifyHostname(h string) error
+func (c *Certificate) VerifyHostname(h string) error
 
-func (CertificateInvalidError) Error() string
+// CheckSignature reports whether the signature on c is valid.
+func (c *CertificateRequest) CheckSignature() error
+
+func (e CertificateInvalidError) Error() string
 
 func (ConstraintViolationError) Error() string
 
-func (HostnameError) Error() string
+func (h HostnameError) Error() string
 
-func (SystemRootsError) Error() string
+func (e InsecureAlgorithmError) Error() string
 
-func (UnhandledCriticalExtension) Error() string
+func (algo SignatureAlgorithm) String() string
 
-func (UnknownAuthorityError) Error() string
+func (se SystemRootsError) Error() string
+
+func (h UnhandledCriticalExtension) Error() string
+
+func (e UnknownAuthorityError) Error() string
+

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -20,7 +20,7 @@ type Cipher struct {
 
 type KeySizeError int
 
-// NewCipher creates and returns a new Cipher.  The key argument should be the
+// NewCipher creates and returns a new Cipher. The key argument should be the
 // RC4 key, at least 1 byte and at most 256 bytes.
 
 // NewCipher创建并返回一个新的Cipher。参数key是RC4密钥，至少1字节，最多256字节。
@@ -30,14 +30,7 @@ func NewCipher(key []byte) (*Cipher, error)
 // process's memory.
 
 // Reset方法会清空密钥数据，以便将其数据从程序内存中清除（以免被破解）
-func (*Cipher) Reset()
+func (c *Cipher) Reset()
 
-// XORKeyStream sets dst to the result of XORing src with the key stream.
-// Dst and src may be the same slice but otherwise should not overlap.
-
-// XORKeyStream方法将src的数据与秘钥生成的伪随机位流取XOR并写入dst。dst和src可指
-// 向同一内存地址；但如果指向不同则其底层内存不可重叠。
-func (*Cipher) XORKeyStream(dst, src []byte)
-
-func (KeySizeError) Error() string
+func (k KeySizeError) Error() string
 

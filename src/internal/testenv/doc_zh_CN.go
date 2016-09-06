@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors.  All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,20 +10,17 @@
 // It is an internal package because these details are specific
 // to the Go team's test setup (on build.golang.org) and not
 // fundamental to tests in general.
-
-// Package testenv provides information about what functionality
-// is available in different testing environments run by the Go team.
-//
-// It is an internal package because these details are specific
-// to the Go team's test setup (on build.golang.org) and not
-// fundamental to tests in general.
-package testenv // import "internal/testenv"
+package testenv
 
 import (
-    "os"
-    "runtime"
-    "strings"
-    "testing"
+	"flag"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"testing"
 )
 
 // Builder reports the name of the builder running this test
@@ -31,6 +28,11 @@ import (
 // If the test is not running on the build infrastructure,
 // Builder returns the empty string.
 func Builder() string
+
+// GoToolPath reports the path to the Go tool.
+// If the tool is unavailable GoToolPath calls t.Skip.
+// If the tool should be available and isn't, GoToolPath calls t.Fatal.
+func GoToolPath(t *testing.T) string
 
 // HasExec reports whether the current system can start new processes
 // using os.StartProcess or (more commonly) exec.Command.
@@ -65,4 +67,8 @@ func MustHaveGoBuild(t *testing.T)
 // MustHaveGoRun checks that the current system can run programs with ``go
 // run.'' If not, MustHaveGoRun calls t.Skip with an explanation.
 func MustHaveGoRun(t *testing.T)
+
+func SkipFlaky(t *testing.T, issue int)
+
+func SkipFlakyNet(t *testing.T)
 

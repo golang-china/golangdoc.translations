@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,46 +6,45 @@
 
 // Package pprof serves via its HTTP server runtime profiling data
 // in the format expected by the pprof visualization tool.
-// For more information about pprof, see
-// http://code.google.com/p/google-perftools/.
 //
 // The package is typically only imported for the side effect of
 // registering its HTTP handlers.
 // The handled paths all begin with /debug/pprof/.
 //
 // To use pprof, link this package into your program:
-//     import _ "net/http/pprof"
+// 	import _ "net/http/pprof"
 //
 // If your application is not already running an http server, you
-// need to start one.  Add "net/http" and "log" to your imports and
+// need to start one. Add "net/http" and "log" to your imports and
 // the following code to your main function:
 //
-//     go func() {
-//         log.Println(http.ListenAndServe("localhost:6060", nil))
-//     }()
+// 	go func() {
+// 		log.Println(http.ListenAndServe("localhost:6060", nil))
+// 	}()
 //
 // Then use the pprof tool to look at the heap profile:
 //
-//     go tool pprof http://localhost:6060/debug/pprof/heap
+// 	go tool pprof http://localhost:6060/debug/pprof/heap
 //
 // Or to look at a 30-second CPU profile:
 //
-//     go tool pprof http://localhost:6060/debug/pprof/profile
+// 	go tool pprof http://localhost:6060/debug/pprof/profile
 //
-// Or to look at the goroutine blocking profile:
+// Or to look at the goroutine blocking profile, after calling
+// runtime.SetBlockProfileRate in your program:
 //
-//     go tool pprof http://localhost:6060/debug/pprof/block
+// 	go tool pprof http://localhost:6060/debug/pprof/block
 //
 // Or to collect a 5-second execution trace:
 //
-//     wget http://localhost:6060/debug/pprof/trace?seconds=5
+// 	wget http://localhost:6060/debug/pprof/trace?seconds=5
 //
 // To view all available profiles, open http://localhost:6060/debug/pprof/
 // in your browser.
 //
 // For a study of the facility in action, visit
 //
-//     https://blog.golang.org/2011/06/profiling-go-programs.html
+// 	https://blog.golang.org/2011/06/profiling-go-programs.html
 
 // pprof 包通过提供HTTP服务返回runtime的统计数据，这个数据是以pprof可视化工具规
 // 定的返回格式返回的. 了解更多的pprof的知识，请参考：
@@ -56,49 +55,49 @@
 //
 // 使用pprof，只要将这个包引入到你的程序中：
 //
-//     import _ "net/http/pprof"
+// 	import _ "net/http/pprof"
 //
 // 如果你的应用并不是运行在http server上，你需要开启一个http服务。 开启方法就是
 // 增加"net/http"和"log"包到你的imports中，然后增加下面的方法到你的main函数中。
 //
-//     go func() {
-//         log.Println(http.ListenAndServe("localhost:6060", nil))
-//     }()
+// 	go func() {
+// 		log.Println(http.ListenAndServe("localhost:6060", nil))
+// 	}()
 //
 // 然后使用pprof工具查看heap统计：
 //
-//     go tool pprof http://localhost:6060/debug/pprof/heap
+// 	go tool pprof http://localhost:6060/debug/pprof/heap
 //
 // 或者查看30秒内的CPU统计：
 //
-//     go tool pprof http://localhost:6060/debug/pprof/profile
+// 	go tool pprof http://localhost:6060/debug/pprof/profile
 //
 // 也可以查看阻塞中的goroutine统计：
 //
-//     go tool pprof http://localhost:6060/debug/pprof/block
+// 	go tool pprof http://localhost:6060/debug/pprof/block
 //
 // 要查看所有的可查看的统计，在浏览器中打开http://localhost:6060/debug/pprof/
 //
 // 要进一步了解profile的功能，请浏览
 //
-//     http://blog.golang.org/2011/06/profiling-go-programs.html
+// 	http://blog.golang.org/2011/06/profiling-go-programs.html
 package pprof
 
 import (
-    "bufio"
-    "bytes"
-    "fmt"
-    "html/template"
-    "io"
-    "log"
-    "net/http"
-    "os"
-    "runtime"
-    "runtime/pprof"
-    "runtime/trace"
-    "strconv"
-    "strings"
-    "time"
+	"bufio"
+	"bytes"
+	"fmt"
+	"html/template"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"runtime"
+	"runtime/pprof"
+	"runtime/trace"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // Cmdline responds with the running program's
@@ -119,9 +118,9 @@ func Handler(name string) http.Handler
 // Index responds to a request for "/debug/pprof/" with an HTML page
 // listing the available profiles.
 
-// Index 返回请求处理中格式化的pprof的统计数据。 例如，“/debug/pprof/heap”
-// 展示的是“heap”统计信息。
-// Index对请求“/debug/pprof/”返回一个HTML页面，这个页面展示了所有可见的统计。
+// Index 返回请求处理中格式化的pprof的统计数据。 例如，“/debug/pprof/heap” 展
+// 示的是“heap”统计信息。 Index对请求“/debug/pprof/”返回一个HTML页面，这个页
+// 面展示了所有可见的统计。
 func Index(w http.ResponseWriter, r *http.Request)
 
 // Profile responds with the pprof-formatted cpu profile.
@@ -139,4 +138,9 @@ func Profile(w http.ResponseWriter, r *http.Request)
 // 返回的是一个程序计数器和函数名字的映射表。
 // 这个包的初始化函数将这个函数注册为/debug/pprof/symbol的处理函数。
 func Symbol(w http.ResponseWriter, r *http.Request)
+
+// Trace responds with the execution trace in binary form. Tracing lasts for
+// duration specified in seconds GET parameter, or for 1 second if not
+// specified. The package initialization registers it as /debug/pprof/trace.
+func Trace(w http.ResponseWriter, r *http.Request)
 

@@ -5,16 +5,14 @@
 // +build ingore
 
 // Package importer provides access to export data importers.
-
-// Package importer provides access to export data importers.
-package importer // import "go/importer"
+package importer
 
 import (
-    "go/internal/gccgoimporter"
-    "go/internal/gcimporter"
-    "go/types"
-    "io"
-    "runtime"
+	"go/internal/gccgoimporter"
+	"go/internal/gcimporter"
+	"go/types"
+	"io"
+	"runtime"
 )
 
 // A Lookup function returns a reader to access package data for

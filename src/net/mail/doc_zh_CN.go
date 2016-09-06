@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,34 +6,37 @@
 
 // Package mail implements parsing of mail messages.
 //
-// For the most part, this package follows the syntax as specified by RFC 5322.
-// Notable divergences:
-//     * Obsolete address formats are not parsed, including addresses with
-//       embedded route information.
-//     * Group addresses are not parsed.
-//     * The full range of spacing (the CFWS syntax element) is not supported,
-//       such as breaking addresses across lines.
+// For the most part, this package follows the syntax as specified by RFC 5322
+// and extended by RFC 6532. Notable divergences:
+//
+// 	* Obsolete address formats are not parsed, including addresses with
+// 	  embedded route information.
+// 	* Group addresses are not parsed.
+// 	* The full range of spacing (the CFWS syntax element) is not supported,
+// 	  such as breaking addresses across lines.
+// 	* No unicode normalization is performed.
 
 // mail 包实现了解析邮件消息的功能.
 //
-// 大多数情况下，这个包跟着RFC 5322定义的格式。 需要注意的：
-//
-//     * 过时的地址格式将不能被解析, 包括嵌入路由信息的地址格式。
-//     * 组地址不能被解析。
-//     * 全范围的空格（CFWS样式元素）不支持，比如使用换行分隔地址。
+// 大多数情况下，这个包遵循 RFC 5322 定义的格式。
+// 需要注意的：
+// 	* 过时的地址格式将不能被解析, 包括嵌入路由信息的地址格式。
+// 	* 组地址不能被解析。
+// 	* 全范围的空格（CFWS 语法元素）不支持，比如使用换行分隔地址。
 package mail
 
 import (
-    "bufio"
-    "bytes"
-    "errors"
-    "fmt"
-    "io"
-    "log"
-    "mime"
-    "net/textproto"
-    "strings"
-    "time"
+	"bufio"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"mime"
+	"net/textproto"
+	"strings"
+	"time"
+	"unicode/utf8"
 )
 
 var ErrHeaderNotPresent = errors.New("mail: header not in message")
@@ -42,11 +45,18 @@ var ErrHeaderNotPresent = errors.New("mail: header not in message")
 // An address such as "Barry Gibbs <bg@example.com>" is represented
 // as Address{Name: "Barry Gibbs", Address: "bg@example.com"}.
 
-// Address代表单个的邮件地址。 一个地址例如"Barry Gibbs <bg@example.com>"代表一
-// 个地址 {Name: "Barry Gibbs", Address: "bg@example.com"}。
+// Address代表单个的邮件地址。
+// 一个地址例如"Barry Gibbs <bg@example.com>"代表一个地址
+// {Name: "Barry Gibbs", Address: "bg@example.com"}。
 type Address struct {
-    Name    string // Proper name; may be empty.
-    Address string // user@domain
+	Name    string // Proper name; may be empty.
+	Address string // user@domain
+}
+
+// An AddressParser is an RFC 5322 address parser.
+type AddressParser struct {
+	// WordDecoder optionally specifies a decoder for RFC 2047 encoded-words.
+	WordDecoder *mime.WordDecoder
 }
 
 // A Header represents the key-value pairs in a mail message header.
@@ -58,8 +68,8 @@ type Header map[string][]string
 
 // Message代表解析后的邮件信息。
 type Message struct {
-    Header Header
-    Body   io.Reader
+	Header Header
+	Body   io.Reader
 }
 
 // Parses a single RFC 5322 address, e.g. "Barry Gibbs <bg@example.com>"
@@ -86,21 +96,30 @@ func ReadMessage(r io.Reader) (msg *Message, err error)
 
 // String格式化一个可视的RFC 5322地址。
 // 如果地址名字包含非ASCII字符串，名字就会按照RFC 2047来解析。
-func (*Address) String() string
+func (a *Address) String() string
+
+// Parse parses a single RFC 5322 address of the
+// form "Gogh Fir <gf@example.com>" or "foo@example.com".
+func (p *AddressParser) Parse(address string) (*Address, error)
+
+// ParseList parses the given string as a list of comma-separated addresses
+// of the form "Gogh Fir <gf@example.com>" or "foo@example.com".
+func (p *AddressParser) ParseList(list string) ([]*Address, error)
 
 // AddressList parses the named header field as a list of addresses.
 
 // AddressList将命名后的头部区域作为一列地址列表解析出来。
-func (Header) AddressList(key string) ([]*Address, error)
+func (h Header) AddressList(key string) ([]*Address, error)
 
 // Date parses the Date header field.
 
 // Date解析Date头部区域。
-func (Header) Date() (time.Time, error)
+func (h Header) Date() (time.Time, error)
 
 // Get gets the first value associated with the given key.
 // If there are no values associated with the key, Get returns "".
 
-// Get获取根据key取出的第一个对应的值。 如果key没有对应的值，返回“”。
-func (Header) Get(key string) string
+// Get获取根据key取出的第一个对应的值。
+// 如果key没有对应的值，返回“”。
+func (h Header) Get(key string) string
 

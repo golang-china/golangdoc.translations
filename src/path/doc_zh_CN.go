@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 package path
 
 import (
-    "errors"
-    "strings"
-    "unicode/utf8"
+	"errors"
+	"strings"
+	"unicode/utf8"
 )
 
 // ErrBadPattern indicates a globbing pattern was malformed.
@@ -31,15 +31,15 @@ var ErrBadPattern = errors.New("syntax error in pattern")
 func Base(path string) string
 
 // Clean returns the shortest path name equivalent to path
-// by purely lexical processing.  It applies the following rules
+// by purely lexical processing. It applies the following rules
 // iteratively until no further processing can be done:
 //
-//     1. Replace multiple slashes with a single slash.
-//     2. Eliminate each . path name element (the current directory).
-//     3. Eliminate each inner .. path name element (the parent directory)
-//        along with the non-.. element that precedes it.
-//     4. Eliminate .. elements that begin a rooted path:
-//        that is, replace "/.." by "/" at the beginning of a path.
+// 	1. Replace multiple slashes with a single slash.
+// 	2. Eliminate each . path name element (the current directory).
+// 	3. Eliminate each inner .. path name element (the parent directory)
+// 	   along with the non-.. element that precedes it.
+// 	4. Eliminate .. elements that begin a rooted path:
+// 	   that is, replace "/.." by "/" at the beginning of a path.
 //
 // The returned path ends in a slash only if it is the root "/".
 //
@@ -48,16 +48,16 @@ func Base(path string) string
 //
 // See also Rob Pike, ``Lexical File Names in Plan 9 or
 // Getting Dot-Dot Right,''
-// http://plan9.bell-labs.com/sys/doc/lexnames.html
+// https://9p.io/sys/doc/lexnames.html
 
 // Clean函数通过单纯的词法操作返回和path代表同一地址的最短路径。
 //
 // 它会不断的依次应用如下的规则，直到不能再进行任何处理：
 //
-//     1. 将连续的多个斜杠替换为单个斜杠
-//     2. 剔除每一个.路径名元素（代表当前目录）
-//     3. 剔除每一个路径内的..路径名元素（代表父目录）和它前面的非..路径名元素
-//     4. 剔除开始一个根路径的..路径名元素，即将路径开始处的"/.."替换为"/"
+// 	1. 将连续的多个斜杠替换为单个斜杠
+// 	2. 剔除每一个.路径名元素（代表当前目录）
+// 	3. 剔除每一个路径内的..路径名元素（代表父目录）和它前面的非..路径名元素
+// 	4. 剔除开始一个根路径的..路径名元素，即将路径开始处的"/.."替换为"/"
 //
 // 只有路径代表根地址"/"时才会以斜杠结尾。如果处理的结果是空字符串，Clean会返回
 // "."。
@@ -102,20 +102,20 @@ func Join(elem ...string) string
 // Match reports whether name matches the shell file name pattern.
 // The pattern syntax is:
 //
-//     pattern:
-//         { term }
-//     term:
-//         '*'         matches any sequence of non-/ characters
-//         '?'         matches any single non-/ character
-//         '[' [ '^' ] { character-range } ']'
-//                     character class (must be non-empty)
-//         c           matches character c (c != '*', '?', '\\', '[')
-//         '\\' c      matches character c
+// 	pattern:
+// 		{ term }
+// 	term:
+// 		'*'         matches any sequence of non-/ characters
+// 		'?'         matches any single non-/ character
+// 		'[' [ '^' ] { character-range } ']'
+// 		            character class (must be non-empty)
+// 		c           matches character c (c != '*', '?', '\\', '[')
+// 		'\\' c      matches character c
 //
-//     character-range:
-//         c           matches character c (c != '\\', '-', ']')
-//         '\\' c      matches character c
-//         lo '-' hi   matches character c for lo <= c <= hi
+// 	character-range:
+// 		c           matches character c (c != '\\', '-', ']')
+// 		'\\' c      matches character c
+// 		lo '-' hi   matches character c for lo <= c <= hi
 //
 // Match requires pattern to match all of name, not just a substring.
 // The only possible returned error is ErrBadPattern, when pattern
@@ -124,18 +124,18 @@ func Join(elem ...string) string
 // 如果name匹配shell文件名模式匹配字符串，Match函数返回真。该模式匹配字符串语法
 // 为：
 //
-//     pattern:
-//         { term }
-//     term:
-//         '*'                                  匹配0或多个非/的字符
-//         '?'                                  匹配1个非/的字符
-//         '[' [ '^' ] { character-range } ']'  字符组（必须非空）
-//         c                                    匹配字符c（c != '*', '?', '\\', '['）
-//         '\\' c                               匹配字符c
-//     character-range:
-//         c           匹配字符c（c != '\\', '-', ']'）
-//         '\\' c      匹配字符c
-//         lo '-' hi   匹配区间[lo, hi]内的字符
+// 	pattern:
+// 	    { term }
+// 	term:
+// 	    '*'                                  匹配0或多个非/的字符
+// 	    '?'                                  匹配1个非/的字符
+// 	    '[' [ '^' ] { character-range } ']'  字符组（必须非空）
+// 	    c                                    匹配字符c（c != '*', '?', '\\', '['）
+// 	    '\\' c                               匹配字符c
+// 	character-range:
+// 	    c           匹配字符c（c != '\\', '-', ']'）
+// 	    '\\' c      匹配字符c
+// 	    lo '-' hi   匹配区间[lo, hi]内的字符
 //
 // Match要求匹配整个name字符串，而不是它的一部分。只有pattern语法错误时，会返回
 // ErrBadPattern。

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -15,27 +15,27 @@
 //
 // The Dial function connects to a server:
 //
-//     conn, err := net.Dial("tcp", "google.com:80")
-//     if err != nil {
-//         // handle error
-//     }
-//     fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
-//     status, err := bufio.NewReader(conn).ReadString('\n')
-//     // ...
+// 	conn, err := net.Dial("tcp", "golang.org:80")
+// 	if err != nil {
+// 		// handle error
+// 	}
+// 	fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
+// 	status, err := bufio.NewReader(conn).ReadString('\n')
+// 	// ...
 //
 // The Listen function creates servers:
 //
-//     ln, err := net.Listen("tcp", ":8080")
-//     if err != nil {
-//         // handle error
-//     }
-//     for {
-//         conn, err := ln.Accept()
-//         if err != nil {
-//             // handle error
-//         }
-//         go handleConnection(conn)
-//     }
+// 	ln, err := net.Listen("tcp", ":8080")
+// 	if err != nil {
+// 		// handle error
+// 	}
+// 	for {
+// 		conn, err := ln.Accept()
+// 		if err != nil {
+// 			// handle error
+// 		}
+// 		go handleConnection(conn)
+// 	}
 //
 //
 // Name Resolution
@@ -63,8 +63,8 @@
 // The resolver decision can be overridden by setting the netdns value of the
 // GODEBUG environment variable (see package runtime) to go or cgo, as in:
 //
-//     export GODEBUG=netdns=go    # force pure Go resolver
-//     export GODEBUG=netdns=cgo   # force cgo resolver
+// 	export GODEBUG=netdns=go    # force pure Go resolver
+// 	export GODEBUG=netdns=cgo   # force cgo resolver
 //
 // The decision can also be forced while building the Go source tree by setting
 // the netgo or netcgo build tag.
@@ -87,36 +87,35 @@
 //
 // Dial函数和服务端建立连接：
 //
-//     conn, err := net.Dial("tcp", "google.com:80")
-//     if err != nil {
-//         // handle error
-//     }
-//     fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
-//     status, err := bufio.NewReader(conn).ReadString('\n')
-//     // ...
+// 	conn, err := net.Dial("tcp", "google.com:80")
+// 	if err != nil {
+// 	    // handle error
+// 	}
+// 	fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
+// 	status, err := bufio.NewReader(conn).ReadString('\n')
+// 	// ...
 //
 // Listen函数创建的服务端：
 //
-//     ln, err := net.Listen("tcp", ":8080")
-//     if err != nil {
-//         // handle error
-//     }
-//     for {
-//         conn, err := ln.Accept()
-//         if err != nil {
-//             // handle error
-//             continue
-//         }
-//         go handleConnection(conn)
-//     }
+// 	ln, err := net.Listen("tcp", ":8080")
+// 	if err != nil {
+// 	    // handle error
+// 	}
+// 	for {
+// 	    conn, err := ln.Accept()
+// 	    if err != nil {
+// 	        // handle error
+// 	        continue
+// 	    }
+// 	    go handleConnection(conn)
+// 	}
 package net
 
 import (
-	"C"
+	"context"
 	"errors"
-	"internal/race"
+	"internal/nettrace"
 	"internal/singleflight"
-	"internal/syscall/windows"
 	"io"
 	"math/rand"
 	"os"
@@ -176,8 +175,8 @@ var (
 
 // Addr代表一个网络终端地址。
 type Addr interface {
-	Network() string // name of the network
-	String() string  // string form of address
+	Network()string // name of the network
+	String()string  // string form of address
 }
 
 type AddrError struct {
@@ -191,25 +190,25 @@ type AddrError struct {
 
 // Conn接口代表通用的面向流的网络连接。多个线程可能会同时调用同一个Conn的方法。
 type Conn interface {
-	// Read reads data from the connection.
-	// Read can be made to time out and return a Error with Timeout() == true
-	// after a fixed time limit; see SetDeadline and SetReadDeadline.
+	// Read reads data from the connection. Read can be made to time out and
+	// return a Error with Timeout() == true after a fixed time limit; see
+	// SetDeadline and SetReadDeadline.
 	Read(b []byte) (n int, err error)
 
-	// Write writes data to the connection.
-	// Write can be made to time out and return a Error with Timeout() == true
-	// after a fixed time limit; see SetDeadline and SetWriteDeadline.
+	// Write writes data to the connection. Write can be made to time out and
+	// return a Error with Timeout() == true after a fixed time limit; see
+	// SetDeadline and SetWriteDeadline.
 	Write(b []byte) (n int, err error)
 
-	// Close closes the connection.
-	// Any blocked Read or Write operations will be unblocked and return errors.
-	Close() error
+	// Close closes the connection. Any blocked Read or Write operations will be
+	// unblocked and return errors.
+	Close()error
 
 	// LocalAddr returns the local network address.
-	LocalAddr() Addr
+	LocalAddr()Addr
 
 	// RemoteAddr returns the remote network address.
-	RemoteAddr() Addr
+	RemoteAddr()Addr
 
 	// SetDeadline sets the read and write deadlines associated
 	// with the connection. It is equivalent to calling both
@@ -224,17 +223,17 @@ type Conn interface {
 	// the deadline after successful Read or Write calls.
 	//
 	// A zero value for t means I/O operations will not time out.
-	SetDeadline(t time.Time) error
+	SetDeadline(t time.Time)error
 
 	// SetReadDeadline sets the deadline for future Read calls.
 	// A zero value for t means Read will not time out.
-	SetReadDeadline(t time.Time) error
+	SetReadDeadline(t time.Time)error
 
 	// SetWriteDeadline sets the deadline for future Write calls.
 	// Even if write times out, it may return n > 0, indicating that
 	// some of the data was successfully written.
 	// A zero value for t means Write will not time out.
-	SetWriteDeadline(t time.Time) error
+	SetWriteDeadline(t time.Time)error
 }
 
 // DNSConfigError represents an error reading the machine's DNS configuration.
@@ -249,10 +248,11 @@ type DNSConfigError struct {
 
 // DNSError代表DNS查询的错误。
 type DNSError struct {
-	Err       string // description of the error
-	Name      string // name looked for
-	Server    string // server used
-	IsTimeout bool
+	Err         string // description of the error
+	Name        string // name looked for
+	Server      string // server used
+	IsTimeout   bool   // if true, timed out; not all timeouts set this
+	IsTemporary bool   // if true, error is temporary; not all errors set this
 }
 
 // A Dialer contains options for connecting to an address.
@@ -266,6 +266,19 @@ type DNSError struct {
 // 每一个字段的零值都等价于没有该字段。因此调用Dialer零值的Dial方法等价于调用
 // Dial函数。
 type Dialer struct {
+	// Timeout is the maximum amount of time a dial will wait for
+	// a connect to complete. If Deadline is also set, it may fail
+	// earlier.
+	//
+	// The default is no timeout.
+	//
+	// When dialing a name with multiple IP addresses, the timeout
+	// may be divided between them.
+	//
+	// With or without a timeout, the operating system may impose
+	// its own earlier timeout. For instance, TCP timeouts are
+	// often around 3 minutes.
+
 	// Timeout is the maximum amount of time a dial will wait for
 	// a connect to complete. If Deadline is also set, it may fail
 	// earlier.
@@ -289,6 +302,11 @@ type Dialer struct {
 	// If nil, a local address is automatically chosen.
 	LocalAddr Addr
 
+	// DualStack enables RFC 6555-compliant "Happy Eyeballs" dialing
+	// when the network is "tcp" and the destination is a host name
+	// with both IPv4 and IPv6 addresses. This allows a client to
+	// tolerate networks where one address family is silently broken.
+
 	// DualStack allows a single dial to attempt to establish
 	// multiple IPv4 and IPv6 connections and to return the first
 	// established connection when the network is "tcp" and the
@@ -296,11 +314,23 @@ type Dialer struct {
 	// DNS records.
 	DualStack bool
 
+	// FallbackDelay specifies the length of time to wait before
+	// spawning a fallback connection, when DualStack is enabled.
+	// If zero, a default delay of 300ms is used.
+	FallbackDelay time.Duration
+
 	// KeepAlive specifies the keep-alive period for an active
 	// network connection.
 	// If zero, keep-alives are not enabled. Network protocols
 	// that do not support keep-alives ignore this field.
 	KeepAlive time.Duration
+
+	// Cancel is an optional channel whose closure indicates that
+	// the dial should be canceled. Not all types of dials support
+	// cancelation.
+	//
+	// Deprecated: Use DialContext instead.
+	Cancel <-chan struct{}
 }
 
 // An Error represents a network error.
@@ -308,8 +338,8 @@ type Dialer struct {
 // Error代表一个网络错误。
 type Error interface {
 	error
-	Timeout() bool   // Is the error a timeout?
-	Temporary() bool // Is the error temporary?
+	Timeout()bool   // Is the error a timeout?
+	Temporary()bool // Is the error temporary?
 }
 
 type Flags uint
@@ -347,9 +377,6 @@ type IPAddr struct {
 // IPConn is the implementation of the Conn and PacketConn interfaces
 // for IP network connections.
 
-// IPConn is the implementation of the Conn and PacketConn interfaces
-// for IP network connections.
-
 // IPConn类型代表IP网络连接，实现了Conn和PacketConn接口。
 type IPConn struct {
 }
@@ -368,7 +395,7 @@ type IPNet struct {
 }
 
 // Interface represents a mapping between network interface name
-// and index.  It also represents network interface facility
+// and index. It also represents network interface facility
 // information.
 
 // Interface类型代表一个网络接口（系统与网络的一个接点）。包含接口索引到名字的映
@@ -391,14 +418,14 @@ type InvalidAddrError string
 // 调用一个Listener的方法。
 type Listener interface {
 	// Accept waits for and returns the next connection to the listener.
-	Accept() (c Conn, err error)
+	Accept() (Conn, error)
 
 	// Close closes the listener.
 	// Any blocked Accept operations will be unblocked and return errors.
-	Close() error
+	Close()error
 
 	// Addr returns the listener's network address.
-	Addr() Addr
+	Addr()Addr
 }
 
 // An MX represents a single DNS MX record.
@@ -433,6 +460,18 @@ type OpError struct {
 	// such as "tcp" or "udp6".
 	Net string
 
+	// For operations involving a remote network connection, like
+	// Dial, Read, or Write, Source is the corresponding local
+	// network address.
+	Source Addr
+
+	// Addr is the network address for which this error occurred.
+	// For local operations, like Listen or SetDeadline, Addr is
+	// the address of the local endpoint being manipulated.
+	// For operations involving a remote network connection, like
+	// Dial, Read, or Write, Addr is the remote address of that
+	// connection.
+
 	// Addr is the network address on which this error occurred.
 	Addr Addr
 
@@ -448,7 +487,7 @@ type OpError struct {
 // Conn的方法。
 type PacketConn interface {
 	// ReadFrom reads a packet from the connection,
-	// copying the payload into b.  It returns the number of
+	// copying the payload into b. It returns the number of
 	// bytes copied into b and the return address that
 	// was on the packet.
 	// ReadFrom can be made to time out and return
@@ -463,22 +502,22 @@ type PacketConn interface {
 	// On packet-oriented connections, write timeouts are rare.
 	WriteTo(b []byte, addr Addr) (n int, err error)
 
-	// Close closes the connection.
-	// Any blocked ReadFrom or WriteTo operations will be unblocked and return errors.
-	Close() error
+	// Close closes the connection. Any blocked ReadFrom or WriteTo operations
+	// will be unblocked and return errors.
+	Close()error
 
 	// LocalAddr returns the local network address.
-	LocalAddr() Addr
+	LocalAddr()Addr
 
 	// SetDeadline sets the read and write deadlines associated
 	// with the connection.
-	SetDeadline(t time.Time) error
+	SetDeadline(t time.Time)error
 
 	// SetReadDeadline sets the deadline for future Read calls.
 	// If the deadline is reached, Read will fail with a timeout
 	// (see type Error) instead of blocking.
 	// A zero value for t means Read will not time out.
-	SetReadDeadline(t time.Time) error
+	SetReadDeadline(t time.Time)error
 
 	// SetWriteDeadline sets the deadline for future Write calls.
 	// If the deadline is reached, Write will fail with a timeout
@@ -486,14 +525,18 @@ type PacketConn interface {
 	// A zero value for t means Write will not time out.
 	// Even if write times out, it may return n > 0, indicating that
 	// some of the data was successfully written.
-	SetWriteDeadline(t time.Time) error
+	SetWriteDeadline(t time.Time)error
 }
 
 // A ParseError is the error type of literal network address parsers.
 
 // ParseError代表一个格式错误的字符串，Type为期望的格式。
 type ParseError struct {
+	// Type is the type of string that was expected, such as
+	// "IP address", "CIDR address".
 	Type string
+
+	// Text is the malformed text string.
 	Text string
 }
 
@@ -520,17 +563,11 @@ type TCPAddr struct {
 // TCPConn is an implementation of the Conn interface for TCP network
 // connections.
 
-// TCPConn is an implementation of the Conn interface for TCP network
-// connections.
-
 // TCPConn代表一个TCP网络连接，实现了Conn接口。
 type TCPConn struct {
 }
 
-// TCPListener is a TCP network listener.  Clients should typically
-// use variables of type Listener instead of assuming TCP.
-
-// TCPListener is a TCP network listener.  Clients should typically
+// TCPListener is a TCP network listener. Clients should typically
 // use variables of type Listener instead of assuming TCP.
 
 // TCPListener代表一个TCP网络的监听者。使用者应尽量使用Listener接口而不是假设（
@@ -550,9 +587,6 @@ type UDPAddr struct {
 // UDPConn is the implementation of the Conn and PacketConn interfaces
 // for UDP network connections.
 
-// UDPConn is the implementation of the Conn and PacketConn interfaces
-// for UDP network connections.
-
 // UDPConn代表一个UDP网络连接，实现了Conn和PacketConn接口。
 type UDPConn struct {
 }
@@ -568,18 +602,11 @@ type UnixAddr struct {
 // UnixConn is an implementation of the Conn interface for connections
 // to Unix domain sockets.
 
-// UnixConn is an implementation of the Conn interface for connections
-// to Unix domain sockets.
-
 // UnixConn代表Unix域socket连接，实现了Conn和PacketConn接口。
 type UnixConn struct {
 }
 
-// UnixListener is a Unix domain socket listener.  Clients should
-// typically use variables of type Listener instead of assuming Unix
-// domain sockets.
-
-// UnixListener is a Unix domain socket listener.  Clients should
+// UnixListener is a Unix domain socket listener. Clients should
 // typically use variables of type Listener instead of assuming Unix
 // domain sockets.
 
@@ -613,19 +640,19 @@ func CIDRMask(ones, bits int) IPMask
 // If the host is empty, as in ":80", the local system is assumed.
 //
 // Examples:
-//     Dial("tcp", "12.34.56.78:80")
-//     Dial("tcp", "google.com:http")
-//     Dial("tcp", "[2001:db8::1]:http")
-//     Dial("tcp", "[fe80::1%lo0]:80")
-//     Dial("tcp", ":80")
+// 	Dial("tcp", "192.0.2.1:80")
+// 	Dial("tcp", "golang.org:http")
+// 	Dial("tcp", "[2001:db8::1]:http")
+// 	Dial("tcp", "[fe80::1%lo0]:80")
+// 	Dial("tcp", ":80")
 //
 // For IP networks, the network must be "ip", "ip4" or "ip6" followed
 // by a colon and a protocol number or name and the addr must be a
 // literal IP address.
 //
 // Examples:
-//     Dial("ip4:1", "127.0.0.1")
-//     Dial("ip6:ospf", "::1")
+// 	Dial("ip4:1", "192.0.2.1")
+// 	Dial("ip6:ipv6-icmp", "2001:db8::1")
 //
 // For Unix networks, the address must be a file system path.
 
@@ -637,16 +664,16 @@ func CIDRMask(ones, bits int) IPMask
 // 对TCP和UDP网络，地址格式是host:port或[host]:port，参见函数JoinHostPort和
 // SplitHostPort。
 //
-//     Dial("tcp", "12.34.56.78:80")
-//     Dial("tcp", "google.com:http")
-//     Dial("tcp", "[2001:db8::1]:http")
-//     Dial("tcp", "[fe80::1%lo0]:80")
+// 	Dial("tcp", "12.34.56.78:80")
+// 	Dial("tcp", "google.com:http")
+// 	Dial("tcp", "[2001:db8::1]:http")
+// 	Dial("tcp", "[fe80::1%lo0]:80")
 //
 // 对IP网络，network必须是"ip"、"ip4"、"ip6"后跟冒号和协议号或者协议名，地址必须
 // 是IP地址字面值。
 //
-//     Dial("ip4:1", "127.0.0.1")
-//     Dial("ip6:ospf", "::1")
+// 	Dial("ip4:1", "127.0.0.1")
+// 	Dial("ip6:ospf", "::1")
 //
 // 对Unix网络，地址必须是文件系统路径。
 func Dial(network, address string) (Conn, error)
@@ -710,7 +737,7 @@ func FileConn(f *os.File) (c Conn, err error)
 // FileListener返回一个下层为文件f的网络监听器的拷贝。调用者有责任在使用结束后改
 // 变l。关闭l不会影响f，关闭f也不会影响l。本函数与各种实现了Listener接口的类型的
 // File方法是对应的。
-func FileListener(f *os.File) (l Listener, err error)
+func FileListener(f *os.File) (ln Listener, err error)
 
 // FilePacketConn returns a copy of the packet network connection
 // corresponding to the open file f.
@@ -763,13 +790,12 @@ func Interfaces() ([]Interface, error)
 // 百分号，格式为"[host]:port"。
 func JoinHostPort(host, port string) string
 
-// Listen announces on the local network address laddr.
-// The network net must be a stream-oriented network: "tcp", "tcp4",
-// "tcp6", "unix" or "unixpacket".
-// For TCP and UDP, the syntax of laddr is "host:port", like "127.0.0.1:8080".
-// If host is omitted, as in ":8080", Listen listens on all available interfaces
-// instead of just the interface with the given host address.
-// See Dial for more details about address syntax.
+// Listen announces on the local network address laddr. The network net must be
+// a stream-oriented network: "tcp", "tcp4", "tcp6", "unix" or "unixpacket". For
+// TCP and UDP, the syntax of laddr is "host:port", like "127.0.0.1:8080". If
+// host is omitted, as in ":8080", Listen listens on all available interfaces
+// instead of just the interface with the given host address. See Dial for more
+// details about address syntax.
 
 // Listen announces on the local network address laddr. The network net must be
 // a stream-oriented network: "tcp", "tcp4", "tcp6", "unix" or "unixpacket". See
@@ -777,7 +803,7 @@ func JoinHostPort(host, port string) string
 func Listen(net, laddr string) (Listener, error)
 
 // ListenIP listens for incoming IP packets addressed to the local
-// address laddr.  The returned connection's ReadFrom and WriteTo
+// address laddr. The returned connection's ReadFrom and WriteTo
 // methods can be used to receive and send IP packets with per-packet
 // addressing.
 
@@ -800,7 +826,7 @@ func ListenIP(netProto string, laddr *IPAddr) (*IPConn, error)
 
 // ListenMulticastUDP接收目的地是ifi接口上的组地址gaddr的UDP数据包。它指定了使用
 // 的接口，如果ifi是nil，将使用默认接口。
-func ListenMulticastUDP(net string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, error)
+func ListenMulticastUDP(network string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, error)
 
 // ListenPacket announces on the local network address laddr. The network net
 // must be a packet-oriented network: "udp", "udp4", "udp6", "ip", "ip4", "ip6"
@@ -817,8 +843,8 @@ func ListenMulticastUDP(net string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, e
 func ListenPacket(net, laddr string) (PacketConn, error)
 
 // ListenTCP announces on the TCP address laddr and returns a TCP
-// listener.  Net must be "tcp", "tcp4", or "tcp6".  If laddr has a
-// port of 0, ListenTCP will choose an available port.  The caller can
+// listener. Net must be "tcp", "tcp4", or "tcp6".  If laddr has a
+// port of 0, ListenTCP will choose an available port. The caller can
 // use the Addr method of TCPListener to retrieve the chosen address.
 
 // ListenTCP在本地TCP地址laddr上声明并返回一个*TCPListener，net参数必须是"tcp"、
@@ -827,10 +853,10 @@ func ListenPacket(net, laddr string) (PacketConn, error)
 func ListenTCP(net string, laddr *TCPAddr) (*TCPListener, error)
 
 // ListenUDP listens for incoming UDP packets addressed to the local
-// address laddr.  Net must be "udp", "udp4", or "udp6".  If laddr has
+// address laddr. Net must be "udp", "udp4", or "udp6".  If laddr has
 // a port of 0, ListenUDP will choose an available port.
 // The LocalAddr method of the returned UDPConn can be used to
-// discover the port.  The returned connection's ReadFrom and WriteTo
+// discover the port. The returned connection's ReadFrom and WriteTo
 // methods can be used to receive and send UDP packets with per-packet
 // addressing.
 
@@ -841,14 +867,14 @@ func ListenTCP(net string, laddr *TCPAddr) (*TCPListener, error)
 func ListenUDP(net string, laddr *UDPAddr) (*UDPConn, error)
 
 // ListenUnix announces on the Unix domain socket laddr and returns a
-// Unix listener.  The network net must be "unix" or "unixpacket".
+// Unix listener. The network net must be "unix" or "unixpacket".
 
 // ListenTCP在Unix域scoket地址laddr上声明并返回一个*UnixListener，net参数必须是
 // "unix"或"unixpacket"。
 func ListenUnix(net string, laddr *UnixAddr) (*UnixListener, error)
 
 // ListenUnixgram listens for incoming Unix datagram packets addressed
-// to the local address laddr.  The network net must be "unixgram".
+// to the local address laddr. The network net must be "unixgram".
 // The returned connection's ReadFrom and WriteTo methods can be used
 // to receive and send packets with per-packet addressing.
 
@@ -862,7 +888,7 @@ func ListenUnixgram(net string, laddr *UnixAddr) (*UnixConn, error)
 
 // LookupAddr查询某个地址，返回映射到该地址的主机名序列，本函数和LookupHost不互
 // 为反函数。
-func LookupAddr(addr string) (name []string, err error)
+func LookupAddr(addr string) (names []string, err error)
 
 // LookupCNAME returns the canonical DNS host for the given name.
 // Callers that do not care about the canonical name can call
@@ -884,18 +910,18 @@ func LookupHost(host string) (addrs []string, err error)
 // It returns an array of that host's IPv4 and IPv6 addresses.
 
 // LookupIP函数查询主机的ipv4和ipv6地址序列。
-func LookupIP(host string) (addrs []IP, err error)
+func LookupIP(host string) (ips []IP, err error)
 
 // LookupMX returns the DNS MX records for the given domain name sorted by
 // preference.
 
 // LookupMX函数返回指定主机的按Pref字段排好序的DNS MX记录。
-func LookupMX(name string) (mx []*MX, err error)
+func LookupMX(name string) (mxs []*MX, err error)
 
 // LookupNS returns the DNS NS records for the given domain name.
 
 // LookupNS函数返回指定主机的DNS NS记录。
-func LookupNS(name string) (ns []*NS, err error)
+func LookupNS(name string) (nss []*NS, err error)
 
 // LookupPort looks up the port for the given network and service.
 
@@ -903,12 +929,12 @@ func LookupNS(name string) (ns []*NS, err error)
 func LookupPort(network, service string) (port int, err error)
 
 // LookupSRV tries to resolve an SRV query of the given service,
-// protocol, and domain name.  The proto is "tcp" or "udp".
+// protocol, and domain name. The proto is "tcp" or "udp".
 // The returned records are sorted by priority and randomized
 // by weight within a priority.
 //
 // LookupSRV constructs the DNS name to look up following RFC 2782.
-// That is, it looks up _service._proto.name.  To accommodate services
+// That is, it looks up _service._proto.name. To accommodate services
 // publishing SRV records under non-standard names, if both service
 // and proto are empty strings, LookupSRV looks up name directly.
 
@@ -923,15 +949,15 @@ func LookupSRV(service, proto, name string) (cname string, addrs []*SRV, err err
 // LookupTXT returns the DNS TXT records for the given domain name.
 
 // LookupTXT函数返回指定主机的DNS TXT记录。
-func LookupTXT(name string) (txt []string, err error)
+func LookupTXT(name string) (txts []string, err error)
 
 // ParseCIDR parses s as a CIDR notation IP address and mask,
-// like "192.168.100.1/24" or "2001:DB8::/48", as defined in
+// like "192.0.2.0/24" or "2001:db8::/32", as defined in
 // RFC 4632 and RFC 4291.
 //
 // It returns the IP address and the network implied by the IP
-// and mask.  For example, ParseCIDR("192.168.100.1/16") returns
-// the IP address 192.168.100.1 and the network 192.168.0.0/16.
+// and mask. For example, ParseCIDR("198.51.100.1/24") returns
+// the IP address 198.51.100.1 and the network 198.51.100.0/24.
 
 // ParseCIDR将s作为一个CIDR（无类型域间路由）的IP地址和掩码字符串，如
 // "192.168.100.1/24"或"2001:DB8::/48"，解析并返回IP地址和IP网络，参见RFC 4632和
@@ -942,8 +968,8 @@ func LookupTXT(name string) (txt []string, err error)
 func ParseCIDR(s string) (IP, *IPNet, error)
 
 // ParseIP parses s as an IP address, returning the result.
-// The string s can be in dotted decimal ("74.125.19.99")
-// or IPv6 ("2001:4860:0:2001::68") form.
+// The string s can be in dotted decimal ("192.0.2.1")
+// or IPv6 ("2001:db8::68") form.
 // If s is not a valid textual representation of an IP address,
 // ParseIP returns nil.
 
@@ -1034,7 +1060,7 @@ func ResolveUnixAddr(net, addr string) (*UnixAddr, error)
 
 // SplitHostPort splits a network address of the form "host:port",
 // "[host]:port" or "[ipv6-host%zone]:port" into host or
-// ipv6-host%zone and port.  A literal address or host name for IPv6
+// ipv6-host%zone and port. A literal address or host name for IPv6
 // must be enclosed in square brackets, as in "[::1]:80",
 // "[ipv6-host]:http" or "[ipv6-host%zone]:80".
 
@@ -1043,29 +1069,29 @@ func ResolveUnixAddr(net, addr string) (*UnixAddr, error)
 // 起来，如"[::1]:80"、"[ipv6-host]:http"、"[ipv6-host%zone]:80"。
 func SplitHostPort(hostport string) (host, port string, err error)
 
-func (*AddrError) Error() string
+func (e *AddrError) Error() string
 
-func (*AddrError) Temporary() bool
+func (e *AddrError) Temporary() bool
 
-func (*AddrError) Timeout() bool
+func (e *AddrError) Timeout() bool
 
-func (*DNSConfigError) Error() string
+func (e *DNSConfigError) Error() string
 
-func (*DNSConfigError) Temporary() bool
+func (e *DNSConfigError) Temporary() bool
 
-func (*DNSConfigError) Timeout() bool
+func (e *DNSConfigError) Timeout() bool
 
-func (*DNSError) Error() string
+func (e *DNSError) Error() string
 
 // Temporary reports whether the DNS error is known to be temporary.
 // This is not always known; a DNS lookup may fail due to a temporary
 // error and return a DNSError for which Temporary returns false.
-func (*DNSError) Temporary() bool
+func (e *DNSError) Temporary() bool
 
 // Timeout reports whether the DNS lookup is known to have timed out.
 // This is not always known; a DNS lookup may fail due to a timeout
 // and return a DNSError for which Timeout returns false.
-func (*DNSError) Timeout() bool
+func (e *DNSError) Timeout() bool
 
 // Dial connects to the address on the named network.
 //
@@ -1073,42 +1099,38 @@ func (*DNSError) Timeout() bool
 // parameters.
 
 // Dial在指定的网络上连接指定的地址。参见Dial函数获取网络和地址参数的描述。
-func (*Dialer) Dial(network, address string) (Conn, error)
+func (d *Dialer) Dial(network, address string) (Conn, error)
+
+// DialContext connects to the address on the named network using
+// the provided context.
+//
+// The provided Context must be non-nil. If the context expires before
+// the connection is complete, an error is returned. Once successfully
+// connected, any expiration of the context will not affect the
+// connection.
+//
+// See func Dial for a description of the network and address
+// parameters.
+func (d *Dialer) DialContext(ctx context.Context, network, address string) (Conn, error)
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
 // The IP address is expected in a form accepted by ParseIP.
 
 // UnmarshalText实现了encoding.TextUnmarshaler接口。IP地址字符串应该是ParseIP函
 // 数可以接受的格式。
-func (*IP) UnmarshalText(text []byte) error
+func (ip *IP) UnmarshalText(text []byte) error
 
 // Network returns the address's network name, "ip".
 
 // Network返回地址的网络类型："ip"。
-func (*IPAddr) Network() string
+func (a *IPAddr) Network() string
 
-func (*IPAddr) String() string
-
-// Close关闭连接
-func (*IPConn) Close() error
-
-// File方法设置下层的os.File为阻塞模式并返回其副本。
-//
-// 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
-// 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
-// 不会）得到期望的效果。
-func (*IPConn) File() (f *os.File, err error)
-
-// LocalAddr返回本地网络地址
-func (*IPConn) LocalAddr() Addr
-
-// Read实现Conn接口Read方法
-func (*IPConn) Read(b []byte) (int, error)
+func (a *IPAddr) String() string
 
 // ReadFrom implements the PacketConn ReadFrom method.
 
 // ReadFrom实现PacketConn接口ReadFrom方法。注意本方法有bug，应避免使用。
-func (*IPConn) ReadFrom(b []byte) (int, Addr, error)
+func (c *IPConn) ReadFrom(b []byte) (int, Addr, error)
 
 // ReadFromIP reads an IP packet from c, copying the payload into b.
 // It returns the number of bytes copied into b and the return address
@@ -1123,164 +1145,121 @@ func (*IPConn) ReadFrom(b []byte) (int, Addr, error)
 //
 // ReadFromIP方法会在超过一个固定的时间点之后超时，并返回一个错误。注意本方法有
 // bug，应避免使用。
-func (*IPConn) ReadFromIP(b []byte) (int, *IPAddr, error)
+func (c *IPConn) ReadFromIP(b []byte) (int, *IPAddr, error)
 
 // ReadMsgIP reads a packet from c, copying the payload into b and the
-// associated out-of-band data into oob.  It returns the number of
+// associated out-of-band data into oob. It returns the number of
 // bytes copied into b, the number of bytes copied into oob, the flags
 // that were set on the packet and the source address of the packet.
 
 // ReadMsgIP从c读取一个数据包，将有效负载拷贝进b，相关的带外数据拷贝进oob，返回
 // 拷贝进b的字节数，拷贝进oob的字节数，数据包的flag，数据包来源地址和可能的错误
 // 。
-func (*IPConn) ReadMsgIP(b, oob []byte) (n, oobn, flags int, addr *IPAddr, err error)
-
-// RemoteAddr返回远端网络地址
-func (*IPConn) RemoteAddr() Addr
-
-// SetDeadline设置读写操作绝对期限，实现了Conn接口的SetDeadline方法
-func (*IPConn) SetDeadline(t time.Time) error
-
-// SetReadBuffer设置该连接的系统接收缓冲
-func (*IPConn) SetReadBuffer(bytes int) error
-
-// SetReadDeadline设置读操作绝对期限，实现了Conn接口的SetReadDeadline方法
-func (*IPConn) SetReadDeadline(t time.Time) error
-
-// SetWriteBuffer设置该连接的系统发送缓冲
-func (*IPConn) SetWriteBuffer(bytes int) error
-
-// SetWriteDeadline设置写操作绝对期限，实现了Conn接口的SetWriteDeadline方法
-func (*IPConn) SetWriteDeadline(t time.Time) error
-
-// Write实现Conn接口Write方法
-func (*IPConn) Write(b []byte) (int, error)
+func (c *IPConn) ReadMsgIP(b, oob []byte) (n, oobn, flags int, addr *IPAddr, err error)
 
 // WriteMsgIP writes a packet to addr via c, copying the payload from
-// b and the associated out-of-band data from oob.  It returns the
+// b and the associated out-of-band data from oob. It returns the
 // number of payload and out-of-band bytes written.
 
 // WriteMsgIP通过c向地址addr发送一个数据包，b和oob分别为包有效负载和对应的带外数
 // 据，返回写入的字节数（包数据、带外数据）和可能的错误。
-func (*IPConn) WriteMsgIP(b, oob []byte, addr *IPAddr) (n, oobn int, err error)
+func (c *IPConn) WriteMsgIP(b, oob []byte, addr *IPAddr) (n, oobn int, err error)
 
 // WriteTo implements the PacketConn WriteTo method.
 
 // WriteTo实现PacketConn接口WriteTo方法
-func (*IPConn) WriteTo(b []byte, addr Addr) (int, error)
+func (c *IPConn) WriteTo(b []byte, addr Addr) (int, error)
 
 // WriteToIP writes an IP packet to addr via c, copying the payload
 // from b.
 //
 // WriteToIP can be made to time out and return an error with
 // Timeout() == true after a fixed time limit; see SetDeadline and
-// SetWriteDeadline.  On packet-oriented connections, write timeouts
+// SetWriteDeadline. On packet-oriented connections, write timeouts
 // are rare.
 
 // WriteToIP通过c向地址addr发送一个数据包，b为包的有效负载，返回写入的字节。
 //
 // WriteToIP方法会在超过一个固定的时间点之后超时，并返回一个错误。在面向数据包的
 // 连接上，写入超时是十分罕见的。
-func (*IPConn) WriteToIP(b []byte, addr *IPAddr) (int, error)
+func (c *IPConn) WriteToIP(b []byte, addr *IPAddr) (int, error)
 
 // Contains reports whether the network includes ip.
 
 // Contains报告该网络是否包含地址ip。
-func (*IPNet) Contains(ip IP) bool
+func (n *IPNet) Contains(ip IP) bool
 
 // Network returns the address's network name, "ip+net".
 
 // Network返回网络类型名："ip+net"，注意该类型名是不合法的。
-func (*IPNet) Network() string
+func (n *IPNet) Network() string
 
-// String returns the CIDR notation of n like "192.168.100.1/24"
-// or "2001:DB8::/48" as defined in RFC 4632 and RFC 4291.
+// String returns the CIDR notation of n like "192.0.2.1/24"
+// or "2001:db8::/48" as defined in RFC 4632 and RFC 4291.
 // If the mask is not in the canonical form, it returns the
 // string which consists of an IP address, followed by a slash
 // character and a mask expressed as hexadecimal form with no
-// punctuation like "192.168.100.1/c000ff00".
+// punctuation like "198.51.100.1/c000ff00".
 
 // String返回n的CIDR表示，如"192.168.100.1/24"或"2001:DB8::/48"，参见RFC 4632和
 // RFC 4291。如果n的Mask字段不是规范格式，它会返回一个包含n.IP.String()、斜线、
 // n.Mask.String()（此时表示为无标点十六进制格式）的字符串，如
 // "192.168.100.1/c000ff00"。
-func (*IPNet) String() string
+func (n *IPNet) String() string
 
 // Addrs returns interface addresses for a specific interface.
 
 // Addrs方法返回网络接口ifi的一或多个接口地址。
-func (*Interface) Addrs() ([]Addr, error)
+func (ifi *Interface) Addrs() ([]Addr, error)
 
 // MulticastAddrs returns multicast, joined group addresses for
 // a specific interface.
 
 // MulticastAddrs返回网络接口ifi加入的多播组地址。
-func (*Interface) MulticastAddrs() ([]Addr, error)
+func (ifi *Interface) MulticastAddrs() ([]Addr, error)
 
-func (*OpError) Error() string
+func (e *OpError) Error() string
 
-func (*OpError) Temporary() bool
+func (e *OpError) Temporary() bool
 
-func (*OpError) Timeout() bool
+func (e *OpError) Timeout() bool
 
-func (*ParseError) Error() string
+func (e *ParseError) Error() string
 
 // Network returns the address's network name, "tcp".
 
 // 返回地址的网络类型，"tcp"。
-func (*TCPAddr) Network() string
+func (a *TCPAddr) Network() string
 
-func (*TCPAddr) String() string
-
-// Close关闭连接
-func (*TCPConn) Close() error
+func (a *TCPAddr) String() string
 
 // CloseRead shuts down the reading side of the TCP connection.
 // Most callers should just use Close.
 
 // CloseRead关闭TCP连接的读取侧（以后不能读取），应尽量使用Close方法。
-func (*TCPConn) CloseRead() error
+func (c *TCPConn) CloseRead() error
 
 // CloseWrite shuts down the writing side of the TCP connection.
 // Most callers should just use Close.
 
 // CloseWrite关闭TCP连接的写入侧（以后不能写入），应尽量使用Close方法。
-func (*TCPConn) CloseWrite() error
-
-// File方法设置下层的os.File为阻塞模式并返回其副本。
-//
-// 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
-// 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
-// 不会）得到期望的效果。
-func (*TCPConn) File() (f *os.File, err error)
-
-// LocalAddr返回本地网络地址
-func (*TCPConn) LocalAddr() Addr
-
-// Read实现了Conn接口Read方法
-func (*TCPConn) Read(b []byte) (int, error)
+func (c *TCPConn) CloseWrite() error
 
 // ReadFrom implements the io.ReaderFrom ReadFrom method.
 
 // ReadFrom实现了io.ReaderFrom接口的ReadFrom方法
-func (*TCPConn) ReadFrom(r io.Reader) (int64, error)
-
-// RemoteAddr返回远端网络地址
-func (*TCPConn) RemoteAddr() Addr
-
-// SetDeadline设置读写操作期限，实现了Conn接口的SetDeadline方法
-func (*TCPConn) SetDeadline(t time.Time) error
+func (c *TCPConn) ReadFrom(r io.Reader) (int64, error)
 
 // SetKeepAlive sets whether the operating system should send
 // keepalive messages on the connection.
 
 // SetKeepAlive设置操作系统是否应该在该连接中发送keepalive信息
-func (*TCPConn) SetKeepAlive(keepalive bool) error
+func (c *TCPConn) SetKeepAlive(keepalive bool) error
 
 // SetKeepAlivePeriod sets period between keep alives.
 
 // SetKeepAlivePeriod设置keepalive的周期，超出会断开
-func (*TCPConn) SetKeepAlivePeriod(d time.Duration) error
+func (c *TCPConn) SetKeepAlivePeriod(d time.Duration) error
 
 // SetLinger sets the behavior of Close on a connection which still
 // has data waiting to be sent or to be acknowledged.
@@ -1301,7 +1280,7 @@ func (*TCPConn) SetKeepAlivePeriod(d time.Duration) error
 // 0，Close立刻返回，操作系统丢弃任何未发送或未接收的数据；如果sec > 0，Close方
 // 法阻塞最多sec秒，等待数据发送或者接收，在一些操作系统中，在超时后，任何未发送
 // 的数据会被丢弃。
-func (*TCPConn) SetLinger(sec int) error
+func (c *TCPConn) SetLinger(sec int) error
 
 // SetNoDelay controls whether the operating system should delay
 // packet transmission in hopes of sending fewer packets (Nagle's
@@ -1310,55 +1289,40 @@ func (*TCPConn) SetLinger(sec int) error
 
 // SetNoDelay设定操作系统是否应该延迟数据包传递，以便发送更少的数据包（Nagle's算
 // 法）。默认为真，即数据应该在Write方法后立刻发送。
-func (*TCPConn) SetNoDelay(noDelay bool) error
-
-// SetReadBuffer设置该连接的系统接收缓冲
-func (*TCPConn) SetReadBuffer(bytes int) error
-
-// SetReadDeadline设置读操作期限，实现了Conn接口的SetReadDeadline方法
-func (*TCPConn) SetReadDeadline(t time.Time) error
-
-// SetWriteBuffer设置该连接的系统发送缓冲
-func (*TCPConn) SetWriteBuffer(bytes int) error
-
-// SetWriteDeadline设置写操作期限，实现了Conn接口的SetWriteDeadline方法
-func (*TCPConn) SetWriteDeadline(t time.Time) error
-
-// Write实现了Conn接口Write方法
-func (*TCPConn) Write(b []byte) (int, error)
+func (c *TCPConn) SetNoDelay(noDelay bool) error
 
 // Accept implements the Accept method in the Listener interface; it
 // waits for the next call and returns a generic Conn.
 
 // Accept用于实现Listener接口的Accept方法；他会等待下一个呼叫，并返回一个该呼叫
 // 的Conn接口。
-func (*TCPListener) Accept() (Conn, error)
+func (l *TCPListener) Accept() (Conn, error)
 
 // AcceptTCP accepts the next incoming call and returns the new
 // connection.
 
 // AcceptTCP接收下一个呼叫，并返回一个新的*TCPConn。
-func (*TCPListener) AcceptTCP() (*TCPConn, error)
+func (l *TCPListener) AcceptTCP() (*TCPConn, error)
 
 // Addr returns the listener's network address, a *TCPAddr.
 // The Addr returned is shared by all invocations of Addr, so
 // do not modify it.
 
 // Addr返回l监听的的网络地址，一个*TCPAddr。
-func (*TCPListener) Addr() Addr
+func (l *TCPListener) Addr() Addr
 
 // Close stops listening on the TCP address.
 // Already Accepted connections are not closed.
 
 // Close停止监听TCP地址，已经接收的连接不受影响。
-func (*TCPListener) Close() error
+func (l *TCPListener) Close() error
 
 // File returns a copy of the underlying os.File, set to blocking
-// mode.  It is the caller's responsibility to close f when finished.
+// mode. It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
 //
 // The returned os.File's file descriptor is different from the
-// connection's.  Attempting to change properties of the original
+// connection's. Attempting to change properties of the original
 // using this duplicate may or may not have the desired effect.
 
 // File方法返回下层的os.File的副本，并将该副本设置为阻塞模式。
@@ -1366,41 +1330,25 @@ func (*TCPListener) Close() error
 // 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
 // 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
 // 不会）得到期望的效果。
-func (*TCPListener) File() (f *os.File, err error)
+func (l *TCPListener) File() (f *os.File, err error)
 
 // SetDeadline sets the deadline associated with the listener.
 // A zero time value disables the deadline.
 
 // 设置监听器执行的期限，t为Time零值则会关闭期限限制。
-func (*TCPListener) SetDeadline(t time.Time) error
+func (l *TCPListener) SetDeadline(t time.Time) error
 
 // Network returns the address's network name, "udp".
 
 // 返回地址的网络类型，"udp"。
-func (*UDPAddr) Network() string
+func (a *UDPAddr) Network() string
 
-func (*UDPAddr) String() string
-
-// Close关闭连接
-func (*UDPConn) Close() error
-
-// File方法设置下层的os.File为阻塞模式并返回其副本。
-//
-// 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
-// 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
-// 不会）得到期望的效果。
-func (*UDPConn) File() (f *os.File, err error)
-
-// LocalAddr返回本地网络地址
-func (*UDPConn) LocalAddr() Addr
-
-// Read实现Conn接口Read方法
-func (*UDPConn) Read(b []byte) (int, error)
+func (a *UDPAddr) String() string
 
 // ReadFrom implements the PacketConn ReadFrom method.
 
 // ReadFrom实现PacketConn接口ReadFrom方法
-func (*UDPConn) ReadFrom(b []byte) (int, Addr, error)
+func (c *UDPConn) ReadFrom(b []byte) (int, Addr, error)
 
 // ReadFromUDP reads a UDP packet from c, copying the payload into b.
 // It returns the number of bytes copied into b and the return address
@@ -1414,10 +1362,10 @@ func (*UDPConn) ReadFrom(b []byte) (int, Addr, error)
 // 源地址。
 //
 // ReadFromUDP方法会在超过一个固定的时间点之后超时，并返回一个错误。
-func (*UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error)
+func (c *UDPConn) ReadFromUDP(b []byte) (int, *UDPAddr, error)
 
 // ReadMsgUDP reads a packet from c, copying the payload into b and
-// the associated out-of-band data into oob.  It returns the number
+// the associated out-of-band data into oob. It returns the number
 // of bytes copied into b, the number of bytes copied into oob, the
 // flags that were set on the packet and the source address of the
 // packet.
@@ -1425,100 +1373,63 @@ func (*UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error)
 // ReadMsgUDP从c读取一个数据包，将有效负载拷贝进b，相关的带外数据拷贝进oob，返回
 // 拷贝进b的字节数，拷贝进oob的字节数，数据包的flag，数据包来源地址和可能的错误
 // 。
-func (*UDPConn) ReadMsgUDP(b, oob []byte) (n, oobn, flags int, addr *UDPAddr, err error)
-
-// RemoteAddr返回远端网络地址
-func (*UDPConn) RemoteAddr() Addr
-
-// SetDeadline设置读写操作期限，实现了Conn接口的SetDeadline方法
-func (*UDPConn) SetDeadline(t time.Time) error
-
-// SetReadBuffer设置该连接的系统接收缓冲
-func (*UDPConn) SetReadBuffer(bytes int) error
-
-// SetReadDeadline设置读操作期限，实现了Conn接口的SetReadDeadline方法
-func (*UDPConn) SetReadDeadline(t time.Time) error
-
-// SetWriteBuffer设置该连接的系统发送缓冲
-func (*UDPConn) SetWriteBuffer(bytes int) error
-
-// SetWriteDeadline设置写操作期限，实现了Conn接口的SetWriteDeadline方法
-func (*UDPConn) SetWriteDeadline(t time.Time) error
-
-// Write实现Conn接口Write方法
-func (*UDPConn) Write(b []byte) (int, error)
+func (c *UDPConn) ReadMsgUDP(b, oob []byte) (n, oobn, flags int, addr *UDPAddr, err error)
 
 // WriteMsgUDP writes a packet to addr via c if c isn't connected, or
 // to c's remote destination address if c is connected (in which case
 // addr must be nil).  The payload is copied from b and the associated
-// out-of-band data is copied from oob.  It returns the number of
+// out-of-band data is copied from oob. It returns the number of
 // payload and out-of-band bytes written.
 
 // WriteMsgUDP通过c向地址addr发送一个数据包，b和oob分别为包有效负载和对应的带外
 // 数据，返回写入的字节数（包数据、带外数据）和可能的错误。
-func (*UDPConn) WriteMsgUDP(b, oob []byte, addr *UDPAddr) (n, oobn int, err error)
+func (c *UDPConn) WriteMsgUDP(b, oob []byte, addr *UDPAddr) (n, oobn int, err error)
 
 // WriteTo implements the PacketConn WriteTo method.
 
 // WriteTo实现PacketConn接口WriteTo方法
-func (*UDPConn) WriteTo(b []byte, addr Addr) (int, error)
+func (c *UDPConn) WriteTo(b []byte, addr Addr) (int, error)
 
 // WriteToUDP writes a UDP packet to addr via c, copying the payload
 // from b.
 //
 // WriteToUDP can be made to time out and return an error with
 // Timeout() == true after a fixed time limit; see SetDeadline and
-// SetWriteDeadline.  On packet-oriented connections, write timeouts
+// SetWriteDeadline. On packet-oriented connections, write timeouts
 // are rare.
 
 // WriteToUDP通过c向地址addr发送一个数据包，b为包的有效负载，返回写入的字节。
 //
 // WriteToUDP方法会在超过一个固定的时间点之后超时，并返回一个错误。在面向数据包
 // 的连接上，写入超时是十分罕见的。
-func (*UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
+func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
 
 // Network returns the address's network name, "unix", "unixgram" or
 // "unixpacket".
 
 // 返回地址的网络类型，"unix"，"unixgram"或"unixpacket"。
-func (*UnixAddr) Network() string
+func (a *UnixAddr) Network() string
 
-func (*UnixAddr) String() string
-
-// Close关闭连接
-func (*UnixConn) Close() error
+func (a *UnixAddr) String() string
 
 // CloseRead shuts down the reading side of the Unix domain connection.
 // Most callers should just use Close.
 
 // CloseRead关闭TCP连接的读取侧（以后不能读取），应尽量使用Close方法
-func (*UnixConn) CloseRead() error
+func (c *UnixConn) CloseRead() error
 
 // CloseWrite shuts down the writing side of the Unix domain connection.
 // Most callers should just use Close.
 
 // CloseWrite关闭TCP连接的写入侧（以后不能写入），应尽量使用Close方法
-func (*UnixConn) CloseWrite() error
-
-// File方法设置下层的os.File为阻塞模式并返回其副本。
-//
-// 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
-// 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
-// 不会）得到期望的效果。
-func (*UnixConn) File() (f *os.File, err error)
-
-// LocalAddr返回本地网络地址
-func (*UnixConn) LocalAddr() Addr
-
-// Read实现了Conn接口Read方法
-func (*UnixConn) Read(b []byte) (int, error)
+func (c *UnixConn) CloseWrite() error
 
 // ReadFrom implements the PacketConn ReadFrom method.
 
 // ReadFrom实现PacketConn接口ReadFrom方法
-func (*UnixConn) ReadFrom(b []byte) (int, Addr, error)
+func (c *UnixConn) ReadFrom(b []byte) (int, Addr, error)
 
-// ReadFromUnix reads a packet from c, copying the payload into b.  It
+// ReadFromUnix reads a packet from c, copying the payload into b. It
 // returns the number of bytes copied into b and the source address of
 // the packet.
 //
@@ -1530,97 +1441,76 @@ func (*UnixConn) ReadFrom(b []byte) (int, Addr, error)
 // 源地址。
 //
 // ReadFromUnix方法会在超过一个固定的时间点之后超时，并返回一个错误。
-func (*UnixConn) ReadFromUnix(b []byte) (int, *UnixAddr, error)
+func (c *UnixConn) ReadFromUnix(b []byte) (int, *UnixAddr, error)
 
 // ReadMsgUnix reads a packet from c, copying the payload into b and
-// the associated out-of-band data into oob.  It returns the number of
+// the associated out-of-band data into oob. It returns the number of
 // bytes copied into b, the number of bytes copied into oob, the flags
 // that were set on the packet, and the source address of the packet.
 
 // ReadMsgUnix从c读取一个数据包，将有效负载拷贝进b，相关的带外数据拷贝进oob，返
 // 回拷贝进b的字节数，拷贝进oob的字节数，数据包的flag，数据包来源地址和可能的错
 // 误。
-func (*UnixConn) ReadMsgUnix(b, oob []byte) (n, oobn, flags int, addr *UnixAddr, err error)
-
-// RemoteAddr返回远端网络地址
-func (*UnixConn) RemoteAddr() Addr
-
-// SetDeadline设置读写操作期限，实现了Conn接口的SetDeadline方法
-func (*UnixConn) SetDeadline(t time.Time) error
-
-// SetReadBuffer设置该连接的系统接收缓冲
-func (*UnixConn) SetReadBuffer(bytes int) error
-
-// SetReadDeadline设置读操作期限，实现了Conn接口的SetReadDeadline方法
-func (*UnixConn) SetReadDeadline(t time.Time) error
-
-// SetWriteBuffer设置该连接的系统发送缓冲
-func (*UnixConn) SetWriteBuffer(bytes int) error
-
-// SetWriteDeadline设置写操作期限，实现了Conn接口的SetWriteDeadline方法
-func (*UnixConn) SetWriteDeadline(t time.Time) error
-
-// Write实现了Conn接口Write方法
-func (*UnixConn) Write(b []byte) (int, error)
+func (c *UnixConn) ReadMsgUnix(b, oob []byte) (n, oobn, flags int, addr *UnixAddr, err error)
 
 // WriteMsgUnix writes a packet to addr via c, copying the payload
-// from b and the associated out-of-band data from oob.  It returns
+// from b and the associated out-of-band data from oob. It returns
 // the number of payload and out-of-band bytes written.
 
 // WriteMsgUnix通过c向地址addr发送一个数据包，b和oob分别为包有效负载和对应的带外
 // 数据，返回写入的字节数（包数据、带外数据）和可能的错误。
-func (*UnixConn) WriteMsgUnix(b, oob []byte, addr *UnixAddr) (n, oobn int, err error)
+func (c *UnixConn) WriteMsgUnix(b, oob []byte, addr *UnixAddr) (n, oobn int, err error)
 
 // WriteTo implements the PacketConn WriteTo method.
 
 // WriteTo实现PacketConn接口WriteTo方法
-func (*UnixConn) WriteTo(b []byte, addr Addr) (int, error)
+func (c *UnixConn) WriteTo(b []byte, addr Addr) (int, error)
 
 // WriteToUnix writes a packet to addr via c, copying the payload from b.
 //
 // WriteToUnix can be made to time out and return an error with
 // Timeout() == true after a fixed time limit; see SetDeadline and
-// SetWriteDeadline.  On packet-oriented connections, write timeouts
+// SetWriteDeadline. On packet-oriented connections, write timeouts
 // are rare.
 
 // WriteToUnix通过c向地址addr发送一个数据包，b为包的有效负载，返回写入的字节。
 //
 // WriteToUnix方法会在超过一个固定的时间点之后超时，并返回一个错误。在面向数据包
 // 的连接上，写入超时是十分罕见的。
-func (*UnixConn) WriteToUnix(b []byte, addr *UnixAddr) (int, error)
+func (c *UnixConn) WriteToUnix(b []byte, addr *UnixAddr) (int, error)
 
-// Accept implements the Accept method in the Listener interface; it
-// waits for the next call and returns a generic Conn.
+// Accept implements the Accept method in the Listener interface.
+// Returned connections will be of type *UnixConn.
 
 // Accept用于实现Listener接口的Accept方法；他会等待下一个呼叫，并返回一个该呼叫
 // 的Conn接口。
-func (*UnixListener) Accept() (Conn, error)
+func (l *UnixListener) Accept() (Conn, error)
 
 // AcceptUnix accepts the next incoming call and returns the new
 // connection.
 
 // AcceptUnix接收下一个呼叫，并返回一个新的*UnixConn。
-func (*UnixListener) AcceptUnix() (*UnixConn, error)
+func (l *UnixListener) AcceptUnix() (*UnixConn, error)
 
 // Addr returns the listener's network address.
 // The Addr returned is shared by all invocations of Addr, so
 // do not modify it.
 
 // Addr返回l的监听的Unix域socket地址
-func (*UnixListener) Addr() Addr
+func (l *UnixListener) Addr() Addr
 
-// Close stops listening on the Unix address.  Already accepted
+// Close stops listening on the Unix address. Already accepted
 // connections are not closed.
 
 // Close停止监听Unix域socket地址，已经接收的连接不受影响。
-func (*UnixListener) Close() error
+func (l *UnixListener) Close() error
 
 // File returns a copy of the underlying os.File, set to blocking
-// mode.  It is the caller's responsibility to close f when finished.
+// mode. It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
 //
 // The returned os.File's file descriptor is different from the
-// connection's.  Attempting to change properties of the original
+// connection's. Attempting to change properties of the original
 // using this duplicate may or may not have the desired effect.
 
 // File方法返回下层的os.File的副本，并将该副本设置为阻塞模式。
@@ -1628,17 +1518,17 @@ func (*UnixListener) Close() error
 // 使用者有责任在用完后关闭f。关闭c不影响f，关闭f也不影响c。返回的os.File类型文
 // 件描述符和原本的网络连接是不同的。试图使用该副本修改本体的属性可能会（也可能
 // 不会）得到期望的效果。
-func (*UnixListener) File() (*os.File, error)
+func (l *UnixListener) File() (f *os.File, err error)
 
 // SetDeadline sets the deadline associated with the listener.
 // A zero time value disables the deadline.
 
 // 设置监听器执行的期限，t为Time零值则会关闭期限限制
-func (*UnixListener) SetDeadline(t time.Time) error
+func (l *UnixListener) SetDeadline(t time.Time) error
 
-func (Flags) String() string
+func (f Flags) String() string
 
-func (HardwareAddr) String() string
+func (a HardwareAddr) String() string
 
 // DefaultMask returns the default IP mask for the IP address ip.
 // Only IPv4 addresses have default masks; DefaultMask returns
@@ -1646,7 +1536,7 @@ func (HardwareAddr) String() string
 
 // 函数返回IP地址ip的默认子网掩码。只有IPv4有默认子网掩码；如果ip不是合法的IPv4
 // 地址，会返回nil。
-func (IP) DefaultMask() IPMask
+func (ip IP) DefaultMask() IPMask
 
 // Equal reports whether ip and x are the same IP address.
 // An IPv4 address and that same address in IPv6 form are
@@ -1654,80 +1544,83 @@ func (IP) DefaultMask() IPMask
 
 // 如果ip和x代表同一个IP地址，Equal会返回真。代表同一地址的IPv4地址和IPv6地址也
 // 被认为是相等的。
-func (IP) Equal(x IP) bool
+func (ip IP) Equal(x IP) bool
 
 // IsGlobalUnicast reports whether ip is a global unicast
 // address.
 
 // 如果ip是全局单播地址，则返回真。
-func (IP) IsGlobalUnicast() bool
+func (ip IP) IsGlobalUnicast() bool
 
 // IsInterfaceLocalMulticast reports whether ip is
 // an interface-local multicast address.
 
 // 如果ip是接口本地组播地址，则返回真。
-func (IP) IsInterfaceLocalMulticast() bool
+func (ip IP) IsInterfaceLocalMulticast() bool
 
 // IsLinkLocalMulticast reports whether ip is a link-local
 // multicast address.
 
 // 如果ip是链路本地组播地址，则返回真。
-func (IP) IsLinkLocalMulticast() bool
+func (ip IP) IsLinkLocalMulticast() bool
 
 // IsLinkLocalUnicast reports whether ip is a link-local
 // unicast address.
 
 // 如果ip是链路本地单播地址，则返回真。
-func (IP) IsLinkLocalUnicast() bool
+func (ip IP) IsLinkLocalUnicast() bool
 
 // IsLoopback reports whether ip is a loopback address.
 
 // 如果ip是环回地址，则返回真。
-func (IP) IsLoopback() bool
+func (ip IP) IsLoopback() bool
 
 // IsMulticast reports whether ip is a multicast address.
 
 // 如果ip是组播地址，则返回真。
-func (IP) IsMulticast() bool
+func (ip IP) IsMulticast() bool
 
 // IsUnspecified reports whether ip is an unspecified address.
 
 // 如果ip是未指定地址，则返回真。
-func (IP) IsUnspecified() bool
+func (ip IP) IsUnspecified() bool
 
 // MarshalText implements the encoding.TextMarshaler interface.
 // The encoding is the same as returned by String.
 
 // MarshalText实现了encoding.TextMarshaler接口，返回值和String方法一样。
-func (IP) MarshalText() ([]byte, error)
+func (ip IP) MarshalText() ([]byte, error)
 
 // Mask returns the result of masking the IP address ip with mask.
 
 // Mask方法认为mask为ip的子网掩码，返回ip的网络地址部分的ip。（主机地址部分都置0
 // ）
-func (IP) Mask(mask IPMask) IP
+func (ip IP) Mask(mask IPMask) IP
 
-// String returns the string form of the IP address ip.
-// If the address is an IPv4 address, the string representation
-// is dotted decimal ("74.125.19.99").  Otherwise the representation
-// is IPv6 ("2001:4860:0:2001::68").
+// String returns the string form of the IP address ip. It returns one of 4
+// forms:
+//
+// 	- "<nil>", if ip has length 0
+// 	- dotted decimal ("192.0.2.1"), if ip is an IPv4 or IP4-mapped IPv6 address
+// 	- IPv6 ("2001:db8::1"), if ip is a valid IPv6 address
+// 	- the hexadecimal form of ip, without punctuation, if no other cases apply
 
 // String返回IP地址ip的字符串表示。如果ip是IPv4地址，返回值的格式为点分隔的，如
 // "74.125.19.99"；否则表示为IPv6格式，如"2001:4860:0:2001::68"。
-func (IP) String() string
+func (ip IP) String() string
 
 // To16 converts the IP address ip to a 16-byte representation.
 // If ip is not an IP address (it is the wrong length), To16 returns nil.
 
 // To16将一个IP地址转换为16字节表示。如果ip不是一个IP地址（长度错误），To16会返
 // 回nil。
-func (IP) To16() IP
+func (ip IP) To16() IP
 
 // To4 converts the IPv4 address ip to a 4-byte representation.
 // If ip is not an IPv4 address, To4 returns nil.
 
 // To4将一个IPv4地址转换为4字节表示。如果ip不是IPv4地址，To4会返回nil。
-func (IP) To4() IP
+func (ip IP) To4() IP
 
 // Size returns the number of leading ones and total bits in the mask.
 // If the mask is not in the canonical form--ones followed by zeros--then
@@ -1735,21 +1628,22 @@ func (IP) To4() IP
 
 // Size返回m的前导的1字位数和总字位数。如果m不是规范的子网掩码（字位：/^1+0+$/）
 // ，将返会(0, 0)。
-func (IPMask) Size() (ones, bits int)
+func (m IPMask) Size() (ones, bits int)
 
 // String returns the hexadecimal form of m, with no punctuation.
 
 // String返回m的十六进制格式，没有标点。
-func (IPMask) String() string
+func (m IPMask) String() string
 
-func (InvalidAddrError) Error() string
+func (e InvalidAddrError) Error() string
 
-func (InvalidAddrError) Temporary() bool
+func (e InvalidAddrError) Temporary() bool
 
-func (InvalidAddrError) Timeout() bool
+func (e InvalidAddrError) Timeout() bool
 
-func (UnknownNetworkError) Error() string
+func (e UnknownNetworkError) Error() string
 
-func (UnknownNetworkError) Temporary() bool
+func (e UnknownNetworkError) Temporary() bool
 
-func (UnknownNetworkError) Timeout() bool
+func (e UnknownNetworkError) Timeout() bool
+

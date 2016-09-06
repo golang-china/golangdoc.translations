@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,10 +14,10 @@
 package strings
 
 import (
-    "errors"
-    "io"
-    "unicode"
-    "unicode/utf8"
+	"errors"
+	"io"
+	"unicode"
+	"unicode/utf8"
 )
 
 // A Reader implements the io.Reader, io.ReaderAt, io.Seeker, io.WriterTo,
@@ -35,6 +35,14 @@ type Reader struct {
 // Replacer类型进行一系列字符串的替换。
 type Replacer struct {
 }
+
+// Compare returns an integer comparing two strings lexicographically.
+// The result will be 0 if a==b, -1 if a < b, and +1 if a > b.
+//
+// Compare is included only for symmetry with package bytes.
+// It is usually clearer and always faster to use the built-in
+// string comparison operators ==, <, >, and so on.
+func Compare(a, b string) int
 
 // Contains reports whether substr is within s.
 
@@ -143,6 +151,10 @@ func LastIndex(s, sep string) int
 // 符串则返回-1。
 func LastIndexAny(s, chars string) int
 
+// LastIndexByte returns the index of the last instance of c in s, or -1 if c is
+// not present in s.
+func LastIndexByte(s string, c byte) int
+
 // LastIndexFunc returns the index into s of the last
 // Unicode code point satisfying f(c), or -1 if none do.
 
@@ -211,36 +223,36 @@ func SplitAfter(s, sep string) []string
 // slice of those substrings. If sep is empty, SplitAfterN splits after each
 // UTF-8 sequence. The count determines the number of substrings to return:
 //
-//     n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//     n == 0: the result is nil (zero substrings)
-//     n < 0: all substrings
+// 	n > 0: at most n substrings; the last substring will be the unsplit remainder.
+// 	n == 0: the result is nil (zero substrings)
+// 	n < 0: all substrings
 
 // 用从s中出现的sep后面切断的方式进行分割，会分割到结尾，并返回生成的所有片段组
 // 成的切片（每一个sep都会进行一次切割，即使两个sep相邻，也会进行两次切割）。如
 // 果sep为空字符，Split会将s切分成每一个unicode码值一个字符串。参数n决定返回的切
 // 片的数目：
 //
-//     n > 0 : 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
-//     n == 0: 返回nil
-//     n < 0 : 返回所有的子字符串组成的切
+// 	n > 0 : 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
+// 	n == 0: 返回nil
+// 	n < 0 : 返回所有的子字符串组成的切
 func SplitAfterN(s, sep string, n int) []string
 
 // SplitN slices s into substrings separated by sep and returns a slice of the
 // substrings between those separators. If sep is empty, SplitN splits after
 // each UTF-8 sequence. The count determines the number of substrings to return:
 //
-//     n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//     n == 0: the result is nil (zero substrings)
-//     n < 0: all substrings
+// 	n > 0: at most n substrings; the last substring will be the unsplit remainder.
+// 	n == 0: the result is nil (zero substrings)
+// 	n < 0: all substrings
 
 // 用去掉s中出现的sep的方式进行分割，会分割到结尾，并返回生成的所有片段组成的切
 // 片（每一个sep都会进行一次切割，即使两个sep相邻，也会进行两次切割）。如果sep为
 // 空字符，Split会将s切分成每一个unicode码值一个字符串。参数n决定返回的切片的数
 // 目：
 //
-//     n > 0 : 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
-//     n == 0: 返回nil
-//     n < 0 : 返回所有的子字符串组成的切片
+// 	n > 0 : 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
+// 	n == 0: 返回nil
+// 	n < 0 : 返回所有的子字符串组成的切片
 func SplitN(s, sep string, n int) []string
 
 // Title returns a copy of the string s with all Unicode letters that begin
@@ -349,33 +361,42 @@ func TrimSuffix(s, suffix string) string
 // string.
 
 // Len返回r包含的字符串还没有被读取的部分。
-func (*Reader) Len() int
+func (r *Reader) Len() int
 
-func (*Reader) Read(b []byte) (n int, err error)
+func (r *Reader) Read(b []byte) (n int, err error)
 
-func (*Reader) ReadAt(b []byte, off int64) (n int, err error)
+func (r *Reader) ReadAt(b []byte, off int64) (n int, err error)
 
-func (*Reader) ReadByte() (b byte, err error)
+func (r *Reader) ReadByte() (byte, error)
 
-func (*Reader) ReadRune() (ch rune, size int, err error)
+func (r *Reader) ReadRune() (ch rune, size int, err error)
+
+// Reset resets the Reader to be reading from s.
+func (r *Reader) Reset(s string)
 
 // Seek implements the io.Seeker interface.
 
 // Seek实现了io.Seeker接口。
-func (*Reader) Seek(offset int64, whence int) (int64, error)
+func (r *Reader) Seek(offset int64, whence int) (int64, error)
 
-func (*Reader) UnreadByte() error
+// Size returns the original length of the underlying string.
+// Size is the number of bytes available for reading via ReadAt.
+// The returned value is always the same and is not affected by calls
+// to any other method.
+func (r *Reader) Size() int64
 
-func (*Reader) UnreadRune() error
+func (r *Reader) UnreadByte() error
+
+func (r *Reader) UnreadRune() error
 
 // WriteTo implements the io.WriterTo interface.
 
 // WriteTo实现了io.WriterTo接口。
-func (*Reader) WriteTo(w io.Writer) (n int64, err error)
+func (r *Reader) WriteTo(w io.Writer) (n int64, err error)
 
 // Replace returns a copy of s with all replacements performed.
-func (*Replacer) Replace(s string) string
+func (r *Replacer) Replace(s string) string
 
 // WriteString writes s to w with all replacements performed.
-func (*Replacer) WriteString(w io.Writer, s string) (n int, err error)
+func (r *Replacer) WriteString(w io.Writer, s string) (n int, err error)
 

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,14 +12,14 @@
 package bytes
 
 import (
-    "errors"
-    "io"
-    "unicode"
-    "unicode/utf8"
+	"errors"
+	"io"
+	"unicode"
+	"unicode/utf8"
 )
 
 // MinRead is the minimum slice size passed to a Read call by
-// Buffer.ReadFrom.  As long as the Buffer has at least MinRead bytes beyond
+// Buffer.ReadFrom. As long as the Buffer has at least MinRead bytes beyond
 // what is required to hold the contents of r, ReadFrom will not grow the
 // underlying buffer.
 
@@ -66,6 +66,13 @@ func Compare(a, b []byte) int
 // Contains 判断切片 b 是否包含子切片 subslice.
 func Contains(b, subslice []byte) bool
 
+// ContainsAny reports whether any of the UTF-8-encoded Unicode code points in
+// chars are within b.
+func ContainsAny(b []byte, chars string) bool
+
+// ContainsRune reports whether the Unicode code point r is within b.
+func ContainsRune(b []byte, r rune) bool
+
 // Count counts the number of non-overlapping instances of sep in s. If sep is
 // an empty slice, Count returns 1 + the number of Unicode code points in s.
 
@@ -96,10 +103,10 @@ func Fields(s []byte) [][]byte
 
 // FieldsFunc interprets s as a sequence of UTF-8-encoded Unicode code points.
 // It splits the slice s at each run of code points c satisfying f(c) and
-// returns a slice of subslices of s.  If all code points in s satisfy f(c), or
-// len(s) == 0, an empty slice is returned.
-// FieldsFunc makes no guarantees about the order in which it calls f(c).
-// If f does not return consistent results for a given c, FieldsFunc may crash.
+// returns a slice of subslices of s. If all code points in s satisfy f(c), or
+// len(s) == 0, an empty slice is returned. FieldsFunc makes no guarantees about
+// the order in which it calls f(c). If f does not return consistent results for
+// a given c, FieldsFunc may crash.
 
 // FieldsFunc 类似 Fields, 但使用函数f来确定分割符.
 // 如果字符串全部是分隔符或者是空字符串的话, 会返回空切片.
@@ -121,9 +128,9 @@ func HasSuffix(s, suffix []byte) bool
 // Index 返回子切片 sep 在 s 中第一次出现的位置, 不存在则返回 -1.
 func Index(s, sep []byte) int
 
-// IndexAny interprets s as a sequence of UTF-8-encoded Unicode code points.
-// It returns the byte index of the first occurrence in s of any of the Unicode
-// code points in chars.  It returns -1 if chars is empty or if there is no code
+// IndexAny interprets s as a sequence of UTF-8-encoded Unicode code points. It
+// returns the byte index of the first occurrence in s of any of the Unicode
+// code points in chars. It returns -1 if chars is empty or if there is no code
 // point in common.
 
 // IndexAny 返回字符串 chars 中的任一个 utf-8 编码字符在 s 中第一次出现的位置,
@@ -163,13 +170,17 @@ func Join(s [][]byte, sep []byte) []byte
 func LastIndex(s, sep []byte) int
 
 // LastIndexAny interprets s as a sequence of UTF-8-encoded Unicode code
-// points.  It returns the byte index of the last occurrence in s of any of
-// the Unicode code points in chars.  It returns -1 if chars is empty or if
+// points. It returns the byte index of the last occurrence in s of any of
+// the Unicode code points in chars. It returns -1 if chars is empty or if
 // there is no code point in common.
 
 // LastIndexAny 返回字符串 chars 中的任一个 utf-8 字符在 s 中最后一次出现的位置,
 // 如不存在或者 chars 为空字符串则返回 -1.
 func LastIndexAny(s []byte, chars string) int
+
+// LastIndexByte returns the index of the last instance of c in s, or -1 if c is
+// not present in s.
+func LastIndexByte(s []byte, c byte) int
 
 // LastIndexFunc interprets s as a sequence of UTF-8-encoded Unicode code
 // points. It returns the byte index in s of the last Unicode code point
@@ -189,7 +200,7 @@ func LastIndexFunc(s []byte, f func(r rune) bool) int
 func Map(mapping func(r rune) rune, s []byte) []byte
 
 // NewBuffer creates and initializes a new Buffer using buf as its initial
-// contents.  It is intended to prepare a Buffer to read existing data.  It
+// contents. It is intended to prepare a Buffer to read existing data. It
 // can also be used to size the internal buffer for writing. To do that,
 // buf should have the desired capacity but a length of zero.
 //
@@ -266,35 +277,34 @@ func SplitAfter(s, sep []byte) [][]byte
 // slice of those subslices. If sep is empty, SplitAfterN splits after each
 // UTF-8 sequence. The count determines the number of subslices to return:
 //
-//     n > 0: at most n subslices; the last subslice will be the unsplit remainder.
-//     n == 0: the result is nil (zero subslices)
-//     n < 0: all subslices
+// 	n > 0: at most n subslices; the last subslice will be the unsplit remainder.
+// 	n == 0: the result is nil (zero subslices)
+// 	n < 0: all subslices
 
 // SplitAfterN 用从 s 中出现的 sep 后面切断的方式进行分割, 会分割到最多 n 个子切
 // 片, 并返回生成的所有 byte 切片组成的切片. 如果 sep 为空字符, Split 会将 s 切
 // 分成每一个 unicode 码值一个 byte 切片. 参数n决定返回的切片的数目:
 //
-//     n > 0: 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
-//     n == 0: 返回nil
-//     n < 0: 返回所有的子字符串组成的切片
+// 	n > 0: 返回的切片最多n个子字符串；最后一个子字符串包含未进行切割的部分。
+// 	n == 0: 返回nil
+// 	n < 0: 返回所有的子字符串组成的切片
 func SplitAfterN(s, sep []byte, n int) [][]byte
 
 // SplitN slices s into subslices separated by sep and returns a slice of the
 // subslices between those separators. If sep is empty, SplitN splits after each
 // UTF-8 sequence. The count determines the number of subslices to return:
 //
-//     n > 0: at most n subslices; the last subslice will be the unsplit remainder.
-//     n == 0: the result is nil (zero subslices)
-//     n < 0: all subslices
+// 	n > 0: at most n subslices; the last subslice will be the unsplit remainder.
+// 	n == 0: the result is nil (zero subslices)
+// 	n < 0: all subslices
 
-// SplitN 用去掉 s 中出现的 sep 的方式进行分割, 会分割到最多n个子切片,
-// 并返回生成的所有 byte 切片组成的切片.
-// 如果 sep 为空字符, Split 会将 s 切分成每一个 unicode 码值一个 byte 切片.
-// 参数n决定返回的切片的数目:
+// SplitN 用去掉 s 中出现的 sep 的方式进行分割, 会分割到最多n个子切片, 并返回生
+// 成的所有 byte 切片组成的切片. 如果 sep 为空字符, Split 会将 s 切分成每一个
+// unicode 码值一个 byte 切片. 参数n决定返回的切片的数目:
 //
-//     n > 0: 返回的切片最多n个子字符串, 最后一个子字符串包含未进行切割的部分.
-//     n == 0: 返回nil
-//     n < 0: 返回所有的子字符串组成的切片
+// 	n > 0: 返回的切片最多n个子字符串, 最后一个子字符串包含未进行切割的部分.
+// 	n == 0: 返回nil
+// 	n < 0: 返回所有的子字符串组成的切片
 func SplitN(s, sep []byte, n int) [][]byte
 
 // Title returns a copy of s with all Unicode letters that begin words mapped to
@@ -408,7 +418,11 @@ func TrimSuffix(s, suffix []byte) []byte
 
 // 返回未读取部分字节数据的切片, len(b.Bytes()) == b.Len().
 // 如果中间没有调用其他方法, 修改返回的切片的内容会直接改变Buffer的内容.
-func (*Buffer) Bytes() []byte
+func (b *Buffer) Bytes() []byte
+
+// Cap returns the capacity of the buffer's underlying byte slice, that is, the
+// total space allocated for the buffer's data.
+func (b *Buffer) Cap() int
 
 // Grow grows the buffer's capacity, if necessary, to guarantee space for
 // another n bytes. After Grow(n), at least n bytes can be written to the
@@ -419,13 +433,13 @@ func (*Buffer) Bytes() []byte
 // Grow 必要时会增加缓冲的容量, 以保证n字节的剩余空间.
 // 调用 Grow(n) 后至少可以向缓冲中写入 n 字节数据而无需申请内存.
 // 如果 n 小于零或者不能增加容量都会 panic.
-func (*Buffer) Grow(n int)
+func (b *Buffer) Grow(n int)
 
 // Len returns the number of bytes of the unread portion of the buffer;
 // b.Len() == len(b.Bytes()).
 
 // Len 返回缓冲中未读取部分的字节长度: b.Len() == len(b.Bytes()).
-func (*Buffer) Len() int
+func (b *Buffer) Len() int
 
 // Next returns a slice containing the next n bytes from the buffer, advancing
 // the buffer as if the bytes had been returned by Read. If there are fewer than
@@ -435,10 +449,10 @@ func (*Buffer) Len() int
 // Next 返回未读取部分前 n 字节数据的切片, 并且移动读取位置, 就像调用了Read方法
 // 一样. 如果缓冲内数据不足, 会返回整个数据的切片. 切片只在下一次调用 b 的读/写
 // 方法前才合法.
-func (*Buffer) Next(n int) []byte
+func (b *Buffer) Next(n int) []byte
 
 // Read reads the next len(p) bytes from the buffer or until the buffer
-// is drained.  The return value n is the number of bytes read.  If the
+// is drained. The return value n is the number of bytes read. If the
 // buffer has no data to return, err is io.EOF (unless len(p) is zero);
 // otherwise it is nil.
 
@@ -446,14 +460,14 @@ func (*Buffer) Next(n int) []byte
 // 将读取的数据写入p.
 // 返回值 n 是读取的字节数, 除非缓冲中完全没有数据可以读取并写入 p,
 // 此时返回值 err 为 io.EOF, 否则 err 总是 nil.
-func (*Buffer) Read(p []byte) (n int, err error)
+func (b *Buffer) Read(p []byte) (n int, err error)
 
 // ReadByte reads and returns the next byte from the buffer.
 // If no byte is available, it returns error io.EOF.
 
 // ReadByte 读取并返回缓冲中的下一个字节.
 // 如果没有数据可用, 返回值 err 为 io.EOF.
-func (*Buffer) ReadByte() (c byte, err error)
+func (b *Buffer) ReadByte() (byte, error)
 
 // ReadBytes reads until the first occurrence of delim in the input, returning a
 // slice containing the data up to and including the delimiter. If ReadBytes
@@ -465,7 +479,7 @@ func (*Buffer) ReadByte() (c byte, err error)
 // 的切片. 如果 ReadBytes 方法在读取到 delim 之前遇到了错误, 它会返回在错误之前
 // 读取的数据以及该错误. 当且仅当 ReadBytes 方法返回的切片不以 delim 结尾时, 会
 // 返回一个非 nil 的错误.
-func (*Buffer) ReadBytes(delim byte) (line []byte, err error)
+func (b *Buffer) ReadBytes(delim byte) (line []byte, err error)
 
 // ReadFrom reads data from r until EOF and appends it to the buffer, growing
 // the buffer as needed. The return value n is the number of bytes read. Any
@@ -475,7 +489,7 @@ func (*Buffer) ReadBytes(delim byte) (line []byte, err error)
 // ReadFrom 从 r 中读取数据直到结束并将读取的数据写入缓冲中, 如必要会增加缓冲容
 // 量. 返回值 n 为从 r 读取并写入 b 的字节数, 会返回读取时遇到的除了io.EOF之外的
 // 错误. 如果缓冲太大, ReadFrom 会采用错误值 ErrTooLarge 引发 panic.
-func (*Buffer) ReadFrom(r io.Reader) (n int64, err error)
+func (b *Buffer) ReadFrom(r io.Reader) (n int64, err error)
 
 // ReadRune reads and returns the next UTF-8-encoded
 // Unicode code point from the buffer.
@@ -486,7 +500,7 @@ func (*Buffer) ReadFrom(r io.Reader) (n int64, err error)
 // ReadRune 读取并返回缓冲中的下一个 utf-8 码值. 如果没有数据可用, 返回值 err 为
 // io.EOF. 如果缓冲中的数据是错误的 utf-8 编码, 本方法会吃掉一字节并返回
 // (U+FFFD, 1, nil).
-func (*Buffer) ReadRune() (r rune, size int, err error)
+func (b *Buffer) ReadRune() (r rune, size int, err error)
 
 // ReadString reads until the first occurrence of delim in the input, returning
 // a string containing the data up to and including the delimiter. If ReadString
@@ -498,21 +512,21 @@ func (*Buffer) ReadRune() (r rune, size int, err error)
 // 的字符串. 如果 ReadString 方法在读取到 delim 之前遇到了错误, 它会返回在错误之
 // 前读取的数据以及该错误. 当且仅当 ReadString 方法返回的切片不以 delim 结尾时,
 // 会返回一个非 nil 的错误.
-func (*Buffer) ReadString(delim byte) (line string, err error)
+func (b *Buffer) ReadString(delim byte) (line string, err error)
 
 // Reset resets the buffer to be empty,
 // but it retains the underlying storage for use by future writes.
 // Reset is the same as Truncate(0).
 
 // Reset 重设缓冲, 因此会丢弃全部内容, 等价于 b.Truncate(0).
-func (*Buffer) Reset()
+func (b *Buffer) Reset()
 
 // String returns the contents of the unread portion of the buffer
-// as a string.  If the Buffer is a nil pointer, it returns "<nil>".
+// as a string. If the Buffer is a nil pointer, it returns "<nil>".
 
 // String 将未读取部分的字节数据作为字符串返回, 如果 b 是 nil 指针, 会返回
 // "<nil>".
-func (*Buffer) String() string
+func (b *Buffer) String() string
 
 // Truncate discards all but the first n unread bytes from the buffer
 // but continues to use the same allocated storage.
@@ -520,15 +534,15 @@ func (*Buffer) String() string
 
 // Truncate 丢弃缓冲中除前 n 字节数据外的其它数据, 如果 n 小于零或者大于缓冲容量
 // 将panic.
-func (*Buffer) Truncate(n int)
+func (b *Buffer) Truncate(n int)
 
 // UnreadByte unreads the last byte returned by the most recent
-// read operation.  If write has happened since the last read, UnreadByte
+// read operation. If write has happened since the last read, UnreadByte
 // returns an error.
 
 // UnreadByte 吐出最近一次读取操作读取的最后一个字节.
 // 如果最后一次读取操作之后进行了写入, 本方法会返回错误.
-func (*Buffer) UnreadByte() error
+func (b *Buffer) UnreadByte() error
 
 // UnreadRune unreads the last rune returned by ReadRune.
 // If the most recent read or write operation on the buffer was
@@ -538,7 +552,7 @@ func (*Buffer) UnreadByte() error
 
 // UnreadRune 吐出最近一次调用 ReadRune 方法读取的 unicode 码值.
 // 如果最近一次读写操作不是 ReadRune, 本方法会返回错误.
-func (*Buffer) UnreadRune() error
+func (b *Buffer) UnreadRune() error
 
 // Write appends the contents of p to the buffer, growing the buffer as
 // needed. The return value n is the length of p; err is always nil. If the
@@ -547,7 +561,7 @@ func (*Buffer) UnreadRune() error
 // Write 将 p 的内容写入缓冲中, 如必要会增加缓冲容量.
 // 返回值 n 为 len(p), err 总是nil.
 // 如果缓冲变得太大, Write 会采用错误值 ErrTooLarge 引发 panic.
-func (*Buffer) Write(p []byte) (n int, err error)
+func (b *Buffer) Write(p []byte) (n int, err error)
 
 // WriteByte appends the byte c to the buffer, growing the buffer as needed.
 // The returned error is always nil, but is included to match bufio.Writer's
@@ -557,17 +571,17 @@ func (*Buffer) Write(p []byte) (n int, err error)
 // WriteByte 将字节 c 写入缓冲中, 如必要会增加缓冲容量.
 // 返回值总是 nil, 但仍保留以匹配 bufio.Writer 的 WriteByte 方法.
 // 如果缓冲太大, WriteByte 会采用错误值 ErrTooLarge 引发 panic.
-func (*Buffer) WriteByte(c byte) error
+func (b *Buffer) WriteByte(c byte) error
 
-// WriteRune appends the UTF-8 encoding of Unicode code point r to the
-// buffer, returning its length and an error, which is always nil but is
-// included to match bufio.Writer's WriteRune. The buffer is grown as needed;
-// if it becomes too large, WriteRune will panic with ErrTooLarge.
+// WriteRune appends the UTF-8 encoding of Unicode code point r to the buffer,
+// returning its length and an error, which is always nil but is included to
+// match bufio.Writer's WriteRune. The buffer is grown as needed; if it becomes
+// too large, WriteRune will panic with ErrTooLarge.
 
 // WriteByte 将 unicode 码值 r 的 utf-8 编码写入缓冲中, 如必要会增加缓冲容量.
 // 返回值总是 nil, 但仍保留以匹配 bufio.Writer 的 WriteRune 方法.
 // 如果缓冲太大, WriteRune 会采用错误值 ErrTooLarge 引发 panic.
-func (*Buffer) WriteRune(r rune) (n int, err error)
+func (b *Buffer) WriteRune(r rune) (n int, err error)
 
 // WriteString appends the contents of s to the buffer, growing the buffer as
 // needed. The return value n is the length of s; err is always nil. If the
@@ -576,7 +590,7 @@ func (*Buffer) WriteRune(r rune) (n int, err error)
 // WriteString 将 s 的内容写入缓冲中, 如必要会增加缓冲容量.
 // 返回值 n 为 len(p), err总是nil.
 // 如果缓冲变得太大, WriteString 会采用错误值 ErrTooLarge 引发 panic.
-func (*Buffer) WriteString(s string) (n int, err error)
+func (b *Buffer) WriteString(s string) (n int, err error)
 
 // WriteTo writes data to w until the buffer is drained or an error occurs.
 // The return value n is the number of bytes written; it always fits into an
@@ -587,33 +601,42 @@ func (*Buffer) WriteString(s string) (n int, err error)
 // 回值 n 为从 b 读取并写入 w 的字节数, 返回值总是可以无溢出的写入int类型, 但为
 // 了匹配 io.WriterTo 接口设为 int64 类型. 从 b 读取是遇到的非 io.EOF 错误及写入
 // w 时遇到的错误都会终止本方法并返回该错误.
-func (*Buffer) WriteTo(w io.Writer) (n int64, err error)
+func (b *Buffer) WriteTo(w io.Writer) (n int64, err error)
 
 // Len returns the number of bytes of the unread portion of the
 // slice.
 
 // Len 返回 r 包含的切片中还没有被读取的部分.
-func (*Reader) Len() int
+func (r *Reader) Len() int
 
-func (*Reader) Read(b []byte) (n int, err error)
+func (r *Reader) Read(b []byte) (n int, err error)
 
-func (*Reader) ReadAt(b []byte, off int64) (n int, err error)
+func (r *Reader) ReadAt(b []byte, off int64) (n int, err error)
 
-func (*Reader) ReadByte() (b byte, err error)
+func (r *Reader) ReadByte() (byte, error)
 
-func (*Reader) ReadRune() (ch rune, size int, err error)
+func (r *Reader) ReadRune() (ch rune, size int, err error)
+
+// Reset resets the Reader to be reading from b.
+func (r *Reader) Reset(b []byte)
 
 // Seek implements the io.Seeker interface.
 
 // Seek 实现了 io.Seeker 接口.
-func (*Reader) Seek(offset int64, whence int) (int64, error)
+func (r *Reader) Seek(offset int64, whence int) (int64, error)
 
-func (*Reader) UnreadByte() error
+// Size returns the original length of the underlying byte slice.
+// Size is the number of bytes available for reading via ReadAt.
+// The returned value is always the same and is not affected by calls
+// to any other method.
+func (r *Reader) Size() int64
 
-func (*Reader) UnreadRune() error
+func (r *Reader) UnreadByte() error
+
+func (r *Reader) UnreadRune() error
 
 // WriteTo implements the io.WriterTo interface.
 
 // WriteTo 实现了 io.WriterTo 接口.
-func (*Reader) WriteTo(w io.Writer) (n int64, err error)
+func (r *Reader) WriteTo(w io.Writer) (n int64, err error)
 

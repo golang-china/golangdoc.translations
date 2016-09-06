@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -19,8 +19,7 @@ package ring
 // 形链表任一元素的指针都可以作为整个环形链表看待。Ring零值是具有一个（Value字段
 // 为nil的）元素的链表。
 type Ring struct {
-    Value interface{} // for use by client; untouched by this library
-
+	Value interface{} // for use by client; untouched by this library
 }
 
 // New creates a ring of n elements.
@@ -33,13 +32,13 @@ func New(n int) *Ring
 
 // 对链表的每一个元素都执行f（正向顺序），注意如果f改变了*r，Do的行为是未定义的
 // 。
-func (*Ring) Do(f func(interface{}))
+func (r *Ring) Do(f func(interface{}))
 
 // Len computes the number of elements in ring r.
 // It executes in time proportional to the number of elements.
 
 // Len返回环形链表中的元素个数，复杂度O(n)。
-func (*Ring) Len() int
+func (r *Ring) Len() int
 
 // Link connects ring r with ring s such that r.Next()
 // becomes s and returns the original value for r.Next().
@@ -63,23 +62,23 @@ func (*Ring) Len() int
 // 表，返回指向该子链表的指针（r的原后继元素）；如果没有删除元素，则仍然返回r的
 // 原后继元素，而不是nil。如果r和s指向不同的链表，将创建一个单独的链表，将s指向
 // 的链表插入r后面，返回s原最后一个元素后面的元素（即r的原后继元素）。
-func (*Ring) Link(s *Ring) *Ring
+func (r *Ring) Link(s *Ring) *Ring
 
 // Move moves n % r.Len() elements backward (n < 0) or forward (n >= 0)
 // in the ring and returns that ring element. r must not be empty.
 
 // 返回移动n个位置（n>=0向前移动，n<0向后移动）后的元素，r不能为空。
-func (*Ring) Move(n int) *Ring
+func (r *Ring) Move(n int) *Ring
 
 // Next returns the next ring element. r must not be empty.
 
 // 返回后一个元素，r不能为空。
-func (*Ring) Next() *Ring
+func (r *Ring) Next() *Ring
 
 // Prev returns the previous ring element. r must not be empty.
 
 // 返回前一个元素，r不能为空。
-func (*Ring) Prev() *Ring
+func (r *Ring) Prev() *Ring
 
 // Unlink removes n % r.Len() elements from the ring r, starting
 // at r.Next(). If n % r.Len() == 0, r remains unchanged.
@@ -87,5 +86,5 @@ func (*Ring) Prev() *Ring
 
 // 删除链表中n % r.Len()个元素，从r.Next()开始删除。如果n % r.Len() ==
 // 0，不修改r。返回删除的元素构成的链表，r不能为空。
-func (*Ring) Unlink(n int) *Ring
+func (r *Ring) Unlink(n int) *Ring
 

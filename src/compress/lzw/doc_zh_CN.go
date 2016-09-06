@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -28,18 +28,19 @@
 package lzw
 
 import (
-    "bufio"
-    "errors"
-    "fmt"
-    "io"
+	"bufio"
+	"errors"
+	"fmt"
+	"io"
 )
 
 const (
-    // LSB means Least Significant Bits first, as used in the GIF file format.
-    LSB Order = iota
-    // MSB means Most Significant Bits first, as used in the TIFF and PDF
-    // file formats.
-    MSB
+	// LSB means Least Significant Bits first, as used in the GIF file format.
+	LSB Order = iota
+
+	// MSB means Most Significant Bits first, as used in the TIFF and PDF
+	// file formats.
+	MSB
 )
 
 // Order specifies the bit ordering in an LZW data stream.
@@ -62,12 +63,11 @@ type Order int
 // litWidth 指定字面码的位数, 必须在 [2,8] 范围内, 一般为8.
 func NewReader(r io.Reader, order Order, litWidth int) io.ReadCloser
 
-// NewWriter creates a new io.WriteCloser.
-// Writes to the returned io.WriteCloser are compressed and written to w.
-// It is the caller's responsibility to call Close on the WriteCloser when
-// finished writing.
-// The number of bits to use for literal codes, litWidth, must be in the
-// range [2,8] and is typically 8. Input bytes must be less than 1<<litWidth.
+// NewWriter creates a new io.WriteCloser. Writes to the returned io.WriteCloser
+// are compressed and written to w. It is the caller's responsibility to call
+// Close on the WriteCloser when finished writing. The number of bits to use for
+// literal codes, litWidth, must be in the range [2,8] and is typically 8. Input
+// bytes must be less than 1<<litWidth.
 
 // NewWriter 创建一个 io.WriteCloser, 它将数据压缩后写入 w.
 // 调用者有责任在结束写入后调用返回值的 Close 方法;

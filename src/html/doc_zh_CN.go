@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 package html
 
 import (
-    "strings"
-    "unicode/utf8"
+	"strings"
+	"unicode/utf8"
 )
 
 // EscapeString escapes special characters like "<" to become "&lt;". It
@@ -29,7 +29,7 @@ func EscapeString(s string) string
 
 // UnescapeString unescapes entities like "&lt;" to become "<". It unescapes a
 // larger range of entities than EscapeString escapes. For example, "&aacute;"
-// unescapes to "á", as does "&#225;" and "&xE1;".
+// unescapes to "á", as does "&#225;" and "&#xE1;".
 // UnescapeString(EscapeString(s)) == s always holds, but the converse isn't
 // always true.
 

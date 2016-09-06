@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,61 +6,60 @@
 
 // Package regexp implements regular expression search.
 //
-// The syntax of the regular expressions accepted is the same
-// general syntax used by Perl, Python, and other languages.
-// More precisely, it is the syntax accepted by RE2 and described at
-// https://golang.org/s/re2syntax, except for \C.
-// For an overview of the syntax, run
-//   go doc regexp/syntax
+// The syntax of the regular expressions accepted is the same general syntax
+// used by Perl, Python, and other languages. More precisely, it is the syntax
+// accepted by RE2 and described at https://golang.org/s/re2syntax, except for
+// \C. For an overview of the syntax, run
 //
-// The regexp implementation provided by this package is
-// guaranteed to run in time linear in the size of the input.
-// (This is a property not guaranteed by most open source
-// implementations of regular expressions.) For more information
-// about this property, see
-//     http://swtch.com/~rsc/regexp/regexp1.html
+// 	go doc regexp/syntax
+//
+// The regexp implementation provided by this package is guaranteed to run in
+// time linear in the size of the input. (This is a property not guaranteed by
+// most open source implementations of regular expressions.) For more
+// information about this property, see
+//
+// 	http://swtch.com/~rsc/regexp/regexp1.html
+//
 // or any book about automata theory.
 //
 // All characters are UTF-8-encoded code points.
 //
 // There are 16 methods of Regexp that match a regular expression and identify
-// the matched text.  Their names are matched by this regular expression:
+// the matched text. Their names are matched by this regular expression:
 //
-//     Find(All)?(String)?(Submatch)?(Index)?
+// 	Find(All)?(String)?(Submatch)?(Index)?
 //
-// If 'All' is present, the routine matches successive non-overlapping
-// matches of the entire expression.  Empty matches abutting a preceding
-// match are ignored.  The return value is a slice containing the successive
-// return values of the corresponding non-'All' routine.  These routines take
-// an extra integer argument, n; if n >= 0, the function returns at most n
-// matches/submatches.
+// If 'All' is present, the routine matches successive non-overlapping matches
+// of the entire expression. Empty matches abutting a preceding match are
+// ignored. The return value is a slice containing the successive return values
+// of the corresponding non-'All' routine. These routines take an extra integer
+// argument, n; if n >= 0, the function returns at most n matches/submatches.
 //
-// If 'String' is present, the argument is a string; otherwise it is a slice
-// of bytes; return values are adjusted as appropriate.
+// If 'String' is present, the argument is a string; otherwise it is a slice of
+// bytes; return values are adjusted as appropriate.
 //
 // If 'Submatch' is present, the return value is a slice identifying the
 // successive submatches of the expression. Submatches are matches of
 // parenthesized subexpressions (also known as capturing groups) within the
 // regular expression, numbered from left to right in order of opening
-// parenthesis. Submatch 0 is the match of the entire expression, submatch 1
-// the match of the first parenthesized subexpression, and so on.
+// parenthesis. Submatch 0 is the match of the entire expression, submatch 1 the
+// match of the first parenthesized subexpression, and so on.
 //
 // If 'Index' is present, matches and submatches are identified by byte index
 // pairs within the input string: result[2*n:2*n+1] identifies the indexes of
-// the nth submatch.  The pair for n==0 identifies the match of the entire
-// expression.  If 'Index' is not present, the match is identified by the
-// text of the match/submatch.  If an index is negative, it means that
-// subexpression did not match any string in the input.
+// the nth submatch. The pair for n==0 identifies the match of the entire
+// expression. If 'Index' is not present, the match is identified by the text of
+// the match/submatch. If an index is negative, it means that subexpression did
+// not match any string in the input.
 //
-// There is also a subset of the methods that can be applied to text read
-// from a RuneReader:
+// There is also a subset of the methods that can be applied to text read from a
+// RuneReader:
 //
-//     MatchReader, FindReaderIndex, FindReaderSubmatchIndex
+// 	MatchReader, FindReaderIndex, FindReaderSubmatchIndex
 //
-// This set may grow.  Note that regular expression matches may need to
-// examine text beyond the text returned by a match, so the methods that
-// match text from a RuneReader may read arbitrarily far into the input
-// before returning.
+// This set may grow. Note that regular expression matches may need to examine
+// text beyond the text returned by a match, so the methods that match text from
+// a RuneReader may read arbitrarily far into the input before returning.
 //
 // (There are a few other methods that do not match this pattern.)
 
@@ -72,15 +71,15 @@
 package regexp
 
 import (
-    "bytes"
-    "io"
-    "regexp/syntax"
-    "sort"
-    "strconv"
-    "strings"
-    "sync"
-    "unicode"
-    "unicode/utf8"
+	"bytes"
+	"io"
+	"regexp/syntax"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Regexp is the representation of a compiled regular expression.
@@ -145,7 +144,7 @@ func Compile(expr string) (*Regexp, error)
 func CompilePOSIX(expr string) (*Regexp, error)
 
 // Match checks whether a textual regular expression
-// matches a byte slice.  More complicated queries need
+// matches a byte slice. More complicated queries need
 // to use Compile and the full Regexp interface.
 
 // Match检查b中是否存在匹配pattern的子序列。更复杂的用法请使用Compile函数和
@@ -153,14 +152,14 @@ func CompilePOSIX(expr string) (*Regexp, error)
 func Match(pattern string, b []byte) (matched bool, err error)
 
 // MatchReader checks whether a textual regular expression matches the text
-// read by the RuneReader.  More complicated queries need to use Compile and
+// read by the RuneReader. More complicated queries need to use Compile and
 // the full Regexp interface.
 
 // MatchReader类似Match，但匹配对象是io.RuneReader。
 func MatchReader(pattern string, r io.RuneReader) (matched bool, err error)
 
 // MatchString checks whether a textual regular expression
-// matches a string.  More complicated queries need
+// matches a string. More complicated queries need
 // to use Compile and the full Regexp interface.
 
 // MatchString类似Match，但匹配对象是字符串。
@@ -190,23 +189,11 @@ func MustCompilePOSIX(str string) *Regexp
 // 则表达式中匹配字面值s。例如，QuoteMeta(`[foo]`)会返回`\[foo\]`。
 func QuoteMeta(s string) string
 
-// Expand appends template to dst and returns the result; during the
-// append, Expand replaces variables in the template with corresponding
-// matches drawn from src.  The match slice should have been returned by
-// FindSubmatchIndex.
+// Copy returns a new Regexp object copied from re.
 //
-// In the template, a variable is denoted by a substring of the form
-// $name or ${name}, where name is a non-empty sequence of letters,
-// digits, and underscores.  A purely numeric name like $1 refers to
-// the submatch with the corresponding index; other names refer to
-// capturing parentheses named with the (?P<name>...) syntax.  A
-// reference to an out of range or unmatched index or a name that is not
-// present in the regular expression is replaced with an empty slice.
-//
-// In the $name form, name is taken to be as long as possible: $1x is
-// equivalent to ${1x}, not ${1}x, and, $10 is equivalent to ${10}, not ${1}0.
-//
-// To insert a literal $ in the output, use $$ in the template.
+// When using a Regexp in multiple goroutines, giving each goroutine
+// its own copy helps to avoid lock contention.
+func (re *Regexp) Copy() *Regexp
 
 // Expand appends template to dst and returns the result; during the append,
 // Expand replaces variables in the template with corresponding matches drawn
@@ -224,226 +211,259 @@ func QuoteMeta(s string) string
 // to ${1x}, not ${1}x, and, $10 is equivalent to ${10}, not ${1}0.
 //
 // To insert a literal $ in the output, use $$ in the template.
-func (*Regexp) Expand(dst []byte, template []byte, src []byte, match []int) []byte
+func (re *Regexp) Expand(dst []byte, template []byte, src []byte, match []int) []byte
+
+// ExpandString is like Expand but the template and source are strings.
+// It appends to and returns a byte slice in order to give the calling
+// code control over allocation.
 
 // ExpandString is like Expand but the template and source are strings. It
 // appends to and returns a byte slice in order to give the calling code control
 // over allocation.
-func (*Regexp) ExpandString(dst []byte, template string, src string, match []int) []byte
+func (re *Regexp) ExpandString(dst []byte, template string, src string, match []int) []byte
 
 // Find returns a slice holding the text of the leftmost match in b of the
 // regular expression. A return value of nil indicates no match.
-func (*Regexp) Find(b []byte) []byte
+func (re *Regexp) Find(b []byte) []byte
+
+// FindAll is the 'All' version of Find; it returns a slice of all successive
+// matches of the expression, as defined by the 'All' description in the
+// package comment.
+// A return value of nil indicates no match.
 
 // FindAll is the 'All' version of Find; it returns a slice of all successive
 // matches of the expression, as defined by the 'All' description in the package
 // comment. A return value of nil indicates no match.
-func (*Regexp) FindAll(b []byte, n int) [][]byte
+func (re *Regexp) FindAll(b []byte, n int) [][]byte
+
+// FindAllIndex is the 'All' version of FindIndex; it returns a slice of all
+// successive matches of the expression, as defined by the 'All' description
+// in the package comment.
+// A return value of nil indicates no match.
 
 // FindAllIndex is the 'All' version of FindIndex; it returns a slice of all
 // successive matches of the expression, as defined by the 'All' description in
 // the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllIndex(b []byte, n int) [][]int
+func (re *Regexp) FindAllIndex(b []byte, n int) [][]int
+
+// FindAllString is the 'All' version of FindString; it returns a slice of all
+// successive matches of the expression, as defined by the 'All' description
+// in the package comment.
+// A return value of nil indicates no match.
 
 // FindAllString is the 'All' version of FindString; it returns a slice of all
 // successive matches of the expression, as defined by the 'All' description in
 // the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllString(s string, n int) []string
+func (re *Regexp) FindAllString(s string, n int) []string
 
 // FindAllStringIndex is the 'All' version of FindStringIndex; it returns a
 // slice of all successive matches of the expression, as defined by the 'All'
 // description in the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllStringIndex(s string, n int) [][]int
+func (re *Regexp) FindAllStringIndex(s string, n int) [][]int
 
 // FindAllStringSubmatch is the 'All' version of FindStringSubmatch; it returns
 // a slice of all successive matches of the expression, as defined by the 'All'
 // description in the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllStringSubmatch(s string, n int) [][]string
+func (re *Regexp) FindAllStringSubmatch(s string, n int) [][]string
+
+// FindAllStringSubmatchIndex is the 'All' version of
+// FindStringSubmatchIndex; it returns a slice of all successive matches of
+// the expression, as defined by the 'All' description in the package
+// comment.
+// A return value of nil indicates no match.
 
 // FindAllStringSubmatchIndex is the 'All' version of FindStringSubmatchIndex;
 // it returns a slice of all successive matches of the expression, as defined by
 // the 'All' description in the package comment. A return value of nil indicates
 // no match.
-func (*Regexp) FindAllStringSubmatchIndex(s string, n int) [][]int
+func (re *Regexp) FindAllStringSubmatchIndex(s string, n int) [][]int
+
+// FindAllSubmatch is the 'All' version of FindSubmatch; it returns a slice
+// of all successive matches of the expression, as defined by the 'All'
+// description in the package comment.
+// A return value of nil indicates no match.
 
 // FindAllSubmatch is the 'All' version of FindSubmatch; it returns a slice of
 // all successive matches of the expression, as defined by the 'All' description
 // in the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllSubmatch(b []byte, n int) [][][]byte
+func (re *Regexp) FindAllSubmatch(b []byte, n int) [][][]byte
+
+// FindAllSubmatchIndex is the 'All' version of FindSubmatchIndex; it returns
+// a slice of all successive matches of the expression, as defined by the
+// 'All' description in the package comment.
+// A return value of nil indicates no match.
 
 // FindAllSubmatchIndex is the 'All' version of FindSubmatchIndex; it returns a
 // slice of all successive matches of the expression, as defined by the 'All'
 // description in the package comment. A return value of nil indicates no match.
-func (*Regexp) FindAllSubmatchIndex(b []byte, n int) [][]int
+func (re *Regexp) FindAllSubmatchIndex(b []byte, n int) [][]int
 
 // FindIndex returns a two-element slice of integers defining the location of
-// the leftmost match in b of the regular expression.  The match itself is at
+// the leftmost match in b of the regular expression. The match itself is at
 // b[loc[0]:loc[1]].
 // A return value of nil indicates no match.
 
 // FindIndex returns a two-element slice of integers defining the location of
 // the leftmost match in b of the regular expression. The match itself is at
 // b[loc[0]:loc[1]]. A return value of nil indicates no match.
-func (*Regexp) FindIndex(b []byte) (loc []int)
-
-// FindReaderIndex returns a two-element slice of integers defining the
-// location of the leftmost match of the regular expression in text read from
-// the RuneReader.  The match text was found in the input stream at
-// byte offset loc[0] through loc[1]-1.
-// A return value of nil indicates no match.
+func (re *Regexp) FindIndex(b []byte) (loc []int)
 
 // FindReaderIndex returns a two-element slice of integers defining the location
 // of the leftmost match of the regular expression in text read from the
 // RuneReader. The match text was found in the input stream at byte offset
 // loc[0] through loc[1]-1. A return value of nil indicates no match.
-func (*Regexp) FindReaderIndex(r io.RuneReader) (loc []int)
-
-// FindReaderSubmatchIndex returns a slice holding the index pairs
-// identifying the leftmost match of the regular expression of text read by
-// the RuneReader, and the matches, if any, of its subexpressions, as defined
-// by the 'Submatch' and 'Index' descriptions in the package comment.  A
-// return value of nil indicates no match.
+func (re *Regexp) FindReaderIndex(r io.RuneReader) (loc []int)
 
 // FindReaderSubmatchIndex returns a slice holding the index pairs identifying
 // the leftmost match of the regular expression of text read by the RuneReader,
 // and the matches, if any, of its subexpressions, as defined by the 'Submatch'
 // and 'Index' descriptions in the package comment. A return value of nil
 // indicates no match.
-func (*Regexp) FindReaderSubmatchIndex(r io.RuneReader) []int
+func (re *Regexp) FindReaderSubmatchIndex(r io.RuneReader) []int
 
 // FindString returns a string holding the text of the leftmost match in s of
 // the regular expression. If there is no match, the return value is an empty
 // string, but it will also be empty if the regular expression successfully
 // matches an empty string. Use FindStringIndex or FindStringSubmatch if it is
 // necessary to distinguish these cases.
-
-// FindString returns a string holding the text of the leftmost match in s of
-// the regular expression. If there is no match, the return value is an empty
-// string, but it will also be empty if the regular expression successfully
-// matches an empty string. Use FindStringIndex or FindStringSubmatch if it is
-// necessary to distinguish these cases.
-func (*Regexp) FindString(s string) string
+func (re *Regexp) FindString(s string) string
 
 // FindStringIndex returns a two-element slice of integers defining the
-// location of the leftmost match in s of the regular expression.  The match
+// location of the leftmost match in s of the regular expression. The match
 // itself is at s[loc[0]:loc[1]].
 // A return value of nil indicates no match.
 
 // FindStringIndex returns a two-element slice of integers defining the location
 // of the leftmost match in s of the regular expression. The match itself is at
 // s[loc[0]:loc[1]]. A return value of nil indicates no match.
-func (*Regexp) FindStringIndex(s string) (loc []int)
+func (re *Regexp) FindStringIndex(s string) (loc []int)
+
+// FindStringSubmatch returns a slice of strings holding the text of the
+// leftmost match of the regular expression in s and the matches, if any, of
+// its subexpressions, as defined by the 'Submatch' description in the
+// package comment.
+// A return value of nil indicates no match.
 
 // FindStringSubmatch returns a slice of strings holding the text of the
 // leftmost match of the regular expression in s and the matches, if any, of its
 // subexpressions, as defined by the 'Submatch' description in the package
 // comment. A return value of nil indicates no match.
-func (*Regexp) FindStringSubmatch(s string) []string
+func (re *Regexp) FindStringSubmatch(s string) []string
+
+// FindStringSubmatchIndex returns a slice holding the index pairs
+// identifying the leftmost match of the regular expression in s and the
+// matches, if any, of its subexpressions, as defined by the 'Submatch' and
+// 'Index' descriptions in the package comment.
+// A return value of nil indicates no match.
 
 // FindStringSubmatchIndex returns a slice holding the index pairs identifying
 // the leftmost match of the regular expression in s and the matches, if any, of
 // its subexpressions, as defined by the 'Submatch' and 'Index' descriptions in
 // the package comment. A return value of nil indicates no match.
-func (*Regexp) FindStringSubmatchIndex(s string) []int
+func (re *Regexp) FindStringSubmatchIndex(s string) []int
+
+// FindSubmatch returns a slice of slices holding the text of the leftmost
+// match of the regular expression in b and the matches, if any, of its
+// subexpressions, as defined by the 'Submatch' descriptions in the package
+// comment.
+// A return value of nil indicates no match.
 
 // FindSubmatch returns a slice of slices holding the text of the leftmost match
 // of the regular expression in b and the matches, if any, of its
 // subexpressions, as defined by the 'Submatch' descriptions in the package
 // comment. A return value of nil indicates no match.
-func (*Regexp) FindSubmatch(b []byte) [][]byte
+func (re *Regexp) FindSubmatch(b []byte) [][]byte
+
+// FindSubmatchIndex returns a slice holding the index pairs identifying the
+// leftmost match of the regular expression in b and the matches, if any, of
+// its subexpressions, as defined by the 'Submatch' and 'Index' descriptions
+// in the package comment.
+// A return value of nil indicates no match.
 
 // FindSubmatchIndex returns a slice holding the index pairs identifying the
 // leftmost match of the regular expression in b and the matches, if any, of its
 // subexpressions, as defined by the 'Submatch' and 'Index' descriptions in the
 // package comment. A return value of nil indicates no match.
-func (*Regexp) FindSubmatchIndex(b []byte) []int
+func (re *Regexp) FindSubmatchIndex(b []byte) []int
 
 // LiteralPrefix returns a literal string that must begin any match
-// of the regular expression re.  It returns the boolean true if the
+// of the regular expression re. It returns the boolean true if the
 // literal string comprises the entire regular expression.
 
 // LiteralPrefix返回一个字符串字面值prefix，任何匹配本正则表达式的字符串都会以
 // prefix起始。 如果该字符串字面值包含整个正则表达式，返回值complete会设为真。
-func (*Regexp) LiteralPrefix() (prefix string, complete bool)
+func (re *Regexp) LiteralPrefix() (prefix string, complete bool)
+
+// Longest makes future searches prefer the leftmost-longest match.
+// That is, when matching against text, the regexp returns a match that
+// begins as early as possible in the input (leftmost), and among those
+// it chooses a match that is as long as possible.
 
 // Longest makes future searches prefer the leftmost-longest match. That is,
 // when matching against text, the regexp returns a match that begins as early
 // as possible in the input (leftmost), and among those it chooses a match that
 // is as long as possible.
-func (*Regexp) Longest()
+func (re *Regexp) Longest()
 
 // Match reports whether the Regexp matches the byte slice b.
-func (*Regexp) Match(b []byte) bool
+func (re *Regexp) Match(b []byte) bool
 
 // MatchReader reports whether the Regexp matches the text read by the
 // RuneReader.
-func (*Regexp) MatchReader(r io.RuneReader) bool
+func (re *Regexp) MatchReader(r io.RuneReader) bool
 
 // MatchString reports whether the Regexp matches the string s.
-func (*Regexp) MatchString(s string) bool
+func (re *Regexp) MatchString(s string) bool
 
 // NumSubexp returns the number of parenthesized subexpressions in this Regexp.
 
 // NumSubexp返回该正则表达式中捕获分组的数量。
-func (*Regexp) NumSubexp() int
+func (re *Regexp) NumSubexp() int
 
 // ReplaceAll returns a copy of src, replacing matches of the Regexp
-// with the replacement text repl.  Inside repl, $ signs are interpreted as
+// with the replacement text repl. Inside repl, $ signs are interpreted as
 // in Expand, so for instance $1 represents the text of the first submatch.
 
 // ReplaceAll returns a copy of src, replacing matches of the Regexp with the
 // replacement text repl. Inside repl, $ signs are interpreted as in Expand, so
 // for instance $1 represents the text of the first submatch.
-func (*Regexp) ReplaceAll(src, repl []byte) []byte
-
-// ReplaceAllFunc returns a copy of src in which all matches of the
-// Regexp have been replaced by the return value of function repl applied
-// to the matched byte slice.  The replacement returned by repl is substituted
-// directly, without using Expand.
+func (re *Regexp) ReplaceAll(src, repl []byte) []byte
 
 // ReplaceAllFunc returns a copy of src in which all matches of the Regexp have
 // been replaced by the return value of function repl applied to the matched
 // byte slice. The replacement returned by repl is substituted directly, without
 // using Expand.
-func (*Regexp) ReplaceAllFunc(src []byte, repl func([]byte) []byte) []byte
+func (re *Regexp) ReplaceAllFunc(src []byte, repl func([]byte) []byte) []byte
 
 // ReplaceAllLiteral returns a copy of src, replacing matches of the Regexp with
 // the replacement bytes repl. The replacement repl is substituted directly,
 // without using Expand.
-
-// ReplaceAllLiteral returns a copy of src, replacing matches of the Regexp with
-// the replacement bytes repl. The replacement repl is substituted directly,
-// without using Expand.
-func (*Regexp) ReplaceAllLiteral(src, repl []byte) []byte
+func (re *Regexp) ReplaceAllLiteral(src, repl []byte) []byte
 
 // ReplaceAllLiteralString returns a copy of src, replacing matches of the
 // Regexp with the replacement string repl. The replacement repl is substituted
 // directly, without using Expand.
-
-// ReplaceAllLiteralString returns a copy of src, replacing matches of the
-// Regexp with the replacement string repl. The replacement repl is substituted
-// directly, without using Expand.
-func (*Regexp) ReplaceAllLiteralString(src, repl string) string
+func (re *Regexp) ReplaceAllLiteralString(src, repl string) string
 
 // ReplaceAllString returns a copy of src, replacing matches of the Regexp
-// with the replacement string repl.  Inside repl, $ signs are interpreted as
+// with the replacement string repl. Inside repl, $ signs are interpreted as
 // in Expand, so for instance $1 represents the text of the first submatch.
 
 // ReplaceAllString returns a copy of src, replacing matches of the Regexp with
 // the replacement string repl. Inside repl, $ signs are interpreted as in
 // Expand, so for instance $1 represents the text of the first submatch.
-func (*Regexp) ReplaceAllString(src, repl string) string
+func (re *Regexp) ReplaceAllString(src, repl string) string
 
 // ReplaceAllStringFunc returns a copy of src in which all matches of the
 // Regexp have been replaced by the return value of function repl applied
-// to the matched substring.  The replacement returned by repl is substituted
+// to the matched substring. The replacement returned by repl is substituted
 // directly, without using Expand.
 
 // ReplaceAllStringFunc returns a copy of src in which all matches of the Regexp
 // have been replaced by the return value of function repl applied to the
 // matched substring. The replacement returned by repl is substituted directly,
 // without using Expand.
-func (*Regexp) ReplaceAllStringFunc(src string, repl func(string) string) string
+func (re *Regexp) ReplaceAllStringFunc(src string, repl func(string) string) string
 
 // Split slices s into substrings separated by the expression and returns a
 // slice of the substrings between those expression matches.
@@ -455,48 +475,29 @@ func (*Regexp) ReplaceAllStringFunc(src string, repl func(string) string) string
 //
 // Example:
 //
-//     s := regexp.MustCompile("a*").Split("abaabaccadaaae", 5)
-//     // s: ["", "b", "b", "c", "cadaaae"]
+// 	s := regexp.MustCompile("a*").Split("abaabaccadaaae", 5)
+// 	// s: ["", "b", "b", "c", "cadaaae"]
 //
 // The count determines the number of substrings to return:
 //
-//     n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//     n == 0: the result is nil (zero substrings)
-//     n < 0: all substrings
-
-// Split slices s into substrings separated by the expression and returns a
-// slice of the substrings between those expression matches.
-//
-// The slice returned by this method consists of all the substrings of s not
-// contained in the slice returned by FindAllString. When called on an
-// expression that contains no metacharacters, it is equivalent to
-// strings.SplitN.
-//
-// Example:
-//
-//     s := regexp.MustCompile("a*").Split("abaabaccadaaae", 5)
-//     // s: ["", "b", "b", "c", "cadaaae"]
-//
-// The count determines the number of substrings to return:
-//
-//     n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//     n == 0: the result is nil (zero substrings)
-//     n < 0: all substrings
-func (*Regexp) Split(s string, n int) []string
+// 	n > 0: at most n substrings; the last substring will be the unsplit remainder.
+// 	n == 0: the result is nil (zero substrings)
+// 	n < 0: all substrings
+func (re *Regexp) Split(s string, n int) []string
 
 // String returns the source text used to compile the regular expression.
 
 // String返回用于编译成正则表达式的字符串。
-func (*Regexp) String() string
+func (re *Regexp) String() string
 
 // SubexpNames returns the names of the parenthesized subexpressions
-// in this Regexp.  The name for the first sub-expression is names[1],
+// in this Regexp. The name for the first sub-expression is names[1],
 // so that if m is a match slice, the name for m[i] is SubexpNames()[i].
 // Since the Regexp as a whole cannot be named, names[0] is always
-// the empty string.  The slice should not be modified.
+// the empty string. The slice should not be modified.
 
 // SubexpNames返回该正则表达式中捕获分组的名字。第一个分组的名字是names[1]，因此
 // ，如果m是一个组匹配切片，m[i]的名字是SubexpNames()[i]。因为整个正则表达式是无
 // 法被命名的，names[0]必然是空字符串。该切片不应被修改。
-func (*Regexp) SubexpNames() []string
+func (re *Regexp) SubexpNames() []string
 

@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,9 +13,9 @@
 package des
 
 import (
-    "crypto/cipher"
-    "encoding/binary"
-    "strconv"
+	"crypto/cipher"
+	"encoding/binary"
+	"strconv"
 )
 
 // The DES block size in bytes.
@@ -35,5 +35,5 @@ func NewCipher(key []byte) (cipher.Block, error)
 // 创建并返回一个使用TDEA算法的cipher.Block接口。
 func NewTripleDESCipher(key []byte) (cipher.Block, error)
 
-func (KeySizeError) Error() string
+func (k KeySizeError) Error() string
 

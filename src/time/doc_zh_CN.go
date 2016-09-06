@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,7 +13,6 @@ package time
 
 import (
 	"errors"
-	"internal/syscall/windows/registry"
 	"runtime"
 	"sync"
 	"syscall"
@@ -22,12 +21,12 @@ import (
 // These are predefined layouts for use in Time.Format and Time.Parse. The
 // reference time used in the layouts is the specific time:
 //
-//     Mon Jan 2 15:04:05 MST 2006
+// 	Mon Jan 2 15:04:05 MST 2006
 //
 // which is Unix time 1136239445. Since MST is GMT-0700, the reference time can
 // be thought of as
 //
-//     01/02 03:04:05PM '06 -0700
+// 	01/02 03:04:05PM '06 -0700
 //
 // To define your own format, write down what the reference time would look like
 // formatted your way; see the values of constants like ANSIC, StampMicro or
@@ -50,16 +49,70 @@ import (
 //
 // Numeric time zone offsets format as follows:
 //
-//     -0700  ±hhmm
-//     -07:00 ±hh:mm
-//     -07    ±hh
+// 	-0700  ±hhmm
+// 	-07:00 ±hh:mm
+// 	-07    ±hh
 //
 // Replacing the sign in the format with a Z triggers the ISO 8601 behavior of
 // printing Z instead of an offset for the UTC zone. Thus:
 //
-//     Z0700  Z or ±hhmm
-//     Z07:00 Z or ±hh:mm
-//     Z07    Z or ±hh
+// 	Z0700  Z or ±hhmm
+// 	Z07:00 Z or ±hh:mm
+// 	Z07    Z or ±hh
+//
+// The executable example for time.Format demonstrates the working of the layout
+// string in detail and is a good reference.
+//
+// Note that the RFC822, RFC850, and RFC1123 formats should be applied only to
+// local times. Applying them to UTC times will use "UTC" as the time zone
+// abbreviation, while strictly speaking those RFCs require the use of "GMT" in
+// that case. In general RFC1123Z should be used instead of RFC1123 for servers
+// that insist on that format, and RFC3339 should be preferred for new
+// protocols. RFC822, RFC822Z, RFC1123, and RFC1123Z are useful for formatting;
+// when used with time.Parse they do not accept all the time formats permitted
+// by the RFCs.
+
+// These are predefined layouts for use in Time.Format and Time.Parse. The
+// reference time used in the layouts is the specific time:
+//
+// 	Mon Jan 2 15:04:05 MST 2006
+//
+// which is Unix time 1136239445. Since MST is GMT-0700, the reference time can
+// be thought of as
+//
+// 	01/02 03:04:05PM '06 -0700
+//
+// To define your own format, write down what the reference time would look like
+// formatted your way; see the values of constants like ANSIC, StampMicro or
+// Kitchen for examples. The model is to demonstrate what the reference time
+// looks like so that the Format and Parse methods can apply the same
+// transformation to a general time value.
+//
+// Within the format string, an underscore _ represents a space that may be
+// replaced by a digit if the following number (a day) has two digits; for
+// compatibility with fixed-width Unix time formats.
+//
+// A decimal point followed by one or more zeros represents a fractional second,
+// printed to the given number of decimal places. A decimal point followed by
+// one or more nines represents a fractional second, printed to the given number
+// of decimal places, with trailing zeros removed. When parsing (only), the
+// input may contain a fractional second field immediately after the seconds
+// field, even if the layout does not signify its presence. In that case a
+// decimal point followed by a maximal series of digits is parsed as a
+// fractional second.
+//
+// Numeric time zone offsets format as follows:
+//
+// 	-0700  ±hhmm
+// 	-07:00 ±hh:mm
+// 	-07    ±hh
+//
+// Replacing the sign in the format with a Z triggers the ISO 8601 behavior of
+// printing Z instead of an offset for the UTC zone. Thus:
+//
+// 	Z0700  Z or ±hhmm
+// 	Z07:00 Z or ±hh:mm
+// 	Z07    Z or ±hh
 //
 // The executable example for time.Format demonstrates the working of the layout
 // string in detail and is a good reference.
@@ -70,39 +123,6 @@ import (
 // that case. In general RFC1123Z should be used instead of RFC1123 for servers
 // that insist on that format, and RFC3339 should be preferred for new
 // protocols.
-
-// 这些预定义的版式用于Time.Format和Time.Parse函数。用在版式中的参考时间是：
-//
-//     Mon Jan 2 15:04:05 MST 2006
-//
-// 对应的Unix时间是1136239445。因为MST的时区是GMT-0700，参考时间也可以表示为如下
-// ：
-//
-//     01/02 03:04:05PM '06 -0700
-//
-// 要定义你自己的格式，写下该参考时间应用于你的格式的情况；例子请参见ANSIC、
-// StampMicro或Kitchen等常数的值。该模型是为了演示参考时间的格式化效果，如此一来
-// Format和Parse方法可以将相同的转换规则用于一个普通的时间值。
-//
-// 在格式字符串中，用前置的'0'表示一个可以被可以被数字替换的'0'（如果它后面的数
-// 字有两位）；使用下划线表示一个可以被数字替换的空格（如果它后面的数字有两位）
-// ；以便兼容Unix定长时间格式。
-//
-// 小数点后跟0到多个'0'，表示秒数的小数部分，输出时会生成和'0'一样多的小数位；小
-// 数点后跟0到多个'9'，表示秒数的小数部分，输出时会生成和'9'一样多的小数位但会将
-// 拖尾的'0'去掉。（只有）解析时，输入可以在秒字段后面紧跟一个小数部分，即使格式
-// 字符串里没有指明该部分。此时，小数点及其后全部的数字都会成为秒的小数部分。
-//
-// 数字表示的时区格式如下：
-//
-//     -0700  ±hhmm
-//     -07:00 ±hh:mm
-//
-// 将格式字符串中的负号替换为Z会触发ISO 8601行为（当时区是UTC时，输出Z而不是时区
-// 偏移量），这样：
-//
-//     Z0700  Z or ±hhmm
-//     Z07:00 Z or ±hh:mm
 const (
 	ANSIC       = "Mon Jan _2 15:04:05 2006"
 	UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
@@ -115,6 +135,7 @@ const (
 	RFC3339     = "2006-01-02T15:04:05Z07:00"
 	RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
 	Kitchen     = "3:04PM"
+
 	// Handy time stamps.
 	Stamp      = "Jan _2 15:04:05"
 	StampMilli = "Jan _2 15:04:05.000"
@@ -137,16 +158,16 @@ const (
 	December
 )
 
-// Common durations.  There is no definition for units of Day or larger
+// Common durations. There is no definition for units of Day or larger
 // to avoid confusion across daylight savings time zone transitions.
 //
 // To count the number of units in a Duration, divide:
-//     second := time.Second
-//     fmt.Print(int64(second/time.Millisecond)) // prints 1000
+// 	second := time.Second
+// 	fmt.Print(int64(second/time.Millisecond)) // prints 1000
 //
 // To convert an integer number of units to a Duration, multiply:
-//     seconds := 10
-//     fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
+// 	seconds := 10
+// 	fmt.Print(time.Duration(seconds)*time.Second) // prints 10s
 
 // 常用的时间段。没有定义一天或超过一天的单元，以避免夏时制的时区切换的混乱。
 //
@@ -178,10 +199,6 @@ const (
 	Saturday
 )
 
-const (
-	_ = iota
-)
-
 // Local represents the system's local time zone.
 
 // Local代表系统本地，对应本地时区。
@@ -193,7 +210,7 @@ var Local *Location = &localLoc
 var UTC *Location = &utcLoc
 
 // A Duration represents the elapsed time between two instants
-// as an int64 nanosecond count.  The representation limits the
+// as an int64 nanosecond count. The representation limits the
 // largest representable duration to approximately 290 years.
 
 // Duration类型代表两个时间点之间经过的时间，以纳秒为单位。可表示的最长时间段大
@@ -230,23 +247,22 @@ type ParseError struct {
 // Ticker保管一个通道，并每隔一段时间向其传递"tick"。
 type Ticker struct {
 	C <-chan Time // The channel on which the ticks are delivered.
-
 }
 
 // A Time represents an instant in time with nanosecond precision.
 //
-// Programs using times should typically store and pass them as values,
-// not pointers.  That is, time variables and struct fields should be of
-// type time.Time, not *time.Time.  A Time value can be used by
-// multiple goroutines simultaneously.
+// Programs using times should typically store and pass them as values, not
+// pointers. That is, time variables and struct fields should be of type
+// time.Time, not *time.Time. A Time value can be used by multiple goroutines
+// simultaneously.
 //
-// Time instants can be compared using the Before, After, and Equal methods.
-// The Sub method subtracts two instants, producing a Duration.
-// The Add method adds a Time and a Duration, producing a Time.
+// Time instants can be compared using the Before, After, and Equal methods. The
+// Sub method subtracts two instants, producing a Duration. The Add method adds
+// a Time and a Duration, producing a Time.
 //
-// The zero value of type Time is January 1, year 1, 00:00:00.000000000 UTC.
-// As this time is unlikely to come up in practice, the IsZero method gives
-// a simple way of detecting a time that has not been initialized explicitly.
+// The zero value of type Time is January 1, year 1, 00:00:00.000000000 UTC. As
+// this time is unlikely to come up in practice, the IsZero method gives a
+// simple way of detecting a time that has not been initialized explicitly.
 //
 // Each Time has associated with it a Location, consulted when computing the
 // presentation form of the time, such as in the Format, Hour, and Year methods.
@@ -297,6 +313,9 @@ type Weekday int
 // After waits for the duration to elapse and then sends the current time
 // on the returned channel.
 // It is equivalent to NewTimer(d).C.
+// The underlying Timer is not recovered by the garbage collector
+// until the timer fires. If efficiency is a concern, use NewTimer
+// instead and call Timer.Stop if the timer is no longer needed.
 
 // After会在另一线程经过时间段d后向返回值发送当时的时间。等价于NewTimer(d).C。
 func After(d Duration) <-chan Time
@@ -310,7 +329,7 @@ func After(d Duration) <-chan Time
 func AfterFunc(d Duration, f func()) *Timer
 
 // Date returns the Time corresponding to
-//     yyyy-mm-dd hh:mm:ss + nsec nanoseconds
+// 	yyyy-mm-dd hh:mm:ss + nsec nanoseconds
 // in the appropriate zone for that time in the given location.
 //
 // The month, day, hour, min, sec, and nsec values may be outside
@@ -319,7 +338,7 @@ func AfterFunc(d Duration, f func()) *Timer
 //
 // A daylight savings time transition skips or repeats times.
 // For example, in the United States, March 13, 2011 2:15am never occurred,
-// while November 6, 2011 1:15am occurred twice.  In such cases, the
+// while November 6, 2011 1:15am occurred twice. In such cases, the
 // choice of time zone, and therefore the time, is not well-defined.
 // Date returns a time that is correct in one of the two zones involved
 // in the transition, but it does not guarantee which.
@@ -328,7 +347,7 @@ func AfterFunc(d Duration, f func()) *Timer
 
 // Date返回一个时区为loc、当地时间为：
 //
-//     year-month-day hour:min:sec + nsec nanoseconds
+// 	year-month-day hour:min:sec + nsec nanoseconds
 //
 // 的时间点。
 //
@@ -353,18 +372,17 @@ func FixedZone(name string, offset int) *Location
 
 // LoadLocation returns the Location with the given name.
 //
-// If the name is "" or "UTC", LoadLocation returns UTC.
-// If the name is "Local", LoadLocation returns Local.
+// If the name is "" or "UTC", LoadLocation returns UTC. If the name is "Local",
+// LoadLocation returns Local.
 //
-// Otherwise, the name is taken to be a location name corresponding to a file
-// in the IANA Time Zone database, such as "America/New_York".
+// Otherwise, the name is taken to be a location name corresponding to a file in
+// the IANA Time Zone database, such as "America/New_York".
 //
-// The time zone database needed by LoadLocation may not be
-// present on all systems, especially non-Unix systems.
-// LoadLocation looks in the directory or uncompressed zip file
-// named by the ZONEINFO environment variable, if any, then looks in
-// known installation locations on Unix systems,
-// and finally looks in $GOROOT/lib/time/zoneinfo.zip.
+// The time zone database needed by LoadLocation may not be present on all
+// systems, especially non-Unix systems. LoadLocation looks in the directory or
+// uncompressed zip file named by the ZONEINFO environment variable, if any,
+// then looks in known installation locations on Unix systems, and finally looks
+// in $GOROOT/lib/time/zoneinfo.zip.
 
 // LoadLocation返回使用给定的名字创建的Location。
 //
@@ -402,7 +420,7 @@ func Now() Time
 // Parse parses a formatted string and returns the time value it represents. The
 // layout defines the format by showing how the reference time, defined to be
 //
-//     Mon Jan 2 15:04:05 -0700 MST 2006
+// 	Mon Jan 2 15:04:05 -0700 MST 2006
 //
 // would be interpreted if it were the value; it serves as an example of the
 // input format. The same interpretation will then be made to the input string.
@@ -445,7 +463,7 @@ func Now() Time
 // Parse parses a formatted string and returns the time value it represents. The
 // layout defines the format by showing how the reference time, defined to be
 //
-//     Mon Jan 2 15:04:05 -0700 MST 2006
+// 	Mon Jan 2 15:04:05 -0700 MST 2006
 //
 // would be interpreted if it were the value; it serves as an example of the
 // input format. The same interpretation will then be made to the input string.
@@ -478,6 +496,12 @@ func Now() Time
 // layouts that use a numeric zone offset, or use ParseInLocation.
 func Parse(layout, value string) (Time, error)
 
+// ParseDuration parses a duration string.
+// A duration string is a possibly signed sequence of
+// decimal numbers, each with optional fraction and a unit suffix,
+// such as "300ms", "-1.5h" or "2h45m".
+// Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+
 // ParseDuration parses a duration string. A duration string is a possibly
 // signed sequence of decimal numbers, each with optional fraction and a unit
 // suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us"
@@ -491,6 +515,9 @@ func ParseDuration(s string) (Duration, error)
 // Local location; ParseInLocation uses the given location.
 func ParseInLocation(layout, value string, loc *Location) (Time, error)
 
+// Since returns the time elapsed since t.
+// It is shorthand for time.Now().Sub(t).
+
 // Since returns the time elapsed since t. It is shorthand for
 // time.Now().Sub(t).
 func Since(t Time) Duration
@@ -503,8 +530,9 @@ func Sleep(d Duration)
 
 // Tick is a convenience wrapper for NewTicker providing access to the ticking
 // channel only. While Tick is useful for clients that have no need to shut down
-// the Ticker, be aware that without a way to shut it down the underlying
-// Ticker cannot be recovered by the garbage collector; it "leaks".
+// the Ticker, be aware that without a way to shut it down the underlying Ticker
+// cannot be recovered by the garbage collector; it "leaks". Unlike NewTicker,
+// Tick will return nil if d <= 0.
 
 // Tick是NewTicker的封装，只提供对Ticker的通道的访问。如果不需要关闭Ticker，本函
 // 数就很方便。
@@ -526,12 +554,12 @@ func Unix(sec int64, nsec int64) Time
 
 // String返回对时区信息的描述，返回值绑定为LoadLocation或FixedZone函数创建l时的
 // name参数。
-func (*Location) String() string
+func (l *Location) String() string
 
 // Error returns the string representation of a ParseError.
 
 // Error返回ParseError的字符串表示。
-func (*ParseError) Error() string
+func (e *ParseError) Error() string
 
 // Stop turns off a ticker. After Stop, no more ticks will be sent. Stop does
 // not close the channel, to prevent a read from the channel succeeding
@@ -539,68 +567,108 @@ func (*ParseError) Error() string
 
 // Stop关闭一个Ticker。在关闭后，将不会发送更多的tick信息。Stop不会关闭通道t.C，
 // 以避免从该通道的读取不正确的成功。
-func (*Ticker) Stop()
+func (t *Ticker) Stop()
 
 // GobDecode implements the gob.GobDecoder interface.
-func (*Time) GobDecode(data []byte) error
+func (t *Time) GobDecode(data []byte) error
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-func (*Time) UnmarshalBinary(data []byte) error
+func (t *Time) UnmarshalBinary(data []byte) error
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+// The time is expected to be a quoted string in RFC 3339 format.
 
 // UnmarshalJSON implements the json.Unmarshaler interface. The time is expected
 // to be a quoted string in RFC 3339 format.
-func (*Time) UnmarshalJSON(data []byte) (err error)
+func (t *Time) UnmarshalJSON(data []byte) error
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// The time is expected to be in RFC 3339 format.
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface. The time is
 // expected to be in RFC 3339 format.
-func (*Time) UnmarshalText(data []byte) (err error)
+func (t *Time) UnmarshalText(data []byte) error
+
+// Reset changes the timer to expire after duration d. It returns true if the
+// timer had been active, false if the timer had expired or been stopped.
+//
+// To reuse an active timer, always call its Stop method first and—if it had
+// expired—drain the value from its channel. For example:
+//
+// 	if !t.Stop() {
+// 		<-t.C
+// 	}
+// 	t.Reset(d)
+//
+// This should not be done concurrent to other receives from the Timer's
+// channel.
+//
+// Note that it is not possible to use Reset's return value correctly, as there
+// is a race condition between draining the channel and the new timer expiring.
+// Reset should always be used in concert with Stop, as described above. The
+// return value exists to preserve compatibility with existing programs.
 
 // Reset changes the timer to expire after duration d.
 // It returns true if the timer had been active, false if the timer had
 // expired or been stopped.
-
-// Reset使t重新开始计时，（本方法返回后再）等待时间段d过去后到期。如果调用时t还
-// 在等待中会返回真；如果t已经到期或者被停止了会返回假。
-func (*Timer) Reset(d Duration) bool
+func (t *Timer) Reset(d Duration) bool
 
 // Stop prevents the Timer from firing. It returns true if the call stops the
 // timer, false if the timer has already expired or been stopped. Stop does not
 // close the channel, to prevent a read from the channel succeeding incorrectly.
+//
+// To prevent the timer firing after a call to Stop, check the return value and
+// drain the channel. For example:
+//
+// 	if !t.Stop() {
+// 		<-t.C
+// 	}
+//
+// This cannot be done concurrent to other receives from the Timer's channel.
 
-// Stop停止Timer的执行。如果停止了t会返回真；如果t已经被停止或者过期了会返回假。
-// Stop不会关闭通道t.C，以避免从该通道的读取不正确的成功。
-func (*Timer) Stop() bool
+// Stop prevents the Timer from firing. It returns true if the call stops the
+// timer, false if the timer has already expired or been stopped. Stop does not
+// close the channel, to prevent a read from the channel succeeding incorrectly.
+func (t *Timer) Stop() bool
 
 // Hours returns the duration as a floating point number of hours.
-func (Duration) Hours() float64
+func (d Duration) Hours() float64
 
 // Minutes returns the duration as a floating point number of minutes.
-func (Duration) Minutes() float64
+func (d Duration) Minutes() float64
 
 // Nanoseconds returns the duration as an integer nanosecond count.
-func (Duration) Nanoseconds() int64
+func (d Duration) Nanoseconds() int64
 
 // Seconds returns the duration as a floating point number of seconds.
-func (Duration) Seconds() float64
+func (d Duration) Seconds() float64
 
 // String returns a string representing the duration in the form "72h3m0.5s".
-// Leading zero units are omitted.  As a special case, durations less than one
+// Leading zero units are omitted. As a special case, durations less than one
 // second format use a smaller unit (milli-, micro-, or nanoseconds) to ensure
-// that the leading digit is non-zero.  The zero duration formats as 0,
-// with no unit.
+// that the leading digit is non-zero. The zero duration formats as 0s.
 
 // String returns a string representing the duration in the form "72h3m0.5s".
 // Leading zero units are omitted. As a special case, durations less than one
 // second format use a smaller unit (milli-, micro-, or nanoseconds) to ensure
 // that the leading digit is non-zero. The zero duration formats as 0, with no
 // unit.
-func (Duration) String() string
+func (d Duration) String() string
 
 // String returns the English name of the month ("January", "February", ...).
-func (Month) String() string
+func (m Month) String() string
 
 // Add returns the time t+d.
-func (Time) Add(d Duration) Time
+func (t Time) Add(d Duration) Time
+
+// AddDate returns the time corresponding to adding the
+// given number of years, months, and days to t.
+// For example, AddDate(-1, 2, 3) applied to January 1, 2011
+// returns March 4, 2010.
+//
+// AddDate normalizes its result in the same way that Date does,
+// so, for example, adding one month to October 31 yields
+// December 1, the normalized form for November 31.
 
 // AddDate returns the time corresponding to adding the given number of years,
 // months, and days to t. For example, AddDate(-1, 2, 3) applied to January 1,
@@ -609,51 +677,63 @@ func (Time) Add(d Duration) Time
 // AddDate normalizes its result in the same way that Date does, so, for
 // example, adding one month to October 31 yields December 1, the normalized
 // form for November 31.
-func (Time) AddDate(years int, months int, days int) Time
+func (t Time) AddDate(years int, months int, days int) Time
 
 // After reports whether the time instant t is after u.
-func (Time) After(u Time) bool
+func (t Time) After(u Time) bool
+
+// AppendFormat is like Format but appends the textual
+// representation to b and returns the extended buffer.
+func (t Time) AppendFormat(b []byte, layout string) []byte
 
 // Before reports whether the time instant t is before u.
-func (Time) Before(u Time) bool
+func (t Time) Before(u Time) bool
 
 // Clock returns the hour, minute, and second within the day specified by t.
-func (Time) Clock() (hour, min, sec int)
+func (t Time) Clock() (hour, min, sec int)
 
 // Date returns the year, month, and day in which t occurs.
-func (Time) Date() (year int, month Month, day int)
+func (t Time) Date() (year int, month Month, day int)
 
 // Day returns the day of the month specified by t.
-func (Time) Day() int
+func (t Time) Day() int
+
+// Equal reports whether t and u represent the same time instant.
+// Two times can be equal even if they are in different locations.
+// For example, 6:00 +0200 CEST and 4:00 UTC are Equal.
+// This comparison is different from using t == u, which also compares
+// the locations.
 
 // Equal reports whether t and u represent the same time instant. Two times can
 // be equal even if they are in different locations. For example, 6:00 +0200
 // CEST and 4:00 UTC are Equal. This comparison is different from using t == u,
 // which also compares the locations.
-func (Time) Equal(u Time) bool
-
-// Format returns a textual representation of the time value formatted
-// according to layout, which defines the format by showing how the reference
-// time, defined to be
-//     Mon Jan 2 15:04:05 -0700 MST 2006
-// would be displayed if it were the value; it serves as an example of the
-// desired output. The same display rules will then be applied to the time
-// value.
-//
-// A fractional second is represented by adding a period and zeros
-// to the end of the seconds section of layout string, as in "15:04:05.000"
-// to format a time stamp with millisecond precision.
-//
-// Predefined layouts ANSIC, UnixDate, RFC3339 and others describe standard
-// and convenient representations of the reference time. For more information
-// about the formats and the definition of the reference time, see the
-// documentation for ANSIC and the other constants defined by this package.
+func (t Time) Equal(u Time) bool
 
 // Format returns a textual representation of the time value formatted according
 // to layout, which defines the format by showing how the reference time,
 // defined to be
 //
-//     Mon Jan 2 15:04:05 -0700 MST 2006
+// 	Mon Jan 2 15:04:05 -0700 MST 2006
+//
+// would be displayed if it were the value; it serves as an example of the
+// desired output. The same display rules will then be applied to the time
+// value.
+//
+// A fractional second is represented by adding a period and zeros to the end of
+// the seconds section of layout string, as in "15:04:05.000" to format a time
+// stamp with millisecond precision.
+//
+// Predefined layouts ANSIC, UnixDate, RFC3339 and others describe standard and
+// convenient representations of the reference time. For more information about
+// the formats and the definition of the reference time, see the documentation
+// for ANSIC and the other constants defined by this package.
+
+// Format returns a textual representation of the time value formatted according
+// to layout, which defines the format by showing how the reference time,
+// defined to be
+//
+// 	Mon Jan 2 15:04:05 -0700 MST 2006
 //
 // would be displayed if it were the value; it serves as an example of the
 // desired output. The same display rules will then be applied to the time
@@ -661,110 +741,135 @@ func (Time) Equal(u Time) bool
 // standard and convenient representations of the reference time. For more
 // information about the formats and the definition of the reference time, see
 // the documentation for ANSIC and the other constants defined by this package.
-func (Time) Format(layout string) string
+func (t Time) Format(layout string) string
 
 // GobEncode implements the gob.GobEncoder interface.
-func (Time) GobEncode() ([]byte, error)
+func (t Time) GobEncode() ([]byte, error)
 
 // Hour returns the hour within the day specified by t, in the range [0, 23].
-func (Time) Hour() int
+func (t Time) Hour() int
+
+// ISOWeek returns the ISO 8601 year and week number in which t occurs.
+// Week ranges from 1 to 53. Jan 01 to Jan 03 of year n might belong to
+// week 52 or 53 of year n-1, and Dec 29 to Dec 31 might belong to week 1
+// of year n+1.
 
 // ISOWeek returns the ISO 8601 year and week number in which t occurs. Week
 // ranges from 1 to 53. Jan 01 to Jan 03 of year n might belong to week 52 or 53
 // of year n-1, and Dec 29 to Dec 31 might belong to week 1 of year n+1.
-func (Time) ISOWeek() (year, week int)
+func (t Time) ISOWeek() (year, week int)
 
 // In returns t with the location information set to loc.
 //
 // In panics if loc is nil.
-func (Time) In(loc *Location) Time
+func (t Time) In(loc *Location) Time
+
+// IsZero reports whether t represents the zero time instant,
+// January 1, year 1, 00:00:00 UTC.
 
 // IsZero reports whether t represents the zero time instant, January 1, year 1,
 // 00:00:00 UTC.
-func (Time) IsZero() bool
+func (t Time) IsZero() bool
 
 // Local returns t with the location set to local time.
-func (Time) Local() Time
+func (t Time) Local() Time
 
 // Location returns the time zone information associated with t.
-func (Time) Location() *Location
+func (t Time) Location() *Location
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (Time) MarshalBinary() ([]byte, error)
+func (t Time) MarshalBinary() ([]byte, error)
 
 // MarshalJSON implements the json.Marshaler interface. The time is a quoted
 // string in RFC 3339 format, with sub-second precision added if present.
-func (Time) MarshalJSON() ([]byte, error)
+func (t Time) MarshalJSON() ([]byte, error)
 
 // MarshalText implements the encoding.TextMarshaler interface. The time is
 // formatted in RFC 3339 format, with sub-second precision added if present.
-func (Time) MarshalText() ([]byte, error)
+func (t Time) MarshalText() ([]byte, error)
 
 // Minute returns the minute offset within the hour specified by t, in the range
 // [0, 59].
-func (Time) Minute() int
+func (t Time) Minute() int
 
 // Month returns the month of the year specified by t.
-func (Time) Month() Month
+func (t Time) Month() Month
+
+// Nanosecond returns the nanosecond offset within the second specified by t,
+// in the range [0, 999999999].
 
 // Nanosecond returns the nanosecond offset within the second specified by t, in
 // the range [0, 999999999].
-func (Time) Nanosecond() int
+func (t Time) Nanosecond() int
 
 // Round returns the result of rounding t to the nearest multiple of d (since
 // the zero time). The rounding behavior for halfway values is to round up. If d
 // <= 0, Round returns t unchanged.
-func (Time) Round(d Duration) Time
+func (t Time) Round(d Duration) Time
 
 // Second returns the second offset within the minute specified by t, in the
 // range [0, 59].
-func (Time) Second() int
+func (t Time) Second() int
 
 // String returns the time formatted using the format string
-//     "2006-01-02 15:04:05.999999999 -0700 MST"
+// 	"2006-01-02 15:04:05.999999999 -0700 MST"
 
 // String returns the time formatted using the format string
 //
 //     "2006-01-02 15:04:05.999999999 -0700 MST"
-func (Time) String() string
+func (t Time) String() string
+
+// Sub returns the duration t-u. If the result exceeds the maximum (or minimum)
+// value that can be stored in a Duration, the maximum (or minimum) duration
+// will be returned.
+// To compute t-d for a duration d, use t.Add(-d).
 
 // Sub returns the duration t-u. If the result exceeds the maximum (or minimum)
 // value that can be stored in a Duration, the maximum (or minimum) duration
 // will be returned. To compute t-d for a duration d, use t.Add(-d).
-func (Time) Sub(u Time) Duration
+func (t Time) Sub(u Time) Duration
 
 // Truncate returns the result of rounding t down to a multiple of d (since the
 // zero time). If d <= 0, Truncate returns t unchanged.
-func (Time) Truncate(d Duration) Time
+func (t Time) Truncate(d Duration) Time
 
 // UTC returns t with the location set to UTC.
-func (Time) UTC() Time
+func (t Time) UTC() Time
+
+// Unix returns t as a Unix time, the number of seconds elapsed
+// since January 1, 1970 UTC.
 
 // Unix returns t as a Unix time, the number of seconds elapsed since January 1,
 // 1970 UTC.
-func (Time) Unix() int64
+func (t Time) Unix() int64
+
+// UnixNano returns t as a Unix time, the number of nanoseconds elapsed
+// since January 1, 1970 UTC. The result is undefined if the Unix time
+// in nanoseconds cannot be represented by an int64. Note that this
+// means the result of calling UnixNano on the zero Time is undefined.
 
 // UnixNano returns t as a Unix time, the number of nanoseconds elapsed since
 // January 1, 1970 UTC. The result is undefined if the Unix time in nanoseconds
 // cannot be represented by an int64. Note that this means the result of calling
 // UnixNano on the zero Time is undefined.
-func (Time) UnixNano() int64
+func (t Time) UnixNano() int64
 
 // Weekday returns the day of the week specified by t.
-func (Time) Weekday() Weekday
+func (t Time) Weekday() Weekday
 
 // Year returns the year in which t occurs.
-func (Time) Year() int
+func (t Time) Year() int
 
 // YearDay returns the day of the year specified by t, in the range [1,365] for
 // non-leap years, and [1,366] in leap years.
-func (Time) YearDay() int
+func (t Time) YearDay() int
 
 // Zone computes the time zone in effect at time t, returning the abbreviated
 // name of the zone (such as "CET") and its offset in seconds east of UTC.
-func (Time) Zone() (name string, offset int)
+func (t Time) Zone() (name string, offset int)
 
 // String returns the English name of the day ("Sunday", "Monday", ...).
 
 // String返回该日（周几）的英文名（"Sunday"、"Monday"，……）
-func (Weekday) String() string
+func (d Weekday) String() string
+

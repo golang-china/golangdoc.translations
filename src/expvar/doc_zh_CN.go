@@ -1,4 +1,4 @@
-// Copyright The Go Authors. All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,13 +13,13 @@
 // In addition to adding the HTTP handler, this package registers the
 // following variables:
 //
-//     cmdline   os.Args
-//     memstats  runtime.Memstats
+// 	cmdline   os.Args
+// 	memstats  runtime.Memstats
 //
 // The package is sometimes only imported for the side effect of
-// registering its HTTP handler and the above variables.  To use it
+// registering its HTTP handler and the above variables. To use it
 // this way, link this package into your program:
-//     import _ "expvar"
+// 	import _ "expvar"
 
 // expvar包提供了公共变量的标准接口，如服务的操作计数器。本包通过HTTP在
 // /debug/vars位置以JSON格式导出了这些变量。
@@ -28,28 +28,28 @@
 //
 // 为了增加HTTP处理器，本包注册了如下变量：
 //
-//     cmdline   os.Args
-//     memstats  runtime.Memstats
+// 	cmdline   os.Args
+// 	memstats  runtime.Memstats
 //
 // 有时候本包被导入只是为了获得本包注册HTTP处理器和上述变量的副作用。此时可以如
 // 下方式导入本包：
 //
-//     import _ "expvar"
+// 	import _ "expvar"
 package expvar
 
 import (
-    "bytes"
-    "encoding/json"
-    "fmt"
-    "log"
-    "math"
-    "net/http"
-    "os"
-    "runtime"
-    "sort"
-    "strconv"
-    "sync"
-    "sync/atomic"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"log"
+	"math"
+	"net/http"
+	"os"
+	"runtime"
+	"sort"
+	"strconv"
+	"sync"
+	"sync/atomic"
 )
 
 // Float is a 64-bit float variable that satisfies the Var interface.
@@ -74,8 +74,8 @@ type Int struct {
 
 // KeyValue代表Map中的一条记录。（键值对）
 type KeyValue struct {
-    Key   string
-    Value Var
+	Key   string
+	Value Var
 }
 
 // Map is a string-to-Var map variable that satisfies the Var interface.
@@ -94,7 +94,10 @@ type String struct {
 
 // Var接口是所有导出变量的抽象类型。
 type Var interface {
-    String() string
+	// String returns a valid JSON value for the variable.
+	// Types with String methods that do not return valid JSON
+	// (such as time.Time) must not be used as a Var.
+	String()string
 }
 
 // Do calls f for each exported variable.
@@ -105,7 +108,8 @@ type Var interface {
 // 可以同时更新。
 func Do(f func(KeyValue))
 
-// Get retrieves a named exported variable.
+// Get retrieves a named exported variable. It returns nil if the name has
+// not been registered.
 
 // Get获取名为name的导出变量。
 func Get(name string) Var
@@ -127,25 +131,25 @@ func NewString(name string) *String
 func Publish(name string, v Var)
 
 // Add adds delta to v.
-func (*Float) Add(delta float64)
+func (v *Float) Add(delta float64)
 
 // Set sets v to value.
-func (*Float) Set(value float64)
+func (v *Float) Set(value float64)
 
-func (*Float) String() string
+func (v *Float) String() string
 
-func (*Int) Add(delta int64)
+func (v *Int) Add(delta int64)
 
-func (*Int) Set(value int64)
+func (v *Int) Set(value int64)
 
-func (*Int) String() string
+func (v *Int) String() string
 
-func (*Map) Add(key string, delta int64)
+func (v *Map) Add(key string, delta int64)
 
 // AddFloat adds delta to the *Float value stored under the given map key.
 
 // AddFloat向索引key对应的值（底层为*Float）修改为加上delta后的值。
-func (*Map) AddFloat(key string, delta float64)
+func (v *Map) AddFloat(key string, delta float64)
 
 // Do calls f for each entry in the map.
 // The map is locked during the iteration,
@@ -153,19 +157,19 @@ func (*Map) AddFloat(key string, delta float64)
 
 // Do对映射的每一条记录都调用f。迭代执行时会锁定该映射，但已存在的记录可以同时更
 // 新。
-func (*Map) Do(f func(KeyValue))
+func (v *Map) Do(f func(KeyValue))
 
-func (*Map) Get(key string) Var
+func (v *Map) Get(key string) Var
 
-func (*Map) Init() *Map
+func (v *Map) Init() *Map
 
-func (*Map) Set(key string, av Var)
+func (v *Map) Set(key string, av Var)
 
-func (*Map) String() string
+func (v *Map) String() string
 
-func (*String) Set(value string)
+func (v *String) Set(value string)
 
-func (*String) String() string
+func (v *String) String() string
 
-func (Func) String() string
+func (f Func) String() string
 
